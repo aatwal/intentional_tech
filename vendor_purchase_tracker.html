@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>District Vendor Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1c2331;
+    --ink-soft:#5b6472;
+    --paper:#eef1f5;
+    --card:#ffffff;
+    --brass:#9c7a3c;
+    --rule:#ccd1d8;
+    --flag:#a5364a;
+    --cat-assessment:#3b7a79;
+    --cat-curriculum:#9c7a3c;
+    --cat-ai:#6b4e71;
+    --cat-materials:#5b6472;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    padding:32px 20px 80px;
+  }
+  .wrap{max-width:960px;margin:0 auto;}
+
+  header.letterhead{
+    border-bottom:2px solid var(--ink);
+    padding-bottom:18px;
+    margin-bottom:24px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  header.letterhead .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--brass);
+    margin:0 0 6px;
+  }
+  header.letterhead h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:32px;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  header.letterhead .sub{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-top:4px;
+  }
+  header.letterhead .stamp{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    text-align:right;
+    line-height:1.5;
+  }
+
+  .stats{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+    margin-bottom:28px;
+  }
+  .stat-card{
+    background:var(--card);
+    border:1px solid var(--rule);
+    border-left:3px solid var(--brass);
+    padding:14px 16px;
+  }
+  .stat-card .label{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:var(--ink-soft);
+    margin-bottom:6px;
+  }
+  .stat-card .value{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:22px;
+    font-weight:500;
+  }
+
+  .toolbar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+    align-items:center;
+  }
+  .toolbar input[type=text], .toolbar select{
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    padding:9px 12px;
+    border:1px solid var(--rule);
+    background:var(--card);
+    color:var(--ink);
+  }
+  .toolbar input[type=text]{flex:1;min-width:180px;}
+  .toolbar select{cursor:pointer;}
+  .toolbar button{
+    font-family:'Inter',sans-serif;
+    font-size:13px;
+    font-weight:600;
+    padding:9px 16px;
+    border:1px solid var(--ink);
+    background:var(--ink);
+    color:#fff;
+    cursor:pointer;
+  }
+  .toolbar button.ghost{
+    background:transparent;
+    color:var(--ink);
+  }
+
+  .ledger{border-top:1px solid var(--ink);}
+  .row{
+    display:grid;
+    grid-template-columns:36px 1fr auto auto auto;
+    gap:14px;
+    align-items:center;
+    padding:14px 4px;
+    border-bottom:1px solid var(--rule);
+    position:relative;
+  }
+  .row.flagged{border-left:2px solid var(--flag);}
+  .seal{
+    width:32px;height:32px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;font-weight:500;color:#fff;
+    flex-shrink:0;
+  }
+  .row .info .vendor{font-weight:600;font-size:14.5px;}
+  .row .info .product{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+  .row .info .note{font-size:11.5px;color:var(--flag);margin-top:4px;}
+  .row .term{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;color:var(--ink-soft);
+    text-align:right;white-space:nowrap;
+  }
+  .row .cat{
+    font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;
+    padding:3px 8px;border:1px solid var(--rule);white-space:nowrap;
+  }
+  .row .amount{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:15px;font-weight:500;text-align:right;white-space:nowrap;
+  }
+  .row .del{
+    background:none;border:none;color:var(--ink-soft);
+    cursor:pointer;font-size:12px;padding:0 0 0 8px;
+  }
+  .empty{padding:40px 4px;text-align:center;color:var(--ink-soft);font-size:13px;}
+
+  .add-panel{
+    margin-top:28px;
+    border-top:2px solid var(--ink);
+    padding-top:18px;
+  }
+  .add-panel h2{
+    font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin:0 0 12px;
+  }
+  .add-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+  }
+  .add-grid label{
+    font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--ink-soft);display:block;margin-bottom:4px;
+  }
+  .add-grid input, .add-grid select{
+    width:100%;font-family:'Inter',sans-serif;font-size:13px;
+    padding:8px 10px;border:1px solid var(--rule);background:var(--card);
+  }
+  .add-grid .full{grid-column:1/-1;}
+  .add-panel .submit-row{margin-top:14px;display:flex;gap:10px;align-items:center;}
+  .save-msg{font-size:12px;color:var(--cat-assessment);}
+
+  @media (max-width:640px){
+    .stats{grid-template-columns:1fr;}
+    .row{grid-template-columns:28px 1fr;grid-template-areas:"seal info" ". term" ". cat" ". amount";}
+    .row .term,.row .cat,.row .amount{text-align:left;}
+    .add-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="letterhead">
+    <div>
+      <p class="eyebrow">Public Record — Compiled from Vendor Quotes &amp; Agreements</p>
+      <h1>District Vendor Ledger</h1>
+      <p class="sub">San Mateo-Foster City School District — Software &amp; Curriculum Purchases</p>
+    </div>
+    <div class="stamp" id="stampDate"></div>
+  </header>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="label">Total spend (filtered)</div>
+      <div class="value" id="statTotal">$0</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Vendors shown</div>
+      <div class="value" id="statCount">0</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Average per vendor</div>
+      <div class="value" id="statAvg">$0</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <input type="text" id="search" placeholder="Search vendor or product…">
+    <select id="categoryFilter">
+      <option value="all">All categories</option>
+      <option value="assessment">Assessment</option>
+      <option value="curriculum">Curriculum / Software</option>
+      <option value="ai">AI Platform</option>
+      <option value="materials">Printed Materials</option>
+    </select>
+    <select id="sortBy">
+      <option value="amount-desc">Sort: Amount (high→low)</option>
+      <option value="amount-asc">Sort: Amount (low→high)</option>
+      <option value="vendor">Sort: Vendor A–Z</option>
+      <option value="term">Sort: Term start date</option>
+    </select>
+  </div>
+
+  <div class="ledger" id="ledger"></div>
+
+  <div class="add-panel">
+    <h2>Add a record</h2>
+    <div class="add-grid">
+      <div><label>Vendor</label><input type="text" id="f-vendor" placeholder="e.g. PowerSchool"></div>
+      <div><label>Category</label>
+        <select id="f-category">
+          <option value="assessment">Assessment</option>
+          <option value="curriculum">Curriculum / Software</option>
+          <option value="ai">AI Platform</option>
+          <option value="materials">Printed Materials</option>
+        </select>
+      </div>
+      <div class="full"><label>Product / service</label><input type="text" id="f-product" placeholder="e.g. Student Information System license"></div>
+      <div><label>Amount (USD)</label><input type="text" id="f-amount" placeholder="e.g. 42000"></div>
+      <div><label>District contact</label><input type="text" id="f-contact" placeholder="e.g. Amy Burke"></div>
+      <div><label>Term start</label><input type="text" id="f-start" placeholder="e.g. 07/01/2026"></div>
+      <div><label>Term end</label><input type="text" id="f-end" placeholder="e.g. 06/30/2027"></div>
+      <div class="full"><label>Note (optional)</label><input type="text" id="f-note" placeholder="e.g. flagged discrepancy, source doc, etc."></div>
+    </div>
+    <div class="submit-row">
+      <button id="addBtn" type="button" style="font-family:'Inter',sans-serif;font-weight:600;font-size:13px;padding:9px 16px;border:1px solid #1c2331;background:#1c2331;color:#fff;cursor:pointer;">Save record</button>
+      <span class="save-msg" id="saveMsg"></span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const CAT_COLOR = {
+  assessment:'var(--cat-assessment)',
+  curriculum:'var(--cat-curriculum)',
+  ai:'var(--cat-ai)',
+  materials:'var(--cat-materials)'
+};
+const CAT_LABEL = {
+  assessment:'Assessment',
+  curriculum:'Curriculum / Software',
+  ai:'AI Platform',
+  materials:'Printed Materials'
+};
+
+const seedData = [
+  {id:'seed-1', vendor:'Amplify', product:'Desmos Math digital licenses — Grades 6–8, Alg 1', category:'curriculum', amount:51000, start:'07/01/2026', end:'06/30/2027', contact:'Amy Burke', note:'', flagged:false},
+  {id:'seed-2', vendor:'Lumi Story AI', product:'AI creative-writing platform, 5 pilot schools (up to 1,500 students)', category:'ai', amount:62500, start:'06/01/2026', end:'annual, auto-renews', contact:'David Chambliss (signer)', note:'$37,500 platform fee + $25,000 admin fee', flagged:false},
+  {id:'seed-3', vendor:'NWEA', product:'MAP Growth K-12 assessment + onsite training', category:'assessment', amount:110750, start:'08/01/2025', end:'07/31/2026', contact:'David Chambliss', note:'', flagged:false},
+  {id:'seed-4', vendor:'Renaissance', product:'DnA software license + Inspect Premium', category:'assessment', amount:76934.98, start:'07/01/2025', end:'06/30/2026', contact:'Gloria Erlick', note:'Quote summary shows $77,454.98 — $520 diff from line-item total, verify before filing', flagged:true},
+  {id:'seed-5', vendor:'Zearn', product:'Math printed student workbooks, Grades K–5', category:'materials', amount:125840, start:'one-time order', end:'', contact:'Jo O\'Brien', note:'Printed materials, not a software license — includes $11,440 shipping', flagged:true},
+];
+
+let userEntries = [];
+let allData = [...seedData];
+
+function fmtMoney(n){
+  return '$' + Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function initials(name){
+  return name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+}
+
+async function loadStored(){
+  try{
+    const res = await window.storage.get('vendor-entries', false);
+    if(res && res.value){
+      userEntries = JSON.parse(res.value);
+    }
+  }catch(e){
+    userEntries = [];
+  }
+  allData = [...seedData, ...userEntries];
+  render();
+}
+
+async function saveStored(){
+  try{
+    await window.storage.set('vendor-entries', JSON.stringify(userEntries), false);
+  }catch(e){
+    document.getElementById('saveMsg').textContent = 'Could not save — record kept for this session only.';
+  }
+}
+
+function render(){
+  const q = document.getElementById('search').value.trim().toLowerCase();
+  const cat = document.getElementById('categoryFilter').value;
+  const sort = document.getElementById('sortBy').value;
+
+  let rows = allData.filter(r=>{
+    const matchesQ = !q || r.vendor.toLowerCase().includes(q) || r.product.toLowerCase().includes(q);
+    const matchesCat = cat==='all' || r.category===cat;
+    return matchesQ && matchesCat;
+  });
+
+  if(sort==='amount-desc') rows.sort((a,b)=>b.amount-a.amount);
+  if(sort==='amount-asc') rows.sort((a,b)=>a.amount-b.amount);
+  if(sort==='vendor') rows.sort((a,b)=>a.vendor.localeCompare(b.vendor));
+  if(sort==='term') rows.sort((a,b)=>(a.start||'').localeCompare(b.start||''));
+
+  const total = rows.reduce((s,r)=>s+Number(r.amount),0);
+  document.getElementById('statTotal').textContent = fmtMoney(total);
+  document.getElementById('statCount').textContent = rows.length;
+  document.getElementById('statAvg').textContent = rows.length ? fmtMoney(total/rows.length) : '$0';
+
+  const ledger = document.getElementById('ledger');
+  if(rows.length===0){
+    ledger.innerHTML = '<div class="empty">No records match this search. Try a different vendor name or category.</div>';
+    return;
+  }
+
+  ledger.innerHTML = rows.map(r=>`
+    <div class="row ${r.flagged?'flagged':''}">
+      <div class="seal" style="background:${CAT_COLOR[r.category]||'#5b6472'}">${initials(r.vendor)}</div>
+      <div class="info">
+        <div class="vendor">${escapeHtml(r.vendor)}</div>
+        <div class="product">${escapeHtml(r.product)}</div>
+        ${r.note ? `<div class="note">⚑ ${escapeHtml(r.note)}</div>` : ''}
+      </div>
+      <div class="term">${escapeHtml(r.start||'')}${r.end?' → '+escapeHtml(r.end):''}</div>
+      <div class="cat" style="border-color:${CAT_COLOR[r.category]||'#5b6472'};color:${CAT_COLOR[r.category]||'#5b6472'}">${CAT_LABEL[r.category]||r.category}</div>
+      <div class="amount">${fmtMoney(r.amount)}
+        ${r.id.startsWith('user-') ? `<button class="del" onclick="deleteEntry('${r.id}')" title="Remove">✕</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+async function deleteEntry(id){
+  userEntries = userEntries.filter(e=>e.id!==id);
+  allData = [...seedData, ...userEntries];
+  await saveStored();
+  render();
+}
+
+document.getElementById('addBtn').addEventListener('click', async ()=>{
+  const vendor = document.getElementById('f-vendor').value.trim();
+  const product = document.getElementById('f-product').value.trim();
+  const category = document.getElementById('f-category').value;
+  const amountRaw = document.getElementById('f-amount').value.trim().replace(/[^0-9.]/g,'');
+  const contact = document.getElementById('f-contact').value.trim();
+  const start = document.getElementById('f-start').value.trim();
+  const end = document.getElementById('f-end').value.trim();
+  const note = document.getElementById('f-note').value.trim();
+  const saveMsg = document.getElementById('saveMsg');
+
+  if(!vendor || !amountRaw){
+    saveMsg.textContent = 'Vendor name and amount are required.';
+    saveMsg.style.color = 'var(--flag)';
+    return;
+  }
+
+  const entry = {
+    id: 'user-'+Date.now(),
+    vendor, product: product||'—', category,
+    amount: parseFloat(amountRaw)||0,
+    start, end, contact, note, flagged:false
+  };
+  userEntries.push(entry);
+  allData = [...seedData, ...userEntries];
+  await saveStored();
+  render();
+
+  ['f-vendor','f-product','f-amount','f-contact','f-start','f-end','f-note'].forEach(id=>document.getElementById(id).value='');
+  saveMsg.style.color = 'var(--cat-assessment)';
+  saveMsg.textContent = 'Saved.';
+  setTimeout(()=>saveMsg.textContent='',2000);
+});
+
+document.getElementById('search').addEventListener('input', render);
+document.getElementById('categoryFilter').addEventListener('change', render);
+document.getElementById('sortBy').addEventListener('change', render);
+
+document.getElementById('stampDate').textContent = 'Compiled ' + new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+
+loadStored();
+</script>
+</body>
+</html>
