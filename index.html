@@ -100,10 +100,10 @@
     font-size:10.5px;
     letter-spacing:.12em;
     text-transform:uppercase;
-    color:var(--accent);
     margin:0 0 10px;
   }
-  .card.ledger .kicker{color:var(--plum);}
+  .kicker .kicker-dash{color:var(--accent);}
+  .kicker .kicker-pub{color:var(--plum);}
   .card h2{
     font-family:'Fraunces',Georgia,serif;
     font-weight:600;
@@ -189,7 +189,7 @@
     <a class="card dashboard" href="smfc_caaspp_dashboard.html">
       <div class="swatch"></div>
       <div class="card-body">
-        <p class="kicker">Interactive Dashboard</p>
+        <p class="kicker"><span class="kicker-dash">Interactive Dashboard</span> <span class="kicker-pub">(Public Record)</span></p>
         <h2>CAASPP 10-Year Trends</h2>
         <p>An interactive dashboard of the district's Smarter Balanced (CAASPP)
           results from 2014–15 through 2024–25. Filter every chart at once by
@@ -211,7 +211,7 @@
     <a class="card ledger" href="vendor_purchase_tracker.html">
       <div class="swatch"></div>
       <div class="card-body">
-        <p class="kicker">Public Record</p>
+        <p class="kicker"><span class="kicker-dash">Interactive Dashboard</span> <span class="kicker-pub">(Public Record)</span></p>
         <h2>District Vendor Ledger</h2>
         <p>A ledger of the district's software and curriculum purchases, styled as a
           public record. Search, filter by category (Assessment, Curriculum / Software,
