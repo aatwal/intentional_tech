@@ -66,6 +66,7 @@
   }
 
   .card{
+    position:relative;
     display:flex;
     flex-direction:column;
     background:var(--card);
@@ -83,6 +84,23 @@
     box-shadow:0 12px 28px rgba(28,43,51,0.12);
     border-color:var(--accent);
   }
+  .card-cover{
+    position:absolute;
+    inset:0;
+    z-index:1;
+  }
+  .presentation-link{
+    position:relative;
+    z-index:2;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:var(--brass);
+    text-decoration:none;
+  }
+  .presentation-link:hover{text-decoration:underline;}
   .card .swatch{
     height:6px;
     width:100%;
@@ -136,14 +154,12 @@
     margin-top:auto;
     display:flex;
     align-items:center;
-    justify-content:space-between;
+    justify-content:flex-end;
     padding-top:16px;
     border-top:1px solid var(--line);
   }
-  .filename{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:12px;
-    color:var(--muted);
+  .card-foot.card-foot--split{
+    justify-content:space-between;
   }
   .go{
     font-family:'Inter',sans-serif;
@@ -186,7 +202,8 @@
 
   <div class="cards">
 
-    <a class="card dashboard" href="smfc_caaspp_dashboard.html">
+    <div class="card dashboard">
+      <a class="card-cover" href="smfc_caaspp_dashboard.html" aria-label="Open CAASPP 10-Year Trends dashboard"></a>
       <div class="swatch"></div>
       <div class="card-body">
         <p class="kicker"><span class="kicker-dash">Interactive Dashboard</span> <span class="kicker-pub">(Public Record)</span></p>
@@ -201,12 +218,12 @@
           <span class="tag">5 linked views</span>
           <span class="tag">Chart.js</span>
         </div>
-        <div class="card-foot">
-          <span class="filename">smfc_caaspp_dashboard.html</span>
+        <div class="card-foot card-foot--split">
+          <a class="presentation-link" href="https://docs.google.com/presentation/d/1L5sdBBohmsUvKWzIbBLyVeRXBesa9Ca-7pgeHzfEn_o/edit" target="_blank" rel="noopener">View companion presentation <span class="arrow">↗</span></a>
           <span class="go">Open dashboard <span class="arrow">→</span></span>
         </div>
       </div>
-    </a>
+    </div>
 
     <a class="card ledger" href="vendor_purchase_tracker.html">
       <div class="swatch"></div>
@@ -224,7 +241,6 @@
           <span class="tag">Add records</span>
         </div>
         <div class="card-foot">
-          <span class="filename">vendor_purchase_tracker.html</span>
           <span class="go">Open ledger <span class="arrow">→</span></span>
         </div>
       </div>
