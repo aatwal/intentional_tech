@@ -241,10 +241,12 @@ def chat():
     # web_search is a server-executed tool: Anthropic runs the search itself and the API
     # response comes back with stop_reason "pause_turn" mid-answer. We just resend the
     # accumulated content and let it continue, up to a few rounds, same pattern as
-    # missing_children/app.py's ask_claude(). Kept short enough (worst case ~90s) to stay
-    # under typical platform request timeouts (e.g. Render's proxy) even with web search on.
-    max_rounds = 3 if web_search else 1
-    per_call_timeout = 30
+    # missing_children/app.py's ask_claude(). Executing a search takes real time, so a
+    # single round needs more than 30s — fewer rounds with more time each keeps the same
+    # ~90s worst case (still under gunicorn's --timeout 120) without starving a round that's
+    # genuinely still working.
+    max_rounds = 2 if web_search else 1
+    per_call_timeout = 45 if web_search else 30
     texts = []
     try:
         for _ in range(max_rounds):
