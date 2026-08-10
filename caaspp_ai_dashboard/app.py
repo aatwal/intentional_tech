@@ -241,10 +241,13 @@ def chat():
     # web_search is a server-executed tool: Anthropic runs the search itself and the API
     # response comes back with stop_reason "pause_turn" mid-answer. We just resend the
     # accumulated content and let it continue, up to a few rounds, same pattern as
-    # missing_children/app.py's ask_claude().
+    # missing_children/app.py's ask_claude(). Kept short enough (worst case ~90s) to stay
+    # under typical platform request timeouts (e.g. Render's proxy) even with web search on.
+    max_rounds = 3 if web_search else 1
+    per_call_timeout = 30
     texts = []
     try:
-        for _ in range(5):
+        for _ in range(max_rounds):
             resp = requests.post(
                 ANTHROPIC_API_URL,
                 headers={
@@ -253,7 +256,7 @@ def chat():
                     "content-type": "application/json",
                 },
                 json=payload,
-                timeout=60 if web_search else 30,
+                timeout=per_call_timeout,
             )
             data = resp.json()
             if "error" in data:
