@@ -120,6 +120,71 @@ def school_rankings(test_id, grade, subgroup_id, limit=5):
     return rows[:limit], rows[-limit:]
 
 
+# Pairs used for a quick district-level achievement-gap read: (label, subgroup id, baseline
+# subgroup id). Picked from the categories the dashboard's own filter already surfaces.
+GAP_SUBGROUPS = [
+    ("economic status", "31", "111"),      # socioeconomically disadvantaged vs not
+    ("disability status", "128", "99"),    # reported disabilities vs none
+    ("English-learner status", "160", "6"),  # EL vs fluent English proficient/English only
+]
+
+
+def build_district_overview():
+    """Plain-text, filter-independent summary of the whole district: baseline trend, every
+    grade, every school, and a few equity-gap comparisons. Computed once at startup (it
+    doesn't depend on the request) and prepended to every chat turn's context so broad or
+    cross-school/cross-grade questions can be answered even when a narrow filter is selected
+    on the Dashboard tab."""
+    lines = [
+        "District-wide overview (All Grades, All Students unless noted -- this section is "
+        "independent of whatever is currently filtered on the Dashboard tab; use it for "
+        "broad, district-level, or cross-school/cross-grade questions):",
+    ]
+    for t in ("1", "2"):
+        lines.append("- " + describe_one("0000000", "13", t, "1"))
+
+    for t in ("1", "2"):
+        by_grade = describe_by_grade("0000000", t, "1")
+        if by_grade:
+            lines.append(f"District by grade, {SUBJECT_NAMES[t]} (latest year, change since first tested year): "
+                          + "; ".join(by_grade))
+
+    for t in ("1", "2"):
+        top, bottom = school_rankings(t, "13", "1", limit=6)
+        if top:
+            lines.append(
+                f"All schools ranked by latest {SUBJECT_NAMES[t]} % meeting/exceeding, highest first: "
+                + "; ".join(f"{n} {v}%" for n, v, c in top)
+            )
+        if bottom:
+            lines.append(
+                f"Lowest {SUBJECT_NAMES[t]} schools: "
+                + "; ".join(f"{n} {v}%" for n, v, c in reversed(bottom))
+            )
+
+    gap_bits = []
+    for label, group_id, baseline_id in GAP_SUBGROUPS:
+        for t in ("1", "2"):
+            rec_group = DATA["data"].get(rec_key("0000000", "13", t, group_id))
+            rec_base = DATA["data"].get(rec_key("0000000", "13", t, baseline_id))
+            s_group = stats_for(rec_group) if rec_group else None
+            s_base = stats_for(rec_base) if rec_base else None
+            if s_group and s_base:
+                gap = round(s_base["latest"]["value"] - s_group["latest"]["value"], 1)
+                gap_bits.append(
+                    f"{SUBJECT_NAMES[t]} {label}: {SUBGROUPS_BY_ID[group_id]['name']} "
+                    f"{s_group['latest']['value']}% vs {SUBGROUPS_BY_ID[baseline_id]['name']} "
+                    f"{s_base['latest']['value']}% (gap {gap:+.1f} pts)"
+                )
+    if gap_bits:
+        lines.append("District-level achievement gaps, latest year: " + "; ".join(gap_bits))
+
+    return "\n".join(lines)
+
+
+DISTRICT_OVERVIEW = build_district_overview()
+
+
 def build_context(filters):
     test_id = filters.get("testId", "1")
     school_code = filters.get("schoolCode", "0000000")
@@ -132,8 +197,9 @@ def build_context(filters):
     subjects = ["1", "2"] if test_id == "all" else [test_id]
 
     lines = [
-        f"Current dashboard selection: {school['name']}, {grade_label}, "
-        f"student group '{subgroup['name']}', subject(s): "
+        f"Current Dashboard-tab selection (more specific than the district overview above -- "
+        f"use this for anything about the exact school/grade/group in view): {school['name']}, "
+        f"{grade_label}, student group '{subgroup['name']}', subject(s): "
         f"{'ELA & Math' if test_id == 'all' else SUBJECT_NAMES[test_id]}.",
         "",
         "Selected-combination stats (percent meeting or exceeding standard, i.e. "
@@ -176,9 +242,13 @@ SYSTEM_PREAMBLE = (
     "student count even when the overall score is reported — treat a missing claim/record "
     "as suppression, not zero. "
     "Answer primarily from the CAASPP data given below; do not invent figures. Keep answers "
-    "concise (a few sentences or short bullet points), cite the specific numbers you're using, "
-    "and if the user asks about something outside the current filter selection, say so and "
-    "suggest which filter to change rather than guessing.\n\n"
+    "concise (a few sentences or short bullet points), and cite the specific numbers you're "
+    "using. You're given two sections: a district-wide overview (all schools, all grades, "
+    "gap comparisons -- for broad or cross-school/cross-grade questions) and the current "
+    "Dashboard-tab selection (a narrower, more specific slice -- for questions about that "
+    "exact school/grade/group). Use whichever fits the question, and say which one you're "
+    "drawing from if it's not obvious. If something is truly outside both -- a school, grade, "
+    "or student group not covered in either section below -- say so rather than guessing.\n\n"
 )
 
 WEB_SEARCH_ADDENDUM = (
@@ -228,7 +298,7 @@ def chat():
     except Exception as e:  # bad/unknown filter values, etc.
         return jsonify({"error": f"Could not read the current selection: {e}"}), 400
 
-    system = SYSTEM_PREAMBLE + (WEB_SEARCH_ADDENDUM if web_search else "") + context
+    system = SYSTEM_PREAMBLE + (WEB_SEARCH_ADDENDUM if web_search else "") + DISTRICT_OVERVIEW + "\n\n" + context
     payload = {
         "model": CLAUDE_MODEL,
         "max_tokens": 1200 if web_search else 800,
