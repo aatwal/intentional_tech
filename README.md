@@ -23,7 +23,7 @@ Five linked views:
 1. **Percent meeting or exceeding standard, 2015–2025** — the headline trend line.
 2. **Achievement levels over time** — all four performance bands, year by year.
 3. **By grade level** — each grade tracked separately to surface which bands are driving a change.
-4. **Which skills eroded most** — claim-area (skill) breakdowns, available for "All Students."
+4. **Which skills eroded most** — claim-area (skill) breakdowns, available for any student group CDE reports it for (very small groups are suppressed by CDE itself).
 5. **Students tested each year** — participation counts for the current selection.
 
 Note: 2019–20 has no data because CAASPP testing was suspended statewide for
