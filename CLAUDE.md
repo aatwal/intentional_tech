@@ -8,17 +8,21 @@ Standalone tools examining educational technology spending and student outcomes 
 San Mateo–Foster City School District (SMFCSD). No build system, no test suite, no package
 manager at the repo root — most of it is self-contained HTML.
 
-- `index.html` — landing page linking to the two static tools below.
-- `smfc_caaspp_dashboard.html` — CAASPP 10-year trends dashboard. Single-file, offline-capable:
-  all test data is embedded inline as a JS `DATA` object, charts render with Chart.js (CDN).
-  No server, no build step — open directly in a browser.
+- `index.html` — landing page linking to the two tools below.
+- `smfc_caaspp_dashboard.html` — no longer a standalone dashboard. It's now a thin redirect stub
+  (meta refresh + `location.replace`) that forwards to the deployed `caaspp_ai_dashboard/` app at
+  `https://smfcsd-tech-analysis.onrender.com/`, the current home of the CAASPP dashboard. Kept
+  around so old links/bookmarks still land somewhere. If that deployment's URL ever changes,
+  update it here too. The embedded `DATA` blob is gone from this file — see the data-sync note
+  below, which now has one fewer copy to keep in sync.
 - `vendor_purchase_tracker.html` — district vendor spending ledger. Seed records are hardcoded;
   user-added records persist via the Artifacts `window.storage` API (`window.storage.get/set`),
   which only exists when this file is published through the Artifact tool with the storage
   capability enabled. Opened as a plain local file, `window.storage` doesn't exist, so adds are
   caught and silently degrade to session-only (see `saveStored()`/`loadStored()`).
-- `caaspp_ai_dashboard/` — a second, Flask-backed copy of the CAASPP dashboard with an added AI
-  chat panel. See below — it's a deliberately separate app, not a shared component.
+- `caaspp_ai_dashboard/` — the Flask-backed CAASPP dashboard with an added AI chat panel. Used to
+  be a second copy alongside a standalone static dashboard; now it's the only working copy. See
+  below.
 - `caaspp_files/` — raw CDE CAASPP research-file exports (`sb_ca20NN_all_41_69039_csv_vN.txt`),
   one per year 2015–2025 (2020 excluded — COVID testing suspension). Source data only; nothing
   reads these at runtime currently (both dashboards consume the already-derived `DATA` blob).
@@ -43,24 +47,24 @@ gunicorn/proxy timeout, not an app bug).
 
 ## `caaspp_ai_dashboard/` architecture
 
-**Why it's a separate app, not a shared component:** `smfc_caaspp_dashboard.html`'s entire design
-point is zero-server/zero-key — just open the file. A chat feature needs to call the Claude API,
-and that call needs somewhere to hold an API key safely, which a browser tab can't do. So this
-directory is a small Flask app that serves the same dashboard and adds one endpoint,
-`POST /api/chat`, that holds `ANTHROPIC_API_KEY` server-side (env var, never sent to the browser)
-and proxies to the Messages API.
+**History:** this used to be a second, Flask-backed copy of a standalone `smfc_caaspp_dashboard.html`
+— kept separate because that file's design point was zero-server/zero-key (just open it), and a
+chat feature needs somewhere to hold an API key safely, which a browser tab can't do. That's no
+longer a live constraint: `smfc_caaspp_dashboard.html` is now just a redirect stub pointing here
+(see above), so `caaspp_ai_dashboard/` is the only working copy of the dashboard. It's still a
+small Flask app for the same reason as before — `POST /api/chat` holds `ANTHROPIC_API_KEY`
+server-side (env var, never sent to the browser) and proxies to the Messages API.
 
-**Data lives in three places that must be kept in sync** — there's no shared source of truth at
+**Data lives in two places that must be kept in sync** — there's no shared source of truth at
 runtime:
-1. `smfc_caaspp_dashboard.html` — embedded `const DATA = {...}` (one JS line).
-2. `caaspp_ai_dashboard/templates/index.html` — the *same* embedded blob, for its own client-side
-   charts (this file is a copy of the static dashboard, not a template that includes it).
-3. `caaspp_ai_dashboard/data/caaspp_data.json` — the same data again, extracted so `app.py` can
+1. `caaspp_ai_dashboard/templates/index.html` — embedded `const DATA = {...}` (one JS line), for
+   its own client-side charts.
+2. `caaspp_ai_dashboard/data/caaspp_data.json` — the same data again, extracted so `app.py` can
    load it without parsing a multi-MB HTML file. Regeneration one-liner is in
    `caaspp_ai_dashboard/README.md`.
 
-If the underlying CAASPP data is ever refreshed, update the static dashboard first, then re-copy/
-re-extract into the other two.
+If the underlying CAASPP data is ever refreshed, update `templates/index.html` first, then re-copy/
+re-extract into the JSON file.
 
 **Chat grounding — the important design constraint:** the full dataset is ~4.5MB (~6,700
 school×grade×subject×subgroup records). It is never sent to the model. Instead `app.py` builds a
@@ -91,7 +95,9 @@ JSON `{"error": "...Read timed out..."}` means the per-call timeout itself is to
 
 **Deploying (e.g. Render):** Root Directory must be `caaspp_ai_dashboard` (this repo has multiple
 projects at the top level). Start Command: `gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120`.
-Set `ANTHROPIC_API_KEY` in the platform's environment settings, not in code.
+Set `ANTHROPIC_API_KEY` in the platform's environment settings, not in code. Currently deployed at
+`https://smfcsd-tech-analysis.onrender.com/`, which is also the redirect target hardcoded into
+`smfc_caaspp_dashboard.html`.
 
 ## Editorial/visual conventions
 
@@ -99,9 +105,9 @@ All of the HTML tools share a "public record" print aesthetic — serif display 
 (Iowan Old Style in the CAASPP dashboards, Fraunces on the `index.html` landing page) over
 Helvetica Neue/Inter UI chrome — but each file defines its own `:root` custom properties rather
 than sharing a stylesheet, and the palettes differ:
-- `smfc_caaspp_dashboard.html` / `caaspp_ai_dashboard/templates/index.html` (identical, since one's
-  a copy of the other): warm paper `--paper:#f6f3ec`, `--accent` teal `#2a6f6f`, gold `#d9a441`,
-  rust `#b5493f`.
+- `caaspp_ai_dashboard/templates/index.html`: warm paper `--paper:#f6f3ec`, `--accent` teal
+  `#2a6f6f`, gold `#d9a441`, rust `#b5493f`. `smfc_caaspp_dashboard.html` (now just a redirect
+  stub) reuses the same tokens for its brief landing message.
 - `vendor_purchase_tracker.html`: cooler paper `--paper:#eef1f5`, no single `--accent` — instead
   per-category colors `--cat-assessment`/`--cat-curriculum`/`--cat-ai`/`--cat-materials`.
 
