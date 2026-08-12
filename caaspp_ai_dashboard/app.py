@@ -299,7 +299,7 @@ def build_context(filters):
         f"{'ELA & Math' if test_id == 'all' else SUBJECT_NAMES[test_id]}.",
         "",
         "Selected-combination stats (percent meeting or exceeding standard, i.e. "
-        "'met_above' — the sum of the Met and Exceeded achievement bands):",
+        "'met_above', the sum of the Met and Exceeded achievement bands):",
     ]
     for t in subjects:
         lines.append("- " + describe_one(school_code, grade, t, subgroup_id))
@@ -335,7 +335,7 @@ SYSTEM_PREAMBLE = (
     "suspended statewide for COVID-19. Achievement bands are Exceeded / Met / Nearly Met / "
     "Not Met; 'met_above' (the headline percentage) is Exceeded + Met. Claim areas are "
     "skill-level breakdowns within ELA or Math, suppressed by the state below a minimum "
-    "student count even when the overall score is reported — treat a missing claim/record "
+    "student count even when the overall score is reported. Treat a missing claim/record "
     "as suppression, not zero. "
     "Answer primarily from the CAASPP data given below; do not invent figures. Keep answers "
     "concise (a few sentences or short bullet points), and cite the specific numbers you're "
@@ -353,7 +353,7 @@ SYSTEM_PREAMBLE = (
 WEB_SEARCH_ADDENDUM = (
     "The user has also enabled web search for this question. You may use it for external "
     "context the dataset can't provide (e.g. news coverage, curriculum or policy changes, "
-    "other districts' results) — but the CAASPP numbers above remain the source of truth for "
+    "other districts' results), but the CAASPP numbers above remain the source of truth for "
     "anything about test scores, participation, or trends, and web search must never override "
     "or be blended into them. When you do use a web result, say so explicitly and note the "
     "source, and be skeptical of results that turn out to be about an unrelated district or "

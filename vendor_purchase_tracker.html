@@ -202,9 +202,9 @@
 
   <header class="letterhead">
     <div>
-      <p class="eyebrow">Public Record — Compiled from Vendor Quotes &amp; Agreements</p>
+      <p class="eyebrow">Public Record · Compiled from Vendor Quotes &amp; Agreements</p>
       <h1>District Vendor Ledger</h1>
-      <p class="sub">San Mateo-Foster City School District — Software &amp; Curriculum Purchases</p>
+      <p class="sub">San Mateo-Foster City School District · Software &amp; Curriculum Purchases</p>
     </div>
     <div class="stamp" id="stampDate"></div>
   </header>
@@ -285,11 +285,11 @@ const CAT_LABEL = {
 };
 
 const seedData = [
-  {id:'seed-1', vendor:'Amplify', product:'Desmos Math digital licenses — Grades 6–8, Alg 1', category:'curriculum', amount:51000, start:'07/01/2026', end:'06/30/2027', contact:'Amy Burke', note:'', flagged:false},
+  {id:'seed-1', vendor:'Amplify', product:'Desmos Math digital licenses, Grades 6–8, Alg 1', category:'curriculum', amount:51000, start:'07/01/2026', end:'06/30/2027', contact:'Amy Burke', note:'', flagged:false},
   {id:'seed-2', vendor:'Lumi Story AI', product:'AI creative-writing platform, 5 pilot schools (up to 1,500 students)', category:'ai', amount:62500, start:'06/01/2026', end:'annual, auto-renews', contact:'David Chambliss (signer)', note:'$37,500 platform fee + $25,000 admin fee', flagged:false},
   {id:'seed-3', vendor:'NWEA', product:'MAP Growth K-12 assessment + onsite training', category:'assessment', amount:110750, start:'08/01/2025', end:'07/31/2026', contact:'David Chambliss', note:'', flagged:false},
-  {id:'seed-4', vendor:'Renaissance', product:'DnA software license + Inspect Premium', category:'assessment', amount:76934.98, start:'07/01/2025', end:'06/30/2026', contact:'Gloria Erlick', note:'Quote summary shows $77,454.98 — $520 diff from line-item total, verify before filing', flagged:true},
-  {id:'seed-5', vendor:'Zearn', product:'Math printed student workbooks, Grades K–5', category:'materials', amount:125840, start:'one-time order', end:'', contact:'Jo O\'Brien', note:'Printed materials, not a software license — includes $11,440 shipping', flagged:true},
+  {id:'seed-4', vendor:'Renaissance', product:'DnA software license + Inspect Premium', category:'assessment', amount:76934.98, start:'07/01/2025', end:'06/30/2026', contact:'Gloria Erlick', note:'Quote summary shows $77,454.98 ($520 diff from line-item total), verify before filing', flagged:true},
+  {id:'seed-5', vendor:'Zearn', product:'Math printed student workbooks, Grades K–5', category:'materials', amount:125840, start:'one-time order', end:'', contact:'Jo O\'Brien', note:'Printed materials, not a software license; includes $11,440 shipping', flagged:true},
 ];
 
 let userEntries = [];
@@ -320,7 +320,7 @@ async function saveStored(){
   try{
     await window.storage.set('vendor-entries', JSON.stringify(userEntries), false);
   }catch(e){
-    document.getElementById('saveMsg').textContent = 'Could not save — record kept for this session only.';
+    document.getElementById('saveMsg').textContent = 'Could not save; record kept for this session only.';
   }
 }
 
