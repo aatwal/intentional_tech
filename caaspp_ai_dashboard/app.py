@@ -14,6 +14,7 @@ Then open http://localhost:8060
 """
 import json
 import os
+from collections import Counter
 
 import requests
 from flask import Flask, jsonify, request, send_file, send_from_directory
@@ -35,6 +36,28 @@ GRADES_BY_CODE = {g["code"]: g for g in DATA["grades"]}
 SUBGROUPS_BY_ID = {sg["id"]: sg for sg in DATA["subgroups"]}
 NUMERIC_GRADES = ["3", "4", "5", "6", "7", "8"]
 SUBJECT_NAMES = {"1": "ELA", "2": "Math"}
+
+# Name -> code reverse maps, used only by the lookup_caaspp_data tool below to turn the exact
+# strings Claude picks (constrained to these via the tool's input_schema enums) back into the
+# codes the rest of this file already keys everything by.
+SCHOOL_CODE_BY_NAME = {s["name"]: s["code"] for s in DATA["schools"]}
+GRADE_CODE_BY_LABEL = {g["label"]: g["code"] for g in DATA["grades"]}
+SUBJECT_ID_BY_NAME = {"ELA": "1", "Math": "2"}
+
+# Subgroup names alone aren't unique: the 7 race/ethnicity names each appear 3 times (once
+# plain, once nested under "Socioeconomically Disadvantaged", once under "Not..."), each a
+# different id. Qualify only the names that actually collide with their category so the enum
+# below stays exact -- a plain {name: id} dict would silently collapse those to one id.
+_subgroup_name_counts = Counter(sg["name"] for sg in DATA["subgroups"])
+
+
+def _subgroup_display_name(sg):
+    if _subgroup_name_counts[sg["name"]] > 1:
+        return f"{sg['name']} ({sg['category']})"
+    return sg["name"]
+
+
+SUBGROUP_ID_BY_NAME = {_subgroup_display_name(sg): sg["id"] for sg in DATA["subgroups"]}
 
 
 # ── Data helpers (mirrors key()/statsFor() in the dashboard's own JS) ─────────
@@ -127,6 +150,79 @@ GAP_SUBGROUPS = [
     ("disability status", "128", "99"),    # reported disabilities vs none
     ("English-learner status", "160", "6"),  # EL vs fluent English proficient/English only
 ]
+
+
+# ── Raw-data fallback tool ─────────────────────────────────────────────────────
+# DISTRICT_OVERVIEW and build_context() only cover two fixed slices of the ~6,700-record
+# dataset (the district-wide baseline, and whatever's currently filtered on the Dashboard
+# tab). This tool lets Claude ask for one specific school/grade/subject/subgroup combination
+# outside those two slices instead of saying it doesn't have the data. It still never sends
+# the raw dataset itself -- each call returns one computed line via describe_one(), the same
+# helper the two pre-computed sections are built from. Parameters are constrained to enums of
+# the real school/grade/subgroup names already in DATA, so resolving a call back to internal
+# codes is an exact dict lookup, not fuzzy string matching.
+LOOKUP_TOOL = {
+    "name": "lookup_caaspp_data",
+    "description": (
+        "Look up exact CAASPP figures for one specific school, grade, subject, and student "
+        "group combination. Use this when the question asks about a combination that isn't "
+        "covered by the district overview or the current Dashboard-tab selection given in the "
+        "system prompt -- instead of guessing or saying the data isn't available -- since the "
+        "underlying dataset covers every school/grade/subject/subgroup combination even though "
+        "only two slices of it are included above by default."
+    ),
+    "input_schema": {
+        "type": "object",
+        "properties": {
+            "school": {
+                "type": "string",
+                "enum": sorted(SCHOOL_CODE_BY_NAME.keys()),
+                "description": "Exact school name, or 'District Total (all schools)' for district-wide figures.",
+            },
+            "grade": {
+                "type": "string",
+                "enum": [g["label"] for g in DATA["grades"]],
+            },
+            "subject": {
+                "type": "string",
+                "enum": ["ELA", "Math"],
+            },
+            "subgroup": {
+                "type": "string",
+                "enum": sorted(SUBGROUP_ID_BY_NAME.keys()),
+                "description": (
+                    "Exact student-group name, or 'All Students' for no breakdown. Race/"
+                    "ethnicity names always include a category in parentheses (e.g. 'Asian "
+                    "(Race and Ethnicity)' for the overall group vs. 'Asian (Ethnicity for "
+                    "Socioeconomically Disadvantaged)' for that group disaggregated by "
+                    "socioeconomic status) because the same race/ethnicity name is reused "
+                    "across categories with different underlying figures."
+                ),
+            },
+        },
+        "required": ["school", "grade", "subject", "subgroup"],
+    },
+}
+
+
+def run_lookup_tool(args):
+    school_name = args.get("school") or "District Total (all schools)"
+    grade_label = args.get("grade") or "All Grades"
+    subject_name = args.get("subject") or "ELA"
+    subgroup_name = args.get("subgroup") or "All Students"
+
+    school_code = SCHOOL_CODE_BY_NAME.get(school_name)
+    grade_code = GRADE_CODE_BY_LABEL.get(grade_label)
+    test_id = SUBJECT_ID_BY_NAME.get(subject_name)
+    subgroup_id = SUBGROUP_ID_BY_NAME.get(subgroup_name)
+    if not all([school_code, grade_code, test_id, subgroup_id]):
+        return (
+            f"Could not resolve one or more of school={school_name!r}, grade={grade_label!r}, "
+            f"subject={subject_name!r}, subgroup={subgroup_name!r} to a known value."
+        )
+
+    line = describe_one(school_code, grade_code, test_id, subgroup_id)
+    return f"{school_name}, student group '{subgroup_name}' -- {line}"
 
 
 def build_district_overview():
@@ -247,8 +343,11 @@ SYSTEM_PREAMBLE = (
     "gap comparisons -- for broad or cross-school/cross-grade questions) and the current "
     "Dashboard-tab selection (a narrower, more specific slice -- for questions about that "
     "exact school/grade/group). Use whichever fits the question, and say which one you're "
-    "drawing from if it's not obvious. If something is truly outside both -- a school, grade, "
-    "or student group not covered in either section below -- say so rather than guessing.\n\n"
+    "drawing from if it's not obvious. If the question asks about a specific school, grade, "
+    "subject, or student group combination that isn't covered by either section, call the "
+    "lookup_caaspp_data tool to fetch that exact combination rather than guessing or saying "
+    "the data isn't available -- the underlying dataset covers every combination even though "
+    "only two slices of it are shown to you by default.\n\n"
 )
 
 WEB_SEARCH_ADDENDUM = (
@@ -304,19 +403,23 @@ def chat():
         "max_tokens": 1200 if web_search else 800,
         "system": system,
         "messages": messages,
+        "tools": [LOOKUP_TOOL] + ([WEB_SEARCH_TOOL] if web_search else []),
     }
-    if web_search:
-        payload["tools"] = [WEB_SEARCH_TOOL]
 
-    # web_search is a server-executed tool: Anthropic runs the search itself and the API
-    # response comes back with stop_reason "pause_turn" mid-answer. We just resend the
-    # accumulated content and let it continue, up to a few rounds, same pattern as
-    # missing_children/app.py's ask_claude(). Executing a search takes real time, so a
-    # single round needs more than 30s — fewer rounds with more time each keeps the same
-    # ~90s worst case (still under gunicorn's --timeout 120) without starving a round that's
-    # genuinely still working.
-    max_rounds = 2 if web_search else 1
-    per_call_timeout = 45 if web_search else 30
+    # Two different tool styles can extend a turn beyond one API call, each needing different
+    # handling:
+    #   - web_search is server-executed: Anthropic runs the search itself and the response
+    #     comes back with stop_reason "pause_turn" mid-answer. We just resend the accumulated
+    #     content and let it continue, same pattern as missing_children/app.py's ask_claude().
+    #   - lookup_caaspp_data is client-executed: the response comes back with stop_reason
+    #     "tool_use" and we have to run it ourselves (it's just an in-memory dict lookup, no
+    #     real latency) and send the result back as a tool_result before Claude can continue.
+    # Executing a web search takes real time, so a single round needs more than 30s; lookup
+    # rounds are effectively instant. Rebalance max_rounds vs per_call_timeout (not just raise
+    # both) to stay under gunicorn's --timeout 120 in the worst case (a lookup then a search
+    # then a final answer, all in one turn).
+    max_rounds = 4 if web_search else 3
+    per_call_timeout = 35 if web_search else 30
     texts = []
     try:
         for _ in range(max_rounds):
@@ -335,9 +438,26 @@ def chat():
                 return jsonify({"error": f"Claude API error: {data['error'].get('message', data['error'])}"}), 502
             content = data.get("content", [])
             texts = [b["text"] for b in content if b.get("type") == "text"]
-            if data.get("stop_reason") != "pause_turn":
-                break
-            payload["messages"] = payload["messages"] + [{"role": "assistant", "content": content}]
+            stop_reason = data.get("stop_reason")
+            if stop_reason == "pause_turn":
+                payload["messages"] = payload["messages"] + [{"role": "assistant", "content": content}]
+                continue
+            if stop_reason == "tool_use":
+                tool_results = [
+                    {
+                        "type": "tool_result",
+                        "tool_use_id": block["id"],
+                        "content": run_lookup_tool(block.get("input") or {}),
+                    }
+                    for block in content
+                    if block.get("type") == "tool_use" and block.get("name") == "lookup_caaspp_data"
+                ]
+                payload["messages"] = payload["messages"] + [
+                    {"role": "assistant", "content": content},
+                    {"role": "user", "content": tool_results},
+                ]
+                continue
+            break
     except Exception as e:
         return jsonify({"error": f"Error calling Claude API: {e}"}), 502
 

@@ -83,10 +83,25 @@ chat can answer both broad ("which grade changed the most district-wide?") and n
 `rec_key()`/`stats_for()` in `app.py` mirror `key()`/`statsFor()` in the dashboards' own client-side
 JS — keep them in sync if the achievement-band/change logic ever changes.
 
+**`lookup_caaspp_data`** is a third, on-demand path for anything outside those two fixed slices —
+e.g. a specific school × grade × subgroup combo nobody filtered to. It's a client-executed Claude
+tool, always included (not opt-in like web search, since it's still the dashboard's own data, not
+an external source): the model calls it with a school/grade/subject/subgroup, `run_lookup_tool()`
+resolves those to codes and returns one line via `describe_one()` — still never the raw dataset,
+just the one combination asked for. Parameters are constrained to enums built from the real
+school/grade/subject/subgroup names in `DATA`, so resolution is an exact dict lookup, not fuzzy
+matching. One wrinkle: 7 race/ethnicity subgroup names (Asian, White, Hispanic or Latino, etc.)
+are each reused across 3 categories (plain, and disaggregated by socioeconomic status) with
+different ids — `SUBGROUP_ID_BY_NAME` qualifies every colliding name with its category (e.g.
+`"Asian (Race and Ethnicity)"` vs `"Asian (Ethnicity for Socioeconomically Disadvantaged)"`) so
+the enum stays 1:1 with ids; a naive `{name: id}` dict would silently collapse those to one id.
+
 **Web search** is an opt-in, off-by-default checkbox (`webSearch` in the request body) using
 Anthropic's server-executed `web_search` tool. That tool returns `stop_reason: "pause_turn"`
-mid-answer (search happens Anthropic-side); `app.py`'s loop just resends the accumulated messages
-to let it continue, same pattern as the sibling `../missing_children/app.py`'s `ask_claude()`.
+mid-answer (search happens Anthropic-side, handled by resending accumulated messages) while
+`lookup_caaspp_data` returns `stop_reason: "tool_use"` (we execute it locally and send back a
+`tool_result`) — `chat()`'s loop in `app.py` handles both, same pattern as the sibling
+`../missing_children/app.py`'s `ask_claude()` for the `pause_turn` half.
 Timeouts are deliberately tight (`max_rounds`/`per_call_timeout` in `chat()`) to stay under
 gunicorn's worker timeout and hosting-platform proxy limits — a raw HTML error page reaching the
 frontend (`SyntaxError: Unexpected token '<'`) means a platform-level timeout, not an app bug; a
