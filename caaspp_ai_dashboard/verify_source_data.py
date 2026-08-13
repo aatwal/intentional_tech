@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
 """
-Cross-validate data/caaspp_data.json (and by extension the identical DATA blob duplicated in
-templates/index.html -- see CLAUDE.md's data-sync note) against the raw CDE CAASPP research-file
-exports in ../caaspp_files/. Those raw files are the actual source of truth for "did we pull and
-interpret the CAASPP data correctly" -- nothing else in this repo reads them at runtime, so this
-is currently the only way to check the derived data traces back to CDE's published figures rather
+Cross-validate data/caaspp_data.json against the raw CDE CAASPP research-file exports in
+../caaspp_files/. Those raw files are the actual source of truth for "did we pull and interpret
+the CAASPP data correctly" -- nothing else in this repo reads them at runtime, so this is
+currently the only way to check the derived data traces back to CDE's published figures rather
 than a transcription error from whenever the original extraction happened.
+
+Also checks that templates/index.html's own embedded copy of DATA (used for its client-side
+charts -- see CLAUDE.md's data-sync note) is byte-for-byte identical to data/caaspp_data.json,
+since nothing enforces that automatically and the two dashboards would silently disagree
+otherwise.
 
 Checks, per (school, grade, subject, student-group, year) combination found in DATA:
   - percent meeting/exceeding standard ("met_above") matches the source row's "Percentage
     Standard Met and Above", rounded to 1 decimal the same way the extraction apparently did
+  - the four achievement-band percentages (exceeded/met/nearly/not_met) match the source row's
+    "Percentage Standard Exceeded/Met/Nearly Met/Not Met" -- these back the "all four achievement
+    bands" chart, a separate code path from met_above
   - "tested" matches the source row's tested-count column exactly
   - each claim-area percentage (rec["claims"][i]) matches the source row's "Area i+1 Percentage
     Above Standard"
@@ -44,10 +51,20 @@ import sys
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(APP_DIR, "data", "caaspp_data.json")
+TEMPLATE_PATH = os.path.join(APP_DIR, "templates", "index.html")
 SOURCE_DIR = os.path.join(APP_DIR, "..", "caaspp_files")
 SOURCE_GLOB = os.path.join(SOURCE_DIR, "sb_ca*_all_41_69039_csv_v*.txt")
 
 CLAIM_AREAS = 4  # DATA always stores 4 claim series even for Math (3 real + 1 zero-filled)
+
+# DATA field name -> source column name, for the four achievement bands (spelled identically
+# across all three format eras, unlike Test ID/Student Group ID/tested above).
+BAND_FIELDS = {
+    "exceeded": "Percentage Standard Exceeded",
+    "met": "Percentage Standard Met",
+    "nearly": "Percentage Standard Nearly Met",
+    "not_met": "Percentage Standard Not Met",
+}
 
 
 def year_label_for(test_year):
@@ -134,6 +151,14 @@ def check_file(path, data_records, year_index, mismatches, checked_counter):
         if src_tested != data_tested:
             mismatches.append(f"{rec_key}: tested DATA={data_tested} source={src_tested}")
 
+        for band_field, source_col in BAND_FIELDS.items():
+            data_band = rec[band_field][year_index]
+            src_band = parse_pct(source_row[source_col])
+            if src_band != data_band:
+                mismatches.append(
+                    f"{rec_key}: {band_field} DATA={data_band} source={src_band}"
+                )
+
         claims = rec.get("claims")
         if claims:
             for i in range(CLAIM_AREAS):
@@ -145,11 +170,34 @@ def check_file(path, data_records, year_index, mismatches, checked_counter):
                     )
 
 
+def check_template_sync():
+    """templates/index.html carries its own copy of the same DATA blob for its client-side
+    charts (see CLAUDE.md's data-sync note) -- nothing enforces the two stay identical, so a
+    dashboard could be showing wrong numbers even with a perfect data/caaspp_data.json."""
+    with open(TEMPLATE_PATH, encoding="utf-8") as f:
+        for line in f:
+            if line.startswith("const DATA = "):
+                raw = line[len("const DATA = "):].rstrip("\n").rstrip(";")
+                return json.loads(raw)
+    raise RuntimeError(f"couldn't find 'const DATA = ' in {TEMPLATE_PATH}")
+
+
 def main():
     verbose = "-v" in sys.argv or "--verbose" in sys.argv
 
     with open(DATA_PATH, encoding="utf-8") as f:
         data = json.load(f)
+
+    template_data = check_template_sync()
+    if template_data != data:
+        print(
+            f"MISMATCH: {TEMPLATE_PATH}'s embedded DATA blob does not match {DATA_PATH}. "
+            "One of the two dashboards is showing different numbers than the other.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if verbose:
+        print(f"{TEMPLATE_PATH}'s embedded DATA blob matches {DATA_PATH}.")
     years = data["years"]
     year_index_by_label = {label: i for i, label in enumerate(years)}
 
