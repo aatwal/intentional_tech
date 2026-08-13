@@ -24,8 +24,9 @@ manager at the repo root — most of it is self-contained HTML.
   be a second copy alongside a standalone static dashboard; now it's the only working copy. See
   below.
 - `caaspp_files/` — raw CDE CAASPP research-file exports (`sb_ca20NN_all_41_69039_csv_vN.txt`),
-  one per year 2015–2025 (2020 excluded — COVID testing suspension). Source data only; nothing
-  reads these at runtime currently (both dashboards consume the already-derived `DATA` blob).
+  one per year 2015–2025 (2020 excluded — COVID testing suspension). Nothing reads these at
+  runtime (both dashboards consume the already-derived `DATA` blob); the only thing that reads
+  them is `caaspp_ai_dashboard/verify_source_data.py`, an offline cross-check (see below).
 
 ## Running things
 
@@ -65,6 +66,16 @@ runtime:
 
 If the underlying CAASPP data is ever refreshed, update `templates/index.html` first, then re-copy/
 re-extract into the JSON file.
+
+**`verify_source_data.py`** cross-checks `data/caaspp_data.json` against the raw files in
+`../caaspp_files/` — the only code in this repo that reads those files. Run it after any data
+refresh (`cd caaspp_ai_dashboard && python3 verify_source_data.py -v`); it exits non-zero and
+prints every discrepancy if `met_above`, `tested`, or any claim-area percentage doesn't match the
+source, in either direction (a real source value gone missing in `DATA`, or a `DATA` value with no
+matching/suppressed source row). CDE changed this research-file format twice across 2015–2025
+(delimiter and several column names differ by era — see the script's docstring), so it resolves
+columns by name per file rather than by position; don't add a new year's file without checking its
+header still matches one of the three known eras.
 
 **Chat grounding — the important design constraint:** the full dataset is ~4.5MB (~6,700
 school×grade×subject×subgroup records). It is never sent to the model. Instead `app.py` builds a
