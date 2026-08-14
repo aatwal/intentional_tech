@@ -119,9 +119,21 @@ frontend (`SyntaxError: Unexpected token '<'`) means a platform-level timeout, n
 JSON `{"error": "...Read timed out..."}` means the per-call timeout itself is too tight. Rebalance
 `max_rounds` vs `per_call_timeout` rather than just raising both.
 
+**Query logging** writes one JSON line per chat request to stdout, prefixed `CHAT_QUERY` (search
+for that in Render's Logs tab). Deliberately just stdout, not a database or local file: Render's
+web-service filesystem is ephemeral and wiped on every redeploy/restart, so anything written
+locally would be lost anyway, and stdout is what Render already captures and makes searchable for
+free. Each line has a UTC timestamp, the question asked, the active Dashboard-tab filters, whether
+web search was on, and a `visitor` field — a salted SHA-256 hash of the requester's IP truncated to
+12 hex chars, not the raw IP, just enough to tell distinct visitors apart within a day without
+storing anything sensitive. Set `QUERY_LOG_SALT` in the platform's environment settings for that
+hash to not be trivially reversible; it works without one, just with weaker protection. Log
+retention is whatever your hosting plan's log-history window is — this adds none of its own.
+
 **Deploying (e.g. Render):** Root Directory must be `caaspp_ai_dashboard` (this repo has multiple
 projects at the top level). Start Command: `gunicorn app:app --bind 0.0.0.0:$PORT --timeout 120`.
-Set `ANTHROPIC_API_KEY` in the platform's environment settings, not in code. Currently deployed at
+Set `ANTHROPIC_API_KEY` (and optionally `QUERY_LOG_SALT`, see query logging above) in the
+platform's environment settings, not in code. Currently deployed at
 `https://smfcsd-tech-analysis.onrender.com/`, which is also the redirect target hardcoded into
 `smfc_caaspp_dashboard.html`.
 
