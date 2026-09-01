@@ -1,7 +1,7 @@
 """
 CAASPP dashboard + AI chat.
 
-Same 10-year Smarter Balanced data and charts as ../smfc_caaspp_dashboard.html,
+Same 10-year CAASPP data and charts as ../smfc_caaspp_dashboard.html,
 served through a small Flask app that adds a chat panel backed by the Claude
 API. The API key stays server-side (read from the ANTHROPIC_API_KEY env var)
 so nothing secret ever reaches the browser.
@@ -12,9 +12,13 @@ Run:
     python app.py
 Then open http://localhost:8060
 """
+import hashlib
 import json
+import logging
 import os
+import sys
 from collections import Counter
+from datetime import datetime, timezone
 
 import requests
 from flask import Flask, jsonify, request, send_file, send_from_directory
@@ -27,6 +31,39 @@ ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
 CLAUDE_MODEL = os.environ.get("CLAUDE_MODEL", "claude-sonnet-5")
 
 app = Flask(__name__)
+
+# Chat-query logging. Render (and most PaaS hosts) capture stdout automatically into a
+# searchable Logs dashboard -- that's the whole storage layer here, deliberately: no database,
+# no persistent disk (Render's web-service filesystem is ephemeral and wiped on every
+# redeploy/restart anyway, so writing to a local file would just be lost). To find these lines
+# in Render's Logs tab, search for "CHAT_QUERY". Each line is one JSON object: UTC timestamp,
+# a salted/truncated hash of the requester's IP (not the raw IP, and not reversible without the
+# salt -- just enough to tell distinct visitors apart within a day), the question asked, the
+# active Dashboard-tab filters, and whether web search was on. Log retention is whatever your
+# Render plan's log history window is; this doesn't add any retention of its own.
+QUERY_LOG_SALT = os.environ.get("QUERY_LOG_SALT", "")
+query_logger = logging.getLogger("chat_queries")
+query_logger.setLevel(logging.INFO)
+query_logger.propagate = False
+if not query_logger.handlers:
+    _handler = logging.StreamHandler(sys.stdout)
+    _handler.setFormatter(logging.Formatter("%(message)s"))
+    query_logger.addHandler(_handler)
+
+
+def hashed_visitor_id(ip):
+    digest = hashlib.sha256(f"{QUERY_LOG_SALT}{ip}".encode()).hexdigest()
+    return digest[:12]
+
+
+def log_chat_query(question, filters, web_search):
+    query_logger.info("CHAT_QUERY " + json.dumps({
+        "ts": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "visitor": hashed_visitor_id(request.remote_addr or "unknown"),
+        "question": question,
+        "filters": filters,
+        "web_search": web_search,
+    }))
 
 with open(DATA_PATH, encoding="utf-8") as f:
     DATA = json.load(f)
@@ -329,7 +366,7 @@ def build_context(filters):
 
 
 SYSTEM_PREAMBLE = (
-    "You are a data analyst assistant embedded in a public CAASPP (Smarter Balanced) "
+    "You are a data analyst assistant embedded in a public CAASPP "
     "results dashboard for the San Mateo-Foster City School District. The dataset covers "
     "school years 2014-15 through 2024-25; 2019-20 has no data because CAASPP testing was "
     "suspended statewide for COVID-19. Achievement bands are Exceeded / Met / Nearly Met / "
@@ -387,6 +424,8 @@ def chat():
     ]
     if not messages or messages[-1]["role"] != "user":
         return jsonify({"error": "No user message provided."}), 400
+
+    log_chat_query(messages[-1]["content"], filters, web_search)
 
     api_key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not api_key:

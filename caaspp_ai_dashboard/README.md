@@ -1,6 +1,6 @@
 # CAASPP Dashboard: AI Chat Edition
 
-Same 10-year Smarter Balanced dashboard as `../smfc_caaspp_dashboard.html`
+Same 10-year CAASPP dashboard as `../smfc_caaspp_dashboard.html`
 (identical charts and filters), plus a chat panel for asking questions about
 the currently selected data. This variant needs a small Python server; it is
 **not** a drop-in replacement for the static file, which stays a standalone,
