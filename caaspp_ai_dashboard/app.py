@@ -1,7 +1,7 @@
 """
 CAASPP dashboard + AI chat.
 
-Same 10-year Smarter Balanced data and charts as ../smfc_caaspp_dashboard.html,
+Same 10-year CAASPP data and charts as ../smfc_caaspp_dashboard.html,
 served through a small Flask app that adds a chat panel backed by the Claude
 API. The API key stays server-side (read from the ANTHROPIC_API_KEY env var)
 so nothing secret ever reaches the browser.
@@ -366,7 +366,7 @@ def build_context(filters):
 
 
 SYSTEM_PREAMBLE = (
-    "You are a data analyst assistant embedded in a public CAASPP (Smarter Balanced) "
+    "You are a data analyst assistant embedded in a public CAASPP "
     "results dashboard for the San Mateo-Foster City School District. The dataset covers "
     "school years 2014-15 through 2024-25; 2019-20 has no data because CAASPP testing was "
     "suspended statewide for COVID-19. Achievement bands are Exceeded / Met / Nearly Met / "

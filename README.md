@@ -9,7 +9,7 @@ install. Just open it in a browser.
 
 ### `smfc_caaspp_dashboard.html` — CAASPP 10-Year Trends Dashboard
 
-An interactive dashboard of the district's Smarter Balanced (CAASPP) results
+An interactive dashboard of the district's CAASPP results
 from 2014–15 through 2024–25. All test data is embedded directly in the file, so
 it works fully offline.
 
@@ -29,7 +29,7 @@ Five linked views:
 Note: 2019–20 has no data because CAASPP testing was suspended statewide for
 COVID-19.
 
-**Source:** CAASPP Smarter Balanced districtwide research files for San
+**Source:** CAASPP districtwide research files for San
 Mateo–Foster City (2014–15 through 2024–25), combined with the CDE's official
 student-group reference file. Charts are rendered with
 [Chart.js](https://www.chartjs.org/) (loaded from a CDN).
