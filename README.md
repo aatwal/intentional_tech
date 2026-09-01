@@ -28,7 +28,8 @@ Five linked views:
 
 Note: 2019–20 has no data because CAASPP testing was suspended statewide for
 COVID-19. 2025–26 is not yet included either — CDE doesn't release CAASPP
-results until October, after that school year's spring testing.
+results until October, after that school year's spring testing. It will be
+added once released.
 
 **Source:** CAASPP districtwide research files for San
 Mateo–Foster City (2014–15 through 2024–25), combined with the CDE's official
