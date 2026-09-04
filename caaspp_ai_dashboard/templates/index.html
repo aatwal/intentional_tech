@@ -170,13 +170,19 @@
       </label>
       <select id="subgroupSel"></select>
     </div>
+    <div class="filter-group">
+      <label for="startYearSel">Compare from
+        <button type="button" class="info-icon" aria-label="About the starting-year filter">ⓘ<span class="tooltip">Trims every chart and stat to start at this year instead of 2014–15, so you can compare against a more recent baseline.</span></button>
+      </label>
+      <select id="startYearSel"></select>
+    </div>
     <div class="filter-note" id="filterNote"></div>
   </div>
 
   <div class="stat-row" id="statRow"></div>
 
   <section>
-    <h2><span class="idx">01</span>Percent meeting or exceeding standard, 2015–2025</h2>
+    <h2><span class="idx">01</span>Percent meeting or exceeding standard, <span id="trendRangeLabel">2015–2025</span></h2>
     <p class="desc" id="trendDesc"></p>
     <div class="panel">
       <div class="legend" id="trendLegend"></div>
@@ -315,6 +321,11 @@ function populateSchools(){
   sel.innerHTML = DATA.schools.map(s => `<option value="${s.code}">${s.name}</option>`).join('');
 }
 
+function populateStartYear(){
+  const sel = document.getElementById('startYearSel');
+  sel.innerHTML = DATA.years.map(y => `<option value="${y}">${y}</option>`).join('');
+}
+
 const CATEGORY_ORDER = [
   'All Students','Gender','Economic Status','Disability Status','English-Language Fluency',
   'Race and Ethnicity','Ethnicity for Socioeconomically Disadvantaged','Ethnicity for Not Socioeconomically Disadvantaged',
@@ -355,6 +366,30 @@ function fmtPct(v){ return (v===null || v===undefined) ? '—' : v+'%'; }
 function destroy(id){ if(charts[id]){ charts[id].destroy(); charts[id]=null; } }
 function show(id, on){ document.getElementById(id).classList.toggle('hidden', !on); }
 
+// ── Starting-year filter: everything below windows years/records to this index ──
+function startYearIndex(){
+  const idx = DATA.years.indexOf(document.getElementById('startYearSel').value);
+  return idx >= 0 ? idx : 0;
+}
+function yearsWindow(){ return DATA.years.slice(startYearIndex()); }
+function windowRec(rec){
+  if(!rec) return rec;
+  const start = startYearIndex();
+  if(start === 0) return rec;
+  const w = {};
+  ['met_above','exceeded','met','nearly','not_met','tested'].forEach(k => { if(rec[k]) w[k] = rec[k].slice(start); });
+  if(rec.claims) w.claims = rec.claims.map(arr => arr.slice(start));
+  return w;
+}
+function testYearOf(yearLabel){ // "2014–15" -> 2015 (the spring the test was administered)
+  const [fourDigit, twoDigit] = yearLabel.split('–');
+  return Math.floor(parseInt(fourDigit,10)/100)*100 + parseInt(twoDigit,10);
+}
+function yearRangeLabel(){
+  const yrs = yearsWindow();
+  return yrs.length ? `${testYearOf(yrs[0])}–${testYearOf(yrs[yrs.length-1])}` : '';
+}
+
 function statsFor(rec){
   const vals = rec.met_above.map((v,i)=>({v,i})).filter(x=>x.v!==null);
   const latest = vals.length ? vals[vals.length-1] : null;
@@ -368,7 +403,7 @@ function byGradePanel(canvasId, schoolCode, testId, subgroupId){
   const school = DATA.schools.find(s => s.code === schoolCode);
   const grades = school.available_grades.filter(g => numericGrades.includes(g));
   const datasets = grades.map(g => {
-    const rec = DATA.data[key(schoolCode, g, testId, subgroupId)];
+    const rec = windowRec(DATA.data[key(schoolCode, g, testId, subgroupId)]);
     return rec ? {
       label:'Grade '+g, data: rec.met_above, borderColor: gradeColors[g], backgroundColor: gradeColors[g],
       tension:.25, pointRadius:2, borderWidth:1.5, spanGaps:true
@@ -377,7 +412,7 @@ function byGradePanel(canvasId, schoolCode, testId, subgroupId){
   const yr = computeYRange(datasets.map(d=>d.data));
   charts[canvasId] = new Chart(document.getElementById(canvasId), {
     type:'line',
-    data:{ labels: DATA.years, datasets },
+    data:{ labels: yearsWindow(), datasets },
     options:{
       responsive:true, maintainAspectRatio:false,
       plugins:{legend:{position:'top', labels:{boxWidth:8, font:{size:10}}},
@@ -392,7 +427,7 @@ function deltaByGradePanel(schoolCode, subgroupId, testIdFilter, selectedGrade){
   const grades = school.available_grades.filter(g => numericGrades.includes(g) && (selectedGrade === '13' || g === selectedGrade));
   function deltasFor(testId){
     return grades.map(g => {
-      const rec = DATA.data[key(schoolCode, g, testId, subgroupId)];
+      const rec = windowRec(DATA.data[key(schoolCode, g, testId, subgroupId)]);
       const change = rec ? statsFor(rec).change : null;
       return change !== null ? Math.round(change * 10) / 10 : null;
     });
@@ -426,8 +461,11 @@ function render(){
   const gradeLabel = DATA.grades.find(g => g.code===grade).label;
   const subgroupObj = DATA.subgroups.find(sg => sg.id === subgroupId) || {id:'1', name:'All Students'};
   const isAll = testId === 'all';
+  const startYearLabel = document.getElementById('startYearSel').value;
+  const startPhrase = startYearIndex() === 0 ? '' : ` · From ${startYearLabel}`;
 
-  document.getElementById('filterNote').textContent = `${school.name} · ${gradeLabel} · ${subgroupObj.name} · ${isAll ? 'ELA & Math' : (testId==='1'?'ELA':'Math')}`;
+  document.getElementById('filterNote').textContent = `${school.name} · ${gradeLabel} · ${subgroupObj.name} · ${isAll ? 'ELA & Math' : (testId==='1'?'ELA':'Math')}${startPhrase}`;
+  document.getElementById('trendRangeLabel').textContent = yearRangeLabel();
 
   if(isAll){
     renderAll(schoolCode, grade, subgroupId, subgroupObj, school, gradeLabel);
@@ -442,8 +480,8 @@ function renderSingle(testId, schoolCode, grade, subgroupId, subgroupObj, school
 
   const subjName = testId==='1' ? 'ELA' : 'Math';
   const subgroupPhrase = subgroupObj.id==='1' ? '' : `, ${subgroupObj.name}`;
-  const rec = DATA.data[key(schoolCode, grade, testId, subgroupId)];
-  const districtRec = DATA.data[key('0000000', grade, testId, subgroupId)];
+  const rec = windowRec(DATA.data[key(schoolCode, grade, testId, subgroupId)]);
+  const districtRec = windowRec(DATA.data[key('0000000', grade, testId, subgroupId)]);
 
   document.getElementById('trendDesc').textContent =
     `Percent of tested students meeting or exceeding standard in ${subjName}, ${gradeLabel.toLowerCase()}, at ${school.code==='0000000' ? 'the district level' : school.name}${subgroupPhrase}.`;
@@ -462,7 +500,8 @@ function renderSingle(testId, schoolCode, grade, subgroupId, subgroupObj, school
   ['mainTrend','levelsChart','claimsChart','testedChart','byGradeChart'].forEach(destroy);
   byGradePanel('byGradeChart', schoolCode, testId, subgroupId);
   deltaByGradePanel(schoolCode, subgroupId, testId, grade);
-  const gradeScopePhraseSingle = grade === '13' ? "from each grade's first to most recent tested year" : `for ${gradeLabel.toLowerCase()}, from its first to most recent tested year`;
+  const startLabel = document.getElementById('startYearSel').value;
+  const gradeScopePhraseSingle = grade === '13' ? `from ${startLabel} to each grade's most recent tested year` : `for ${gradeLabel.toLowerCase()}, from ${startLabel} to its most recent tested year`;
   document.getElementById('deltaByGradeDesc').textContent =
     `Point change in percent meeting or exceeding standard in ${subjName}, ${gradeScopePhraseSingle}, at ${school.code==='0000000' ? 'the district level' : school.name}${subgroupPhrase}.`;
 
@@ -475,10 +514,11 @@ function renderSingle(testId, schoolCode, grade, subgroupId, subgroupObj, school
   const tested = rec.tested.filter(v=>v!==null);
   const latestTested = tested.length ? tested[tested.length-1] : null;
 
+  const yrs = yearsWindow();
   document.getElementById('statRow').innerHTML = [
-    {num: s.latest? s.latest.v+'%':'—', lbl:`Latest (${s.latest? DATA.years[s.latest.i]:''})`},
-    {num: s.peak? s.peak.v+'%':'—', lbl:`Peak (${s.peak? DATA.years[s.peak.i]:''})`},
-    {num: s.change!==null ? (s.change>=0?'+':'')+s.change.toFixed(1)+' pts' : '—', lbl:`Change, ${s.first?DATA.years[s.first.i]:''} → ${s.latest?DATA.years[s.latest.i]:''}`, cls: s.change!==null ? (s.change<0?'down':'up') : ''},
+    {num: s.latest? s.latest.v+'%':'—', lbl:`Latest (${s.latest? yrs[s.latest.i]:''})`},
+    {num: s.peak? s.peak.v+'%':'—', lbl:`Peak (${s.peak? yrs[s.peak.i]:''})`},
+    {num: s.change!==null ? (s.change>=0?'+':'')+s.change.toFixed(1)+' pts' : '—', lbl:`Change, ${s.first?yrs[s.first.i]:''} → ${s.latest?yrs[s.latest.i]:''}`, cls: s.change!==null ? (s.change<0?'down':'up') : ''},
     {num: latestTested!==null ? latestTested.toLocaleString('en-US') : '—', lbl:'Students tested, latest year'},
   ].map(x=>`<div class="stat"><div class="num ${x.cls||''}">${x.num}</div><div class="lbl">${x.lbl}</div></div>`).join('');
 
@@ -491,7 +531,7 @@ function renderSingle(testId, schoolCode, grade, subgroupId, subgroupObj, school
   const trendYr = computeYRange(datasets.map(d=>d.data));
   charts.mainTrend = new Chart(document.getElementById('mainTrend'), {
     type:'line',
-    data:{ labels: DATA.years, datasets },
+    data:{ labels: yearsWindow(), datasets },
     options:{
       responsive:true, maintainAspectRatio:false,
       plugins:{legend:{display:false}, tooltip:{callbacks:{label:(c)=>`${c.dataset.label}: ${fmtPct(c.raw)}`}}},
@@ -502,7 +542,7 @@ function renderSingle(testId, schoolCode, grade, subgroupId, subgroupObj, school
   charts.levelsChart = new Chart(document.getElementById('levelsChart'), {
     type:'bar',
     data:{
-      labels: DATA.years,
+      labels: yearsWindow(),
       datasets:[
         {label:'Exceeded', data:rec.exceeded, backgroundColor:'#2a6f6f', stack:'s'},
         {label:'Met', data:rec.met, backgroundColor:'#7fb8ae', stack:'s'},
@@ -527,7 +567,7 @@ function renderSingle(testId, schoolCode, grade, subgroupId, subgroupObj, school
     const claimsYr = computeYRange(claimDatasets.map(d=>d.data));
     charts.claimsChart = new Chart(document.getElementById('claimsChart'), {
       type:'line',
-      data:{ labels: DATA.years, datasets: claimDatasets },
+      data:{ labels: yearsWindow(), datasets: claimDatasets },
       options:{
         responsive:true, maintainAspectRatio:false,
         plugins:{legend:{position:'top', labels:{boxWidth:8, font:{size:10}}},
@@ -539,7 +579,7 @@ function renderSingle(testId, schoolCode, grade, subgroupId, subgroupObj, school
 
   charts.testedChart = new Chart(document.getElementById('testedChart'), {
     type:'bar',
-    data:{ labels: DATA.years, datasets:[{label:'Students tested', data: rec.tested, backgroundColor:'#2a6f6f'}] },
+    data:{ labels: yearsWindow(), datasets:[{label:'Students tested', data: rec.tested, backgroundColor:'#2a6f6f'}] },
     options:{
       responsive:true, maintainAspectRatio:false,
       plugins:{legend:{display:false}},
@@ -553,10 +593,10 @@ function renderAll(schoolCode, grade, subgroupId, subgroupObj, school, gradeLabe
   show('byGradeSingleWrap', false); show('byGradeDualWrap', true);
 
   const subgroupPhrase = subgroupObj.id==='1' ? '' : `, ${subgroupObj.name}`;
-  const recEla = DATA.data[key(schoolCode, grade, '1', subgroupId)];
-  const recMath = DATA.data[key(schoolCode, grade, '2', subgroupId)];
-  const distEla = DATA.data[key('0000000', grade, '1', subgroupId)];
-  const distMath = DATA.data[key('0000000', grade, '2', subgroupId)];
+  const recEla = windowRec(DATA.data[key(schoolCode, grade, '1', subgroupId)]);
+  const recMath = windowRec(DATA.data[key(schoolCode, grade, '2', subgroupId)]);
+  const distEla = windowRec(DATA.data[key('0000000', grade, '1', subgroupId)]);
+  const distMath = windowRec(DATA.data[key('0000000', grade, '2', subgroupId)]);
 
   const hasAnyClaims = (recEla && recEla.claims) || (recMath && recMath.claims);
   show('claimsSingleWrap', false); show('claimsDualWrap', !!hasAnyClaims);
@@ -575,7 +615,8 @@ function renderAll(schoolCode, grade, subgroupId, subgroupObj, school, gradeLabe
   byGradePanel('byGradeChartELA', schoolCode, '1', subgroupId);
   byGradePanel('byGradeChartMath', schoolCode, '2', subgroupId);
   deltaByGradePanel(schoolCode, subgroupId, 'all', grade);
-  const gradeScopePhraseAll = grade === '13' ? "from each grade's first to most recent tested year" : `for ${gradeLabel.toLowerCase()}, from its first to most recent tested year`;
+  const startLabelAll = document.getElementById('startYearSel').value;
+  const gradeScopePhraseAll = grade === '13' ? `from ${startLabelAll} to each grade's most recent tested year` : `for ${gradeLabel.toLowerCase()}, from ${startLabelAll} to its most recent tested year`;
   document.getElementById('deltaByGradeDesc').textContent =
     `Point change in percent meeting or exceeding standard in ELA and Math, ${gradeScopePhraseAll}, at ${school.code==='0000000' ? 'the district level' : school.name}${subgroupPhrase}.`;
 
@@ -586,10 +627,11 @@ function renderAll(schoolCode, grade, subgroupId, subgroupObj, school, gradeLabe
 
   const sEla = recEla ? statsFor(recEla) : null;
   const sMath = recMath ? statsFor(recMath) : null;
+  const yrsAll = yearsWindow();
 
   document.getElementById('statRow').innerHTML = [
-    {num: sEla && sEla.latest ? sEla.latest.v+'%':'—', lbl:`Latest ELA (${sEla && sEla.latest? DATA.years[sEla.latest.i]:''})`},
-    {num: sMath && sMath.latest ? sMath.latest.v+'%':'—', lbl:`Latest Math (${sMath && sMath.latest? DATA.years[sMath.latest.i]:''})`},
+    {num: sEla && sEla.latest ? sEla.latest.v+'%':'—', lbl:`Latest ELA (${sEla && sEla.latest? yrsAll[sEla.latest.i]:''})`},
+    {num: sMath && sMath.latest ? sMath.latest.v+'%':'—', lbl:`Latest Math (${sMath && sMath.latest? yrsAll[sMath.latest.i]:''})`},
     {num: sEla && sEla.change!==null ? (sEla.change>=0?'+':'')+sEla.change.toFixed(1)+' pts' : '—', lbl:'ELA change over period', cls: sEla && sEla.change!==null ? (sEla.change<0?'down':'up') : ''},
     {num: sMath && sMath.change!==null ? (sMath.change>=0?'+':'')+sMath.change.toFixed(1)+' pts' : '—', lbl:'Math change over period', cls: sMath && sMath.change!==null ? (sMath.change<0?'down':'up') : ''},
   ].map(x=>`<div class="stat"><div class="num ${x.cls||''}">${x.num}</div><div class="lbl">${x.lbl}</div></div>`).join('');
@@ -604,7 +646,7 @@ function renderAll(schoolCode, grade, subgroupId, subgroupObj, school, gradeLabe
   const allTrendYr = computeYRange(trendDatasets.map(d=>d.data));
   charts.mainTrend = new Chart(document.getElementById('mainTrend'), {
     type:'line',
-    data:{ labels: DATA.years, datasets: trendDatasets },
+    data:{ labels: yearsWindow(), datasets: trendDatasets },
     options:{
       responsive:true, maintainAspectRatio:false,
       plugins:{legend:{display:false}, tooltip:{callbacks:{label:(c)=>`${c.dataset.label}: ${fmtPct(c.raw)}`}}},
@@ -617,7 +659,7 @@ function renderAll(schoolCode, grade, subgroupId, subgroupObj, school, gradeLabe
     charts[canvasId] = new Chart(document.getElementById(canvasId), {
       type:'bar',
       data:{
-        labels: DATA.years,
+        labels: yearsWindow(),
         datasets:[
           {label:'Exceeded', data:rec.exceeded, backgroundColor:'#2a6f6f', stack:'s'},
           {label:'Met', data:rec.met, backgroundColor:'#7fb8ae', stack:'s'},
@@ -645,7 +687,7 @@ function renderAll(schoolCode, grade, subgroupId, subgroupObj, school, gradeLabe
     const yr = computeYRange(datasets.map(d=>d.data));
     charts[canvasId] = new Chart(document.getElementById(canvasId), {
       type:'line',
-      data:{ labels: DATA.years, datasets },
+      data:{ labels: yearsWindow(), datasets },
       options:{
         responsive:true, maintainAspectRatio:false,
         plugins:{legend:{position:'top', labels:{boxWidth:8, font:{size:9}}},
@@ -662,7 +704,7 @@ function renderAll(schoolCode, grade, subgroupId, subgroupObj, school, gradeLabe
   if(recMath) testedDatasets.push({label:'Math tested', data: recMath.tested, backgroundColor:'#d9a441'});
   charts.testedChart = new Chart(document.getElementById('testedChart'), {
     type:'bar',
-    data:{ labels: DATA.years, datasets: testedDatasets },
+    data:{ labels: yearsWindow(), datasets: testedDatasets },
     options:{
       responsive:true, maintainAspectRatio:false,
       plugins:{legend:{position:'top', align:'end', labels:{boxWidth:10}}},
@@ -678,11 +720,14 @@ document.getElementById('gradeSel').value = '13';
 populateSubgroups('0000000');
 document.getElementById('subgroupSel').value = '1';
 document.getElementById('subjectSel').value = 'all';
+populateStartYear();
+document.getElementById('startYearSel').value = '2018–19';
 
 document.getElementById('subjectSel').addEventListener('change', render);
 document.getElementById('schoolSel').addEventListener('change', (e)=>{ populateGrades(e.target.value); populateSubgroups(e.target.value); render(); });
 document.getElementById('gradeSel').addEventListener('change', render);
 document.getElementById('subgroupSel').addEventListener('change', render);
+document.getElementById('startYearSel').addEventListener('change', render);
 
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
