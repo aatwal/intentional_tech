@@ -214,6 +214,19 @@
   .answer { padding: 0 2px 20px; max-width: 66ch; }
   .answer p { margin: 0 0 12px; color: var(--ink); }
   .answer p:last-child { margin-bottom: 0; }
+  .answer .take-action {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 4px;
+    padding: 11px 22px;
+    background: var(--green);
+    color: #143012;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    border-radius: 0;
+  }
+  .answer .take-action:hover { background: #6d9a41; }
 
   footer { background: var(--blue-deep); color: #C9DBEC; padding: 48px 0 30px; }
   .footer-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 30px; }
@@ -313,7 +326,6 @@
         <summary>What are you actually asking the board to do?</summary>
         <div class="answer">
           <p>Three concrete things: join or formally support a district Tech Use Task Force with parent representation, review the current Google Workspace for Education admin settings (YouTube access tier, Chrome site filtering, Gemini/AI defaults) against what other comparable districts have configured, and commit to publishing an annual, plain-language update on both device-use policy and the achievement data it's meant to protect.</p>
-          <p>We are not asking for a device ban, a curriculum overhaul, or the removal of any specific vendor contract.</p>
         </div>
       </details>
 
@@ -395,7 +407,7 @@
       <details>
         <summary>Who's actually behind Intentional Tech in Schools?</summary>
         <div class="answer">
-          <p>We're a small group of SMFCSD parents with kids across several district schools. Some of us have backgrounds in technology, data, or education, which is partly why we started with the data rather than just opinions.</p>
+          <p>We're a small but growing group of SMFCSD parents with kids across several district schools. Some of us have backgrounds in technology, data, or education, which is partly why we started with the data rather than just opinions.</p>
           <p>We're listing ourselves as a group rather than by name for now, mainly to keep the focus on the data and the ask rather than on individuals. School board advocacy can get personal fast, and we'd rather not invite that onto any one family. We're not hiding: we show up and speak at board meetings under our own names, and we're glad to talk directly with any parent, trustee, or district staff member who reaches out.</p>
         </div>
       </details>
@@ -403,7 +415,8 @@
       <details>
         <summary>How can I get involved?</summary>
         <div class="answer">
-          <p>The fastest way is to email a trustee or sign up for public comment at an upcoming board meeting. We've put together ready-to-use templates and instructions for both.</p>
+          <p>The fastest way is to email a trustee or sign up for public comment at an upcoming board meeting. We've put together <a href="email-templates.html">ready-to-use templates and instructions</a> for both.</p>
+          <a class="take-action" href="email-templates.html">Take action</a>
         </div>
       </details>
     </div>
