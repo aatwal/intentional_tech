@@ -46,13 +46,6 @@
   }
   a { color: inherit; }
   .wrap { max-width: 1060px; margin: 0 auto; padding: 0 28px; }
-  .label {
-    font-family: 'IBM Plex Mono', monospace;
-    text-transform: uppercase;
-    font-size: 0.72rem;
-    letter-spacing: 0.09em;
-    font-weight: 600;
-  }
 
   /* ---------------- header ---------------- */
   header {
@@ -111,19 +104,33 @@
     color: #fff;
     padding: 48px 0 42px;
   }
-  .page-hero .label { color: #9DC0E0; }
   .page-hero h1 {
     color: #fff;
     font-size: 2.3rem;
     line-height: 1.18;
-    margin-top: 10px;
+    margin-top: 0;
   }
   .page-hero p {
     margin-top: 16px;
     font-size: 1.05rem;
     color: #C9DBEC;
-    max-width: 62ch;
   }
+  .page-hero .hero-ctas { display: flex; justify-content: center; gap: 14px; margin-top: 26px; flex-wrap: wrap; }
+  .page-hero .btn-primary, .page-hero .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 24px;
+    font-weight: 600;
+    font-size: 1rem;
+    text-decoration: none;
+    border-radius: 0;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  .page-hero .btn-primary { background: var(--green); color: #143012; }
+  .page-hero .btn-primary:hover { background: #6d9a41; }
+  .page-hero .btn-secondary { background: transparent; color: #fff; border: 1.5px solid #fff; }
+  .page-hero .btn-secondary:hover { background: rgba(255,255,255,0.12); }
 
   main { padding: 8px 0 60px; }
 
@@ -141,10 +148,9 @@
   /* ---------------- section framing ---------------- */
   .section { padding: 30px 0 6px; }
   .subject-head { margin-bottom: 18px; }
-  .subject-head .label { color: var(--green-deep); }
   .subject-head h2 {
     font-size: 1.6rem;
-    margin-top: 6px;
+    margin-top: 0;
     padding-bottom: 12px;
     border-bottom: 2px solid var(--blue-deep);
     display: inline-block;
@@ -272,9 +278,12 @@
 
 <section class="page-hero">
   <div class="wrap">
-    <span class="label">Questions &amp; answers</span>
     <h1>Common questions from the district</h1>
     <p>We'd rather answer the hard questions here than have them go unanswered. If something's missing, ask us and we'll add it.</p>
+    <div class="hero-ctas">
+      <a class="btn-primary" href="https://www.fournorms.com/campaigns/san-mateo-foster-city-school-district-parents-for-intentional-tech-petition-for-intentional-technology-use-in-san-mateo-foster-city-schools">Sign the petition</a>
+      <a class="btn-secondary" href="https://smfcsd-tech-analysis.onrender.com/" target="_blank" rel="noopener">Explore 10 years of school data</a>
+    </div>
   </div>
 </section>
 
@@ -286,7 +295,6 @@
 
   <section class="section">
     <div class="subject-head">
-      <span class="label">Why we're doing this</span>
       <h2>On the mission</h2>
     </div>
 
@@ -320,7 +328,6 @@
 
   <section class="section">
     <div class="subject-head">
-      <span class="label">Where the numbers come from</span>
       <h2>On the data</h2>
     </div>
 
@@ -354,7 +361,6 @@
 
   <section class="section">
     <div class="subject-head">
-      <span class="label">Devices &amp; special cases</span>
       <h2>On accessibility &amp; devices</h2>
     </div>
 
@@ -380,7 +386,6 @@
 
   <section class="section">
     <div class="subject-head">
-      <span class="label">Transparency</span>
       <h2>On who we are</h2>
     </div>
 
