@@ -132,7 +132,7 @@
   .page-hero .btn-secondary { background: transparent; color: #fff; border: 1.5px solid #fff; }
   .page-hero .btn-secondary:hover { background: rgba(255,255,255,0.12); }
 
-  main { padding: 8px 0 60px; }
+  main.wrap { padding-top: 8px; padding-bottom: 80px; }
 
   .section { padding: 34px 0 6px; }
   .subject-head { margin-bottom: 20px; }
@@ -229,6 +229,15 @@
   }
   .copy-btn:hover { background: #163c63; }
   .copy-btn.copied { background: var(--green-deep); }
+  .cpra-note {
+    margin-top: 16px;
+    border-left: 3px solid var(--yellow);
+    border-radius: 0 12px 12px 0;
+    padding: 12px 16px;
+    background: var(--yellow-pale);
+    font-size: 0.88rem;
+    color: #5c4108;
+  }
 
   /* ---------------- meeting logistics ---------------- */
   .action-box {
@@ -406,6 +415,31 @@ I plan to attend the <span class="bracket">[date]</span> Regular Board Meeting a
 Thank you,
 <span class="bracket">[Your name]</span></div>
       <button class="copy-btn" data-target="body-3">Copy email</button>
+    </div>
+
+    <div class="template-card">
+      <h3>4. California Public Records Act (CPRA) request</h3>
+      <p class="template-purpose">For requesting specific district records directly, such as device usage data, vendor contracts, or task force meeting materials. This is a formal legal request, not an advocacy email, so keep it factual and specific. You don't have to explain why you want the records. See our <a href="cpra-guide.html">full guide to making a public records request</a> for the timeline and what to do if a request is denied.</p>
+      <div class="field-label">Subject</div>
+      <div class="subject-line" id="subject-4">California Public Records Act Request</div>
+      <div class="field-label">Body</div>
+      <div class="body-text" id="body-4">To the San Mateo-Foster City School District Public Records Custodian,
+
+Pursuant to the California Public Records Act (Government Code section 7920.000 et seq.), I am requesting copies of the following records:
+
+<span class="bracket">[Describe the records as specifically as you can, e.g. "Aggregate student device usage logs (screen time, app or site categories accessed) for grades TK-8, districtwide, for the 2024-25 and 2025-26 school years" or "All Tech Use Task Force meeting agendas, minutes, and materials from [date range]"]</span>
+
+If any portion of this request is denied, please cite the specific statutory exemption justifying the withholding of each record, and provide any reasonably segregable, non-exempt portion of the withheld records, as required under the Act.
+
+I understand the District has 10 days from receipt of this request to determine whether it holds disclosable records responsive to this request and to notify me of that determination. If it would be helpful to narrow the scope of this request, please let me know.
+
+I would prefer to receive responsive records electronically, by email, if possible.
+
+Thank you,
+<span class="bracket">[Your name]</span>
+<span class="bracket">[Your phone or email]</span></div>
+      <button class="copy-btn" data-target="body-4">Copy email</button>
+      <div class="cpra-note">The District generally has 10 calendar days to tell you whether it will provide the records, with a possible 14-day extension for unusual circumstances (Gov. Code &sect;7922.535). That's a deadline to respond, not necessarily a deadline to hand over the records, so it can still take longer for larger requests. Send CPRA requests directly to the district's public records contact rather than to individual trustees.</div>
     </div>
   </section>
 
