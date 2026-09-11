@@ -451,9 +451,16 @@
     border-radius: 22px;
     padding: 28px 36px;
     margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
   }
+  .help-card .help-text { flex: 1 1 340px; }
   .help-card h3 { font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; font-size: 1.25rem; color: var(--yellow); }
   .help-card p { color: #fff; margin: 10px 0 0; font-size: 1.02rem; }
+  .help-card .btn-primary { flex-shrink: 0; white-space: nowrap; }
 
   /* ---------------- footer directory ---------------- */
   footer { background: var(--blue-deep); color: #C9DBEC; padding: 48px 0 30px; }
@@ -648,13 +655,15 @@
 
 <section class="section" id="involved">
   <div class="wrap">
-    <div class="subject-head" style="display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:16px;">
-      <h2 style="margin-top:0;">Get involved</h2>
-      <a class="btn-primary" style="padding:11px 20px; font-size:0.92rem;" href="email-templates.html">TAKE ACTION</a>
+    <div class="subject-head">
+      <h2>Get involved</h2>
     </div>
     <div class="help-card">
-      <h3>WE NEED YOUR HELP</h3>
-      <p>Across the country, organized parent advocacy is helping public schools change course. We need more voices to join us!</p>
+      <div class="help-text">
+        <h3>WE NEED YOUR HELP</h3>
+        <p>Across the country, organized parent advocacy is helping public schools change course. We need more voices to join us!</p>
+      </div>
+      <a class="btn-primary" style="padding:11px 20px; font-size:0.92rem;" href="email-templates.html">TAKE ACTION</a>
     </div>
     <div class="two-col">
       <div class="quiz-card">
