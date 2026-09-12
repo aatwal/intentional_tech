@@ -31,7 +31,7 @@
 
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-  section[id] { scroll-margin-top: 96px; }
+  section[id] { scroll-margin-top: 140px; }
 
   body {
     margin: 0;
@@ -452,9 +452,16 @@
     padding: 24px 26px;
     border-radius: 22px;
     margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
   }
+  .help-card .help-text { flex: 1 1 340px; }
   .help-card h3 { color: #fff; font-size: 1.15rem; margin-top: 6px; font-family: 'IBM Plex Sans', sans-serif; font-weight: 600; }
   .help-card p { color: #C9DBEC; font-size: 0.95rem; margin-top: 10px; }
+  .help-card .btn-primary { flex-shrink: 0; white-space: nowrap; }
 
   /* ---------------- footer directory ---------------- */
   footer { background: var(--blue-deep); color: #C9DBEC; padding: 48px 0 30px; }
@@ -524,6 +531,7 @@
       <a href="#needed">What's needed</a>
       <a href="#involved">Get involved</a>
       <a href="generative-ai.html">Generative AI</a>
+      <a href="faq.html">FAQ</a>
     </nav>
     <a class="nav-cta" href="https://www.fournorms.com/campaigns/san-mateo-foster-city-school-district-parents-for-intentional-tech-petition-for-intentional-technology-use-in-san-mateo-foster-city-schools">Sign the petition</a>
   </div>
@@ -652,8 +660,11 @@
       <h2>Get involved</h2>
     </div>
     <div class="help-card">
-      <h3>WE NEED YOUR HELP</h3>
-      <p>Across the country, organized parent advocacy is helping public schools change course. We need more voices to join us!</p>
+      <div class="help-text">
+        <h3>WE NEED YOUR HELP</h3>
+        <p>Across the country, organized parent advocacy is helping public schools change course. We need more voices to join us!</p>
+      </div>
+      <a class="btn-primary" style="padding:11px 20px; font-size:0.92rem;" href="https://docs.google.com/forms/d/e/1FAIpQLSd1VXc07g4nrGkUc5Dt2NcebiUoLHdNNAry-CxyPv3z7IxBQA/viewform?usp=send_form" target="_blank" rel="noopener">TAKE ACTION</a>
     </div>
     <div class="two-col">
       <div class="quiz-card">
