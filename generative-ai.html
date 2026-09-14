@@ -31,7 +31,7 @@
 
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
-  section[id] { scroll-margin-top: 96px; }
+  section[id] { scroll-margin-top: calc(var(--header-h, 96px) + 20px); }
 
   body {
     margin: 0;
@@ -521,6 +521,21 @@
     <a class="nav-cta" href="https://www.fournorms.com/campaigns/san-mateo-foster-city-school-district-parents-for-intentional-tech-petition-for-intentional-technology-use-in-san-mateo-foster-city-schools">Sign the petition</a>
   </div>
 </header>
+<script>
+  (function () {
+    // Anchor links should land just above each section's title, not under the
+    // sticky header. The header's actual height differs by device (the nav
+    // links wrap to a second row on narrow/mobile widths), so measure it
+    // instead of hardcoding a single offset.
+    var header = document.querySelector('header');
+    function setHeaderOffset() {
+      document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
+    }
+    setHeaderOffset();
+    window.addEventListener('load', setHeaderOffset);
+    window.addEventListener('resize', setHeaderOffset);
+  })();
+</script>
 
 <section class="hero">
   <div class="wrap">
