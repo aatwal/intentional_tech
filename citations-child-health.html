@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Citations: Child Health &amp; Well-Being · Intentional Tech in Schools</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600;700&family=Spectral:ital@1&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #FFFFFF;
+    --card: #F7FAFB;
+    --ink: #20303B;
+    --ink-soft: #5B6B75;
+    --blue: #2F6BB6;
+    --blue-deep: #1E4A78;
+    --blue-pale: #EAF2FB;
+    --green: #7FAF4D;
+    --green-deep: #55793A;
+    --green-pale: #F0F6E9;
+    --yellow: #E3A912;
+    --yellow-pale: #FBF1D8;
+    --red: #B3382C;
+    --red-pale: #F7E2DF;
+    --orange: #C4622A;
+    --orange-pale: #FBEADD;
+    --line: #E2E8ED;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  section[id] { scroll-margin-top: calc(var(--header-h, 140px) + 20px); }
+
+  body {
+    margin: 0;
+    background: var(--white);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, .display {
+    font-family: 'Spectral', serif;
+    font-weight: 700;
+    color: var(--blue-deep);
+    margin: 0;
+  }
+
+  a { color: var(--blue); text-decoration: underline; text-decoration-color: rgba(47,107,182,0.35); }
+  a:hover { color: var(--blue-deep); }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 28px; }
+
+  .label {
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.09em;
+    font-weight: 600;
+  }
+
+  /* ---------------- header (matches intentionaltechinschools.com) ---------------- */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: var(--white);
+    border-bottom: 3px solid var(--green);
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
+  .brand-mark { width: 60px; height: 60px; flex-shrink: 0; border-radius: 50%; }
+  .brand-text {
+    font-family: 'Spectral', serif;
+    font-weight: 700;
+    font-size: 1.7rem;
+    color: var(--blue-deep);
+    line-height: 1.15;
+  }
+  .brand-text span {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 500;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    color: var(--green-deep);
+    margin-top: 3px;
+    text-transform: uppercase;
+  }
+  nav.links { display: flex; gap: 26px; font-weight: 600; font-size: 0.92rem; align-items: center; }
+  nav.links a { text-decoration: none; color: var(--ink-soft); }
+  nav.links a:hover { color: var(--blue); }
+  nav.links a.current { color: var(--blue-deep); border-bottom: 2px solid var(--green); padding-bottom: 2px; }
+  .nav-cta {
+    background: var(--green);
+    color: #143012;
+    padding: 9px 18px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    border-radius: 0;
+    white-space: nowrap;
+  }
+  .nav-cta:hover { background: #6d9a41; }
+
+  @media (max-width: 860px) {
+    nav.links {
+      order: 3;
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px 20px;
+      padding-top: 10px;
+      margin-top: 2px;
+      border-top: 1px solid var(--line);
+    }
+  }
+
+  /* ---------------- hero ---------------- */
+  .hero {
+    background: var(--blue-deep);
+    color: #fff;
+    padding: 48px 0 42px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero .label { color: #9DC0E0; }
+  .hero h1 {
+    color: #fff;
+    font-size: clamp(1.9rem, 4vw, 2.6rem);
+    line-height: 1.16;
+    font-weight: 600;
+    margin-top: 10px;
+    max-width: 22ch;
+  }
+  .hero p {
+    margin-top: 16px;
+    font-size: 1.05rem;
+    color: #C9DBEC;
+    max-width: 62ch;
+  }
+  .hero .source-note {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.22);
+    font-size: 0.92rem;
+    color: #B9CCDD;
+    max-width: 62ch;
+  }
+  .hero .source-note strong { color: #fff; }
+  .hero-ctas { display: flex; gap: 14px; margin-top: 24px; flex-wrap: wrap; }
+  .btn-primary, .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 20px;
+    font-weight: 600;
+    font-size: 0.94rem;
+    text-decoration: none;
+    border-radius: 0;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  .btn-primary { background: var(--green); color: #143012; }
+  .btn-primary:hover { background: #6d9a41; }
+  .btn-secondary { background: transparent; color: #fff; border: 1.5px solid #fff; }
+  .btn-secondary:hover { background: rgba(255,255,255,0.12); }
+
+  /* ---------------- layout ---------------- */
+  .layout {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 34px 28px 60px;
+    display: grid;
+    grid-template-columns: 230px minmax(0, 1fr);
+    gap: 40px;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; gap: 20px; padding: 24px 20px 48px; }
+  }
+
+  /* ---------------- toc ---------------- */
+  nav.toc {
+    position: sticky;
+    top: 90px;
+    font-size: 0.86rem;
+  }
+  @media (max-width: 900px) {
+    nav.toc { position: static; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+    nav.toc .toc-list { display: none; }
+    nav.toc.open .toc-list { display: block; }
+  }
+  .toc-toggle {
+    display: none;
+    width: 100%;
+    background: none;
+    border: none;
+    font: inherit;
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.8rem;
+    color: var(--blue-deep);
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    padding: 0;
+  }
+  @media (max-width: 900px) {
+    .toc-toggle { display: flex; align-items: center; justify-content: space-between; }
+  }
+  .toc-toggle::after { content: "+"; font-size: 1.1rem; color: var(--green-deep); }
+  nav.toc.open .toc-toggle::after { content: "\2013"; }
+  .toc-list { list-style: none; margin: 8px 0 0; padding: 0; border-left: 2px solid var(--line); }
+  .toc-list li a {
+    display: block;
+    padding: 0.3rem 0 0.3rem 0.9rem;
+    margin-left: -2px;
+    border-left: 2px solid transparent;
+    color: var(--ink-soft);
+    text-decoration: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.02em;
+  }
+  .toc-list li a:hover { color: var(--blue-deep); }
+  .toc-list li a.active {
+    color: var(--blue-deep);
+    border-left-color: var(--green);
+    font-weight: 600;
+  }
+
+  /* ---------------- search ---------------- */
+  .search-wrap { margin-bottom: 30px; }
+  .search-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 11px 16px;
+  }
+  .search-box svg { flex: none; color: var(--ink-soft); }
+  #search-input {
+    border: none;
+    background: none;
+    flex: 1;
+    font: inherit;
+    font-size: 0.95rem;
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  #search-input:focus { outline: none; }
+  #search-input::placeholder { color: var(--ink-soft); }
+  #search-count {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.76rem;
+    color: var(--ink-soft);
+    margin-top: 8px;
+    min-height: 1.1em;
+    letter-spacing: 0.02em;
+  }
+  #no-results {
+    display: none;
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+    padding: 1.2rem 0;
+  }
+
+  /* ---------------- section framing (matches subject-head) ---------------- */
+  main { min-width: 0; }
+  .doc-section { margin-bottom: 44px; }
+  .section-head { margin-bottom: 18px; display: flex; align-items: baseline; gap: 12px; }
+  .section-head .section-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--green-deep);
+  }
+  .section-head h2 {
+    font-size: 1.55rem;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--blue-deep);
+    display: inline-block;
+  }
+  .section-intro {
+    color: var(--ink-soft);
+    font-size: 0.97rem;
+    margin: -6px 0 18px;
+    max-width: 70ch;
+  }
+  .subsection-head {
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.78rem;
+    color: var(--blue);
+    margin: 22px 0 12px;
+  }
+
+  /* ---------------- citation cards ---------------- */
+  .citation {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--blue);
+    border-radius: 16px;
+    padding: 18px 22px;
+    margin-bottom: 14px;
+    box-shadow: 2px 2px 0 var(--line);
+  }
+  .citation.hidden { display: none; }
+  .cite-text { font-size: 0.97rem; margin: 0 0 10px; }
+  .cite-text .authors { font-weight: 600; color: var(--ink); }
+  .cite-text .titlework { font-family: 'Spectral', serif; font-style: italic; }
+  .cite-link { font-size: 0.82rem; word-break: break-word; }
+  .also-link { margin-top: 8px; }
+
+  .key-finding {
+    margin-top: 10px;
+    border-left: 3px solid var(--yellow);
+    border-radius: 0 12px 12px 0;
+    padding: 10px 16px;
+    background: var(--yellow-pale);
+    font-size: 0.93rem;
+    color: #5c4108;
+  }
+  .key-finding .label { display: block; margin-bottom: 4px; color: var(--green-deep); }
+
+  .legal-entry { border-left-color: var(--blue-deep); background: var(--blue-pale); }
+  .legal-entry .cite-text em { color: var(--ink-soft); font-style: italic; }
+
+  /* ---------------- callouts ---------------- */
+  .callout {
+    background: var(--yellow-pale);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 20px 24px;
+    font-size: 0.96rem;
+    color: var(--ink);
+  }
+  .callout strong.tag {
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.75rem;
+    color: var(--green-deep);
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  /* ---------------- resource groups ---------------- */
+  .resource-group {
+    background: var(--green-pale);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+  .resource-group h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--green-deep);
+    font-size: 0.8rem;
+    margin: 0 0 12px;
+  }
+  .resource-group ol, .resource-group ul { margin: 0; padding-left: 0; list-style: none; }
+  .resource-group li {
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    display: flex;
+    gap: 8px;
+  }
+  .resource-group li::before {
+    content: "\2713";
+    font-family: 'IBM Plex Mono', monospace;
+    color: var(--green-deep);
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  /* ---------------- footer (matches site) ---------------- */
+  footer { background: var(--blue-deep); color: #C9DBEC; padding: 44px 0 26px; margin-top: 20px; }
+  .footer-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 30px; }
+  footer h4 {
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #fff;
+    font-size: 0.82rem;
+    margin-bottom: 14px;
+  }
+  footer a { color: #B7DE85; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  footer p { margin: 0 0 9px; font-size: 0.95rem; }
+  .footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.15);
+    margin-top: 30px;
+    padding-top: 16px;
+    font-size: 0.82rem;
+    color: #9FB6C9;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  @media (max-width: 860px) {
+    .footer-grid { grid-template-columns: 1fr; }
+  }
+
+  ::selection { background: rgba(47,107,182,0.2); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="https://www.intentionaltechinschools.com/index.html">
+      <img class="brand-mark" src="data:image/png;base64,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" alt="Intentional Tech in Schools logo">
+      <div class="brand-text">Intentional Tech in Schools<span>SMFCSD Parent Coalition</span></div>
+    </a>
+    <nav class="links">
+      <a href="https://www.intentionaltechinschools.com/index.html#voices">Voices</a>
+      <a href="https://www.intentionaltechinschools.com/index.html#needed">What's needed</a>
+      <a href="https://www.intentionaltechinschools.com/index.html#involved">Get involved</a>
+      <a href="https://www.intentionaltechinschools.com/generative-ai.html">Generative AI</a>
+      <a href="https://www.intentionaltechinschools.com/faq.html">FAQ</a>    </nav>
+    <a class="nav-cta" href="https://www.fournorms.com/campaigns/san-mateo-foster-city-school-district-parents-for-intentional-tech-petition-for-intentional-technology-use-in-san-mateo-foster-city-schools">Sign the petition</a>
+  </div>
+</header>
+<script>
+  (function () {
+    var header = document.querySelector('header');
+    function setHeaderOffset() {
+      document.documentElement.style.setProperty('--header-h', header.offsetHeight + 'px');
+    }
+    setHeaderOffset();
+    window.addEventListener('load', setHeaderOffset);
+    window.addEventListener('resize', setHeaderOffset);
+  })();
+</script>
+
+<section class="hero">
+  <div class="wrap">
+    <p class="label">Citations</p>
+    <h1>Child Health &amp; Well-Being</h1>
+    <p>Peer-reviewed research and expert consensus on impacts for students 18 and under from screen-based, software-driven, and engagement-optimized technology used for learning, relative to analog and human-led practices. Organized by domain of harm, with legal and policy context at the end.</p>
+    <p class="source-note"><strong>Source:</strong> compiled by Schools Beyond Screens &mdash; DC Chapter. Republished here as a working reference for our own advocacy; some legal citations (Section 12) are specific to DCPS policy and are included as a model, not as claims about SMFCSD.</p>
+    <div class="hero-ctas">
+      <a class="btn-primary" href="#brain-development">Browse the citations</a>
+      <a class="btn-secondary" href="https://www.intentionaltechinschools.com/index.html">Back to the main site</a>
+    </div>
+  </div>
+</section>
+
+<div class="layout">
+  <nav class="toc" id="toc">
+    <button class="toc-toggle" id="toc-toggle" aria-expanded="false">Jump to a section</button>
+    <ul class="toc-list" id="toc-list">
+      <li><a href="#brain-development">01. Brain Development</a></li>
+      <li><a href="#handwriting-typing">02. Handwriting vs. Typing</a></li>
+      <li><a href="#reading-paper-screens">03. Reading: Paper vs. Screens</a></li>
+      <li><a href="#attention-distraction">04. Attention &amp; ADHD</a></li>
+      <li><a href="#edtech-outcomes">05. EdTech Outcomes</a></li>
+      <li><a href="#mental-health">06. Mental Health</a></li>
+      <li><a href="#physical-health">07. Physical Health</a></li>
+      <li><a href="#social-emotional">08. Social-Emotional</a></li>
+      <li><a href="#addictive-design">09. Persuasive Design</a></li>
+      <li><a href="#expert-consensus">10. Expert Consensus</a></li>
+      <li><a href="#equity">11. Bias &amp; Equity</a></li>
+      <li><a href="#legal">12. Legal (DCPS)</a></li>
+      <li><a href="#evidence-notes">Evidence Notes</a></li>
+      <li><a href="#additional-resources">Resources</a></li>
+    </ul>
+  </nav>
+
+  <main>
+<div class="search-wrap">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <circle cx="7" cy="7" r="5.2" stroke="currentColor" stroke-width="1.4"/>
+          <line x1="10.9" y1="11" x2="14.5" y2="14.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <input type="text" id="search-input" placeholder="Search citations — author, topic, year…" aria-label="Search citations">
+      </div>
+      <div id="search-count" class="sans" aria-live="polite"></div>
+    </div>
+    <p id="no-results">No citations match that search. Try a different author name, year, or keyword.</p>
+
+    <!-- 1. Brain Development -->
+    <section class="doc-section" id="brain-development">
+      <div class="section-head"><span class="section-num">01</span><h2>Brain Development &amp; Cognition</h2></div>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Hutton, J.S., Dudley, J., Horowitz-Kraus, T., DeWitt, T., &amp; Holland, S.K. (2020).</span> Associations between screen-based media use and brain white matter integrity in preschool-aged children. <span class="titlework">JAMA Pediatrics</span>, 174(1), e193869. <a class="cite-link" href="https://pubmed.ncbi.nlm.nih.gov/31682712/">doi:10.1001/jamapediatrics.2019.3869</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>First MRI study of its kind: preschoolers with screen use above AAP guidelines showed lower structural integrity of white matter tracts supporting language, executive function, and emergent literacy, plus lower scores on language and literacy measures.</div>
+        <p class="also-link cite-link"><a href="https://jamanetwork.com/journals/jamapediatrics/fullarticle/2754101">jamanetwork.com/journals/jamapediatrics/fullarticle/2754101</a></p>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Hutton, J.S., Piotrowski, J.T., Bagot, K., et al. (2022).</span> Associations between digital media use and brain surface structural measures in preschool-aged children. <span class="titlework">Scientific Reports</span>, 12, 19095. <a class="cite-link" href="https://pubmed.ncbi.nlm.nih.gov/36351968/">doi:10.1038/s41598-022-20922-0</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Higher screen use in 3- to 5-year-olds was associated with lower cortical thickness and sulcal depth in brain regions supporting visual processing, attention, memory encoding, letter recognition, and social cognition.</div>
+        <p class="also-link cite-link"><a href="https://www.nature.com/articles/s41598-022-20922-0">nature.com/articles/s41598-022-20922-0</a></p>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Hutton, J.S., Dudley, J., Horowitz-Kraus, T., DeWitt, T., &amp; Holland, S.K. (2020).</span> Differences in functional brain network connectivity during stories presented in audio, illustrated, and animated format in preschool-age children. <span class="titlework">Brain Imaging and Behavior</span>, 14(1), 130–141. <a class="cite-link" href="https://link.springer.com/article/10.1007/s11682-018-9985-y">doi:10.1007/s11682-018-9985-y</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Brain network connectivity supporting language and imagery was strongest and most balanced during illustrated storybook reading compared to animated (screen) formats.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Horowitz-Kraus, T., &amp; Hutton, J.S. (2018).</span> Brain connectivity in children is increased by the time they spend reading books and decreased by the length of exposure to screen-based media. <span class="titlework">Acta Paediatrica</span>, 107(4), 685–693. <a class="cite-link" href="https://onlinelibrary.wiley.com/doi/10.1111/apa.14176">doi:10.1111/apa.14176</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Book reading time was associated with increased brain connectivity in children; screen time was associated with decreased connectivity in the same networks.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Jomaa, F., Ebraheem, F., &amp; Horowitz-Kraus, T. (2025).</span> Greater parent–child brain synchronisation during printed book versus screen reading using hyperscanning electroencephalograph data. <span class="titlework">Acta Paediatrica</span>, 114(7), 1633–1641. <a class="cite-link" href="https://onlinelibrary.wiley.com/doi/10.1111/apa.70007">doi:10.1111/apa.70007</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Parent–child neural synchrony — a marker of attuned, relational learning — was greater during printed book reading than screen reading.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Takeuchi, H., Taki, Y., Asano, K., Asano, M., Sassa, Y., Yokota, S., Kotozaki, Y., Nouchi, R., &amp; Kawashima, R. (2018).</span> Impact of frequency of internet use on development of brain structures and verbal intelligence: Longitudinal analyses. <span class="titlework">Human Brain Mapping</span>, 39(11), 4471–4479. <a class="cite-link" href="https://doi.org/10.1002/hbm.24286">doi:10.1002/hbm.24286</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>In a longitudinal sample of Japanese children, higher frequency of internet use was associated with smaller increases in gray and white matter volume across brain regions (including prefrontal and anterior cingulate cortex) and lower verbal intelligence development over time.</div>
+      </article>
+    </section>
+
+    <!-- 2. Handwriting vs Typing -->
+    <section class="doc-section" id="handwriting-typing">
+      <div class="section-head"><span class="section-num">02</span><h2>Handwriting vs. Typing</h2></div>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Van der Weel, F.R., &amp; Van der Meer, A.L.H. (2024).</span> Handwriting but not typewriting leads to widespread brain connectivity: A high-density EEG study with implications for the classroom. <span class="titlework">Frontiers in Psychology</span>, 14, 1219945. doi:10.3389/fpsyg.2023.1219945</p>
+        <div class="key-finding"><span class="label">Key finding</span>256-channel EEG showed handwriting produced far more elaborate, widespread theta/alpha brain connectivity patterns in regions crucial for memory formation and learning than typing; the authors conclude handwriting promotes learning in ways keyboarding does not.</div>
+        <p class="also-link cite-link"><a href="https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2023.1219945/full">frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2023.1219945/full</a></p>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Ose Askvik, E., Van der Weel, F.R., &amp; Van der Meer, A.L.H. (2020).</span> The importance of cursive handwriting over typewriting for learning in the classroom: A high-density EEG study of 12-year-old children and young adults. <span class="titlework">Frontiers in Psychology</span>, 11, 1810. doi:10.3389/fpsyg.2020.01810</p>
+        <div class="key-finding"><span class="label">Key finding</span>The same handwriting-superior connectivity pattern was found in 12-year-old schoolchildren as in adults, with cursive producing the widest connectivity, directly relevant to K-12 policy.</div>
+        <p class="also-link cite-link"><a href="https://www.frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2020.01810/full">frontiersin.org/journals/psychology/articles/10.3389/fpsyg.2020.01810/full</a></p>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Mueller, P.A., &amp; Oppenheimer, D.M. (2014).</span> The pen is mightier than the keyboard: Advantages of longhand over laptop note taking. <span class="titlework">Psychological Science</span>, 25(6), 1159–1168. <a class="cite-link" href="https://journals.sagepub.com/doi/10.1177/0956797614524581">doi:10.1177/0956797614524581</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Across three experiments, laptop note-takers performed worse on conceptual questions; typing encourages shallow verbatim transcription rather than processing and reframing in one's own words. <em>Evidence note: a 2019 direct replication by Morehead, Dunlosky &amp; Rawson found smaller, non-significant effects favoring longhand.</em></div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Donica, D.K., Giroux, P., &amp; Faust, A. (2018).</span> Keyboarding instruction: Comparison of techniques for improved keyboarding skills in elementary students. <span class="titlework">Journal of Occupational Therapy, Schools, &amp; Early Intervention</span>, 11(4), 396–410. <a class="cite-link" href="https://www.tandfonline.com/doi/full/10.1080/19411243.2018.1512067">doi:10.1080/19411243.2018.1512067</a></p>
+      </article>
+    </section>
+
+    <!-- 3. Reading Paper vs Screens -->
+    <section class="doc-section" id="reading-paper-screens">
+      <div class="section-head"><span class="section-num">03</span><h2>Reading: Paper vs. Screens</h2></div>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Delgado, P., Vargas, C., Ackerman, R., &amp; Salmerón, L. (2018).</span> Don't throw away your printed books: A meta-analysis on the effects of reading media on reading comprehension. <span class="titlework">Educational Research Review</span>, 25, 23–38. <a class="cite-link" href="https://www.sciencedirect.com/science/article/pii/S1747938X18300101">doi:10.1016/j.edurev.2018.09.003</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Meta-analysis of 54 studies (170,000+ participants): paper reading produced reliably better comprehension than screens, especially for informational texts and under time pressure — and the screen disadvantage has grown, not shrunk, in studies of "digital native" cohorts.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Clinton, V. (2019).</span> Reading from paper compared to screens: A systematic review and meta-analysis. <span class="titlework">Journal of Research in Reading</span>, 42(2), 288–325. <a class="cite-link" href="https://onlinelibrary.wiley.com/doi/abs/10.1111/1467-9817.12269">doi:10.1111/1467-9817.12269</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Independent meta-analysis confirming the paper advantage for comprehension of informational text, and finding readers on screens are more overconfident (poorer metacognitive calibration).</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Kong, Y., Seo, Y.S., &amp; Zhai, L. (2018).</span> Comparison of reading performance on screen and on paper: A meta-analysis. <span class="titlework">Computers &amp; Education</span>, 123, 138–149. <a class="cite-link" href="https://www.sciencedirect.com/science/article/abs/pii/S0360131518301052">doi:10.1016/j.compedu.2018.05.005</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>A third converging meta-analysis: reading comprehension was better on paper, with no time savings from screens.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Furenes, M.I., Kucirkova, N., &amp; Bus, A.G. (2021).</span> A comparison of children's reading on paper versus screen: A meta-analysis. <span class="titlework">Review of Educational Research</span>, 91(4), 483–517. <a class="cite-link" href="https://journals.sagepub.com/doi/10.3102/0034654321998074">doi:10.3102/0034654321998074</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Focused on young children's shared book reading: poorly designed digital enhancements impede comprehension, while adult mediation during print reading beats children reading digital books alone.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Columbia University, Teachers College (May 2024).</span> "Children derive deeper meaning from printed texts than screens, according to new brain study from Teachers College" (neuroimaging study by the Froud lab finding deeper semantic processing of print in middle schoolers).</p>
+        <div class="key-finding"><span class="label">Key finding</span>Pair this press item with the underlying peer-reviewed article when citing formally; the meta-analyses above (Delgado, Clinton, Kong, Furenes) are the strongest citable anchors for this bucket.</div>
+        <p class="also-link cite-link"><a href="https://www.tc.columbia.edu/marcomm/what-we-do/media/press-releases/2024/children-derive-deeper-meaning-from-printed-texts-than-screens/">tc.columbia.edu — press release</a></p>
+      </article>
+    </section>
+
+    <!-- 4. Attention -->
+    <section class="doc-section" id="attention-distraction">
+      <div class="section-head"><span class="section-num">04</span><h2>Attention, Distraction &amp; ADHD-Related Symptoms</h2></div>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Ra, C.K., Cho, J., Stone, M.D., et al. (2018).</span> Association of digital media use with subsequent symptoms of attention-deficit/hyperactivity disorder among adolescents. <span class="titlework">JAMA</span>, 320(3), 255–263. <a class="cite-link" href="https://pubmed.ncbi.nlm.nih.gov/30027248/">doi:10.1001/jama.2018.8931</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>24-month longitudinal cohort of ~2,600 teens with no baseline ADHD symptoms: high-frequency digital media use predicted higher odds of developing ADHD symptoms over the following two years.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Thorell, L.B., Burén, J., Ström Wiman, J., Sandberg, D., &amp; Nutley, S.B. (2024).</span> Longitudinal associations between digital media use and ADHD symptoms in children and adolescents: A systematic literature review. <span class="titlework">European Child &amp; Adolescent Psychiatry</span>, 33, 2503–2526. <a class="cite-link" href="https://pubmed.ncbi.nlm.nih.gov/36562860/">doi:10.1007/s00787-022-02130-3</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Karolinska Institutet review of 28 longitudinal studies: support for reciprocal effects. Digital media use (especially problematic use) contributes to later ADHD symptom levels, partly via effects on sleep and social relations.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Sana, F., Weston, T., &amp; Cepeda, N.J. (2013).</span> Laptop multitasking hinders classroom learning for both users and nearby peers. <span class="titlework">Computers &amp; Education</span>, 62, 24–31. <a class="cite-link" href="https://psycnet.apa.org/record/2013-05913-005">doi:10.1016/j.compedu.2012.10.003</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>In-class laptop multitasking lowered test scores not only for the user but for surrounding students who could see the screen — a secondhand-distraction effect directly relevant to 1:1 device classrooms.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">OECD (2023).</span> PISA 2022 Results (Volume II): Learning During — and From — Disruption; and OECD (2024), Students, Digital Devices and Success.</p>
+        <div class="key-finding"><span class="label">Key finding</span>Across OECD countries, ~two-thirds of 15-year-olds report being distracted by digital devices in math class; distraction by other students' devices is associated with a performance gap equivalent to roughly three-quarters of a year of learning; students spending 5–7 hours/day on devices at school scored 49 points lower in math than light users after socioeconomic adjustment.</div>
+        <p class="also-link cite-link"><a href="https://www.oecd.org/en/publications/students-digital-devices-and-success_9e4c0624-en.html">oecd.org — Students, Digital Devices and Success</a></p>
+      </article>
+    </section>
+
+    <!-- 5. EdTech Outcomes -->
+    <section class="doc-section" id="edtech-outcomes">
+      <div class="section-head"><span class="section-num">05</span><h2>EdTech &amp; Device Programs: Academic Outcomes</h2></div>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Lee, J., et al. (2022).</span> Exploring the negative and gap-widening effects of EdTech on young children's learning achievement: Evidence from a longitudinal dataset of children in American K–3 classrooms (ECLS-K:2011). <span class="titlework">International Journal of Environmental Research and Public Health</span>, 19(9), 5430.</p>
+        <div class="key-finding"><span class="label">Key finding</span>Nationally representative U.S. longitudinal data: EdTech use in K–3 showed a negative effect on learning achievement and a gap-widening effect, with harms concentrated among already-disadvantaged students.</div>
+        <p class="also-link cite-link"><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9104322/">ncbi.nlm.nih.gov/pmc/articles/PMC9104322</a></p>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Mora, T., Escardíbul, J.-O., &amp; Di Pietro, G. (2018).</span> Computers and students' achievement: An analysis of the One Laptop per Child program in Catalonia. <span class="titlework">International Journal of Educational Research</span>, 92, 145–157. <a class="cite-link" href="https://www.uic.es/sites/default/files/2020-08/published_ijer.pdf">doi:10.1016/j.ijer.2018.09.013</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Population-level longitudinal data (2009–2016): the 1:1 laptop program reduced student performance in Catalan, Spanish, English, and mathematics by 0.20–0.22 SD, with larger harms for boys.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Vigdor, J.L., Ladd, H.F., &amp; Martinez, E. (2014).</span> Scaling the digital divide: Home computer technology and student achievement. <span class="titlework">Economic Inquiry</span>, 52(3), 1103–1119. <a class="cite-link" href="https://onlinelibrary.wiley.com/doi/abs/10.1111/ecin.12089">doi:10.1111/ecin.12089</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>North Carolina administrative data on ~1 million students: expanded home computer and broadband access led to modest but persistent declines in reading and math scores, with larger declines for disadvantaged students.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Malamud, O., &amp; Pop-Eleches, C. (2011).</span> Home computer use and the development of human capital. <span class="titlework">Quarterly Journal of Economics</span>, 126(2), 987–1027. <a class="cite-link" href="https://pubmed.ncbi.nlm.nih.gov/22719135/">doi:10.1093/qje/qjr008</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Regression-discontinuity evidence from a voucher program: children who won home computers had significantly lower school grades in math, English, and Romanian.</div>
+      </article>
+    </section>
+
+    <!-- 6. Mental Health -->
+    <section class="doc-section" id="mental-health">
+      <div class="section-head"><span class="section-num">06</span><h2>Mental Health</h2></div>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Twenge, J.M., &amp; Campbell, W.K. (2018).</span> Associations between screen time and lower psychological well-being among children and adolescents: Evidence from a population-based study. <span class="titlework">Preventive Medicine Reports</span>, 12, 271–283. <a class="cite-link" href="https://pubmed.ncbi.nlm.nih.gov/30406005/">doi:10.1016/j.pmedr.2018.10.003</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>N &gt; 40,000 U.S. children/adolescents: high screen users (7+ hrs/day) were more than twice as likely to have been diagnosed with depression or anxiety, and showed lower self-control and emotional stability, versus low users; associations were larger for adolescents than young children.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Boers, E., Afzali, M.H., Newton, N., &amp; Conrod, P. (2019).</span> Association of screen time and depression in adolescence. <span class="titlework">JAMA Pediatrics</span>, 173(9), 853–859. <a class="cite-link" href="https://jamanetwork.com/journals/jamapediatrics/fullarticle/2737909">doi:10.1001/jamapediatrics.2019.1759</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>4-year longitudinal study of ~3,800 adolescents: within-person increases in social media and television use predicted increases in depressive symptoms, consistent with upward social comparison and displacement mechanisms.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Shannon, H., Bush, K., Villeneuve, P.J., Hellemans, K.G., &amp; Guimond, S. (2022).</span> Problematic social media use in adolescents and young adults: Systematic review and meta-analysis. <span class="titlework">JMIR Mental Health</span>, 9(4), e33450. <a class="cite-link" href="https://pubmed.ncbi.nlm.nih.gov/35436240/">doi:10.2196/33450</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Meta-analysis of 18 studies (N = 9,269): problematic social media use was moderately and significantly correlated with depression (r = .27), anxiety (r = .35), and stress (r = .31).</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Liu, M., Kamper-DeMarco, K.E., Zhang, J., Xiao, J., Dong, D., &amp; Xue, P. (2022).</span> Time spent on social media and risk of depression in adolescents: A dose-response meta-analysis. <span class="titlework">International Journal of Environmental Research and Public Health</span>, 19(9), 5164. <a class="cite-link" href="https://pubmed.ncbi.nlm.nih.gov/35564559/">doi:10.3390/ijerph19095164</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Pooled analysis of 26 studies (N = 55,340): risk of depression rose with each additional hour of daily social media time in a dose-response pattern.</div>
+        <p class="also-link cite-link"><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9103874/">ncbi.nlm.nih.gov/pmc/articles/PMC9103874</a></p>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Li, L., Zhang, Q., Zhu, L., Zeng, G., Huang, H., et al. (2022).</span> Screen time and depression risk: A meta-analysis of cohort studies. <span class="titlework">Frontiers in Psychiatry</span>, 13, 1058572. <a class="cite-link" href="https://pubmed.ncbi.nlm.nih.gov/36620668/">doi:10.3389/fpsyt.2022.1058572</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Prospective cohort studies only: higher screen time predicted elevated subsequent depression risk.</div>
+      </article>
+    </section>
+
+    <!-- 7. Physical Health -->
+    <section class="doc-section" id="physical-health">
+      <div class="section-head"><span class="section-num">07</span><h2>Physical Health: Sleep, Vision, Sedentary Harms</h2></div>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Carter, B., Rees, P., Hale, L., Bhattacharjee, D., &amp; Paradkar, M.S. (2016).</span> Association between portable screen-based media device access or use and sleep outcomes: A systematic review and meta-analysis. <span class="titlework">JAMA Pediatrics</span>, 170(12), 1202–1208. <a class="cite-link" href="https://jamanetwork.com/journals/jamapediatrics/fullarticle/2571467">doi:10.1001/jamapediatrics.2016.2341</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Children 6–19 with bedtime device access had roughly double the odds of inadequate sleep quantity, poor sleep quality, and excessive daytime sleepiness (OR 2.27) — even mere access without use was harmful.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Hale, L., &amp; Guan, S. (2015).</span> Screen time and sleep among school-aged children and adolescents: A systematic literature review. <span class="titlework">Sleep Medicine Reviews</span>, 21, 50–58. <a class="cite-link" href="https://pubmed.ncbi.nlm.nih.gov/25193149/">doi:10.1016/j.smrv.2014.07.007</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>90% of included studies found screen time adversely associated with sleep outcomes (shortened duration, delayed timing) in school-aged children and adolescents.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Lanca, C., &amp; Saw, S.-M. (2020).</span> The association between digital screen time and myopia: A systematic review. <span class="titlework">Ophthalmic and Physiological Optics</span>, 40(2), 216–229. <a class="cite-link" href="https://pubmed.ncbi.nlm.nih.gov/31943280/">doi:10.1111/opo.12657</a></p>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Zong, Z., et al. (2024).</span> The association between screen time exposure and myopia in children and adolescents: A meta-analysis. <span class="titlework">BMC Public Health</span>, 24, 1625. <a class="cite-link" href="https://pubmed.ncbi.nlm.nih.gov/38890613/">doi:10.1186/s12889-024-19113-5</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Pooled evidence across 19 studies linking higher screen exposure to elevated myopia risk in children and adolescents; complements a 2025 BMC dose-response meta-analysis (766,848 participants aged 5–19) finding sedentary screen/near-work behavior raises myopia risk while outdoor time is protective (doi:10.1186/s12889-025-22434-8).</div>
+        <p class="also-link cite-link"><a href="https://bmcpublichealth.biomedcentral.com/articles/10.1186/s12889-024-19113-5">bmcpublichealth.biomedcentral.com/articles/10.1186/s12889-024-19113-5</a></p>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Fang, K., Mu, M., Liu, K., &amp; He, Y. (2019).</span> Screen time and childhood overweight/obesity: A systematic review and meta-analysis. <span class="titlework">Child: Care, Health and Development</span>, 45(5), 744–753. <a class="cite-link" href="https://pubmed.ncbi.nlm.nih.gov/31270831/">doi:10.1111/cch.12701</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Higher screen time was significantly associated with childhood overweight/obesity risk.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Janssen, X., Martin, A., Hughes, A.R., Hill, C.M., Kotronoulas, G., &amp; Hesketh, K.R. (2020).</span> Associations of screen time, sedentary time and physical activity with sleep in under 5s: A systematic review and meta-analysis. <span class="titlework">Sleep Medicine Reviews</span>, 49, 101226. <a class="cite-link" href="https://pubmed.ncbi.nlm.nih.gov/31778942/">doi:10.1016/j.smrv.2019.101226</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Screen time is associated with poorer sleep outcomes beginning in infancy and toddlerhood; physical activity and outdoor play are favorably associated with sleep, supporting analog/outdoor defaults in education.</div>
+      </article>
+    </section>
+
+    <!-- 8. Social-Emotional -->
+    <section class="doc-section" id="social-emotional">
+      <div class="section-head"><span class="section-num">08</span><h2>Social-Emotional Development &amp; Human Connection</h2></div>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Uhls, Y.T., Michikyan, M., Morris, J., Garcia, D., Small, G.W., Zgourou, E., &amp; Greenfield, P.M. (2014).</span> Five days at outdoor education camp without screens improves preteen skills with nonverbal emotion cues. <span class="titlework">Computers in Human Behavior</span>, 39, 387–392. <a class="cite-link" href="https://www.sciencedirect.com/science/article/pii/S0747563214003227">doi:10.1016/j.chb.2014.05.036</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Field experiment with 105 sixth-graders: just five screen-free days at an outdoor education camp significantly improved recognition of nonverbal emotional cues relative to matched controls who kept usual media use.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Hutton et al. (2022)</span> — see Section 1.</p>
+        <div class="key-finding"><span class="label">Key finding</span>Cortical thinning associated with higher screen use included regions involved in social cognition, reasoning, and empathy — areas that should be thickening at preschool age.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Center for Democracy &amp; Technology (Oct 2025).</span> CDT survey research finds use of AI in K-12 schools connected to negative effects on students, including their real-life relationships.</p>
+        <p class="also-link cite-link"><a href="https://cdt.org/insights/report-off-task-edtech-threats-to-student-privacy-and-equity-in-the-age-of-ai/">cdt.org — Off Task report</a></p>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Grundmeier, R.W., et al. (2026).</span> Generative artificial intelligence: Implications for families and pediatricians. <span class="titlework">Pediatrics</span>. <a class="cite-link" href="https://publications.aap.org/pediatrics/article-abstract/doi/10.1542/peds.2025-074912/206753/Generative-Artificial-Intelligence-Implications?redirectedFrom=fulltext">doi:10.1542/peds.2025-074912</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>AAP review concluding generative-AI risks to children are most acute in early and middle childhood.</div>
+      </article>
+    </section>
+
+    <!-- 9. Addictive Design -->
+    <section class="doc-section" id="addictive-design">
+      <div class="section-head"><span class="section-num">09</span><h2>Addictive &amp; Persuasive Design ("Dark Patterns")</h2></div>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Radesky, J., Hiniker, A., McLaren, C., Akgun, E., Schaller, A., Weeks, H.M., Campbell, S., &amp; Gearhardt, A.N. (2022).</span> Prevalence and characteristics of manipulative design in mobile applications used by children. <span class="titlework">JAMA Network Open</span>, 5(6), e2217641. <a class="cite-link" href="https://jamanetwork.com/journals/jamanetworkopen/fullarticle/2793493">doi:10.1001/jamanetworkopen.2022.17641</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Of apps used by 160 children aged 3–5, 80% contained manipulative design (parasocial pressure, fabricated time pressure, navigation constraints, lures); nearly 99% of children had at least one such app, with manipulative design most prevalent in apps used by lower-SES children.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Meyer, M., Zosh, J.M., McLaren, C., Robb, M., McCaffery, H., Golinkoff, R.M., Hirsh-Pasek, K., &amp; Radesky, J. (2021).</span> How educational are "educational" apps for young children? App store content analysis using the Four Pillars of Learning framework. <span class="titlework">Journal of Children and Media</span>, 15(4), 526–548. <a class="cite-link" href="https://pubmed.ncbi.nlm.nih.gov/35282402/">doi:10.1080/17482798.2021.1882516</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Most top "educational" apps scored low on established science-of-learning criteria. Marketing claims of educational value are largely unsubstantiated.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Zhao, F., Egelman, S., Weeks, H.M., Kaciroti, N., Miller, A.L., &amp; Radesky, J.S. (2020).</span> Data collection practices of mobile applications played by preschool-aged children. <span class="titlework">JAMA Pediatrics</span>, 174(12), e203345. <a class="cite-link" href="https://jamanetwork.com/journals/jamapediatrics/fullarticle/2769689">doi:10.1001/jamapediatrics.2020.3345</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Apps played by preschoolers showed high frequencies of persistent-identifier transmission to third parties, suggesting COPPA-relevant privacy rules are not being enforced.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Kidron, B., Evans, A., &amp; Afia, J. (2018).</span> <span class="titlework">Disrupted Childhood: The Cost of Persuasive Design.</span> 5Rights Foundation.</p>
+        <div class="key-finding"><span class="label">Key finding</span>Foundational policy report documenting how persuasive design strategies (variable rewards, infinite scroll, social validation loops) are deployed against developmental vulnerabilities of children.</div>
+      </article>
+    </section>
+
+    <!-- 10. Expert Consensus -->
+    <section class="doc-section" id="expert-consensus">
+      <div class="section-head"><span class="section-num">10</span><h2>Expert Consensus, Policy Statements &amp; International Rollbacks</h2></div>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Karolinska Institutet (2023).</span> Statement on Sweden's national digitalisation strategy in education.</p>
+        <div class="key-finding"><span class="label">Key finding</span>"There's clear scientific evidence that digital tools impair rather than enhance student learning," recommending a return to printed textbooks and teacher expertise. Sweden subsequently reversed mandatory digital devices in preschools, ended digital learning for children under 6, and funded a national return to physical textbooks following PIRLS reading declines (2016–2021).</div>
+        <p class="also-link cite-link"><a href="https://apnews.com/article/sweden-digital-education-backlash-reading-writing-1dd964c628f76361c43dbf3964f7dbf4">apnews.com — Sweden digital education backlash</a></p>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">UNESCO (2023).</span> Global Education Monitoring Report 2023: Technology in education — A tool on whose terms?</p>
+        <div class="key-finding"><span class="label">Key finding</span>UNESCO's "urgent call for appropriate use of technology in education": technology should never replace in-person, teacher-led instruction; finds little robust evidence of added educational value for much classroom technology, with much of the favorable evidence funded by the companies selling the products.</div>
+        <p class="also-link cite-link"><a href="https://www.unesco.org/gem-report/en/technology">unesco.org/gem-report/en/technology</a></p>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">American Academy of Pediatrics (2025).</span> Digital ecosystems, children, and adolescents. Robert W. Grundmeier et al., "Generative Artificial Intelligence: Implications for Families and Pediatricians," <span class="titlework">Pediatrics</span>, published March 4, 2026. <a class="cite-link" href="https://publications.aap.org/pediatrics/article-abstract/doi/10.1542/peds.2025-074912/206753/Generative-Artificial-Intelligence-Implications?redirectedFrom=fulltext">DOI: 10.1542/peds.2025-074912</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>The review synthesizes current evidence on risks of generative AI for children, emphasizing that risks vary by developmental stage and are most acute in early and middle childhood.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Handbook of Children and Screens (2025).</span> Christakis, D.A., &amp; Hale, L. (Eds.), <span class="titlework">Handbook of Children and Screens: Digital Media, Development, and Well-Being from Birth Through Adolescence.</span> Springer.</p>
+        <div class="key-finding"><span class="label">Key finding</span>Open-access synthesis of the full evidence base by 100+ researchers.</div>
+        <p class="also-link cite-link"><a href="https://link.springer.com/book/10.1007/978-3-031-69362-5">link.springer.com/book/10.1007/978-3-031-69362-5</a></p>
+      </article>
+    </section>
+
+    <!-- 11. Equity -->
+    <section class="doc-section" id="equity">
+      <div class="section-head"><span class="section-num">11</span><h2>Racism, Bias &amp; Equity</h2></div>
+      <p class="section-intro">"Equity" is a common rationale offered for expanding 1:1 devices, edtech platforms, and AI in classrooms: closing the "digital divide." The evidence below shows the opposite pattern: screen-heavy defaults concentrate their harms on Black, Hispanic, low-income, English-learner, disabled, and LGBTQ+ students, through four distinct mechanisms — (a) achievement gap-widening, (b) discriminatory surveillance and discipline, (c) algorithmic bias built into the tools themselves, and (d) exploitative design targeted at disadvantaged children.</p>
+
+      <p class="subsection-head">a. Gap-Widening Academic Effects</p>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Lee, J., et al. (2022)</span> — cross-reference Section 5. Exploring the negative and gap-widening effects of EdTech on young children's learning achievement (ECLS-K:2011). <span class="titlework">International Journal of Environmental Research and Public Health</span>, 19(9), 5430.</p>
+        <div class="key-finding"><span class="label">Key finding</span>Nationally representative U.S. K–3 data identified both a negative effect and a gap-widening effect: EdTech harms were concentrated among already-disadvantaged children, widening achievement gaps rather than closing them.</div>
+        <p class="also-link cite-link"><a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9104322/">ncbi.nlm.nih.gov/pmc/articles/PMC9104322</a></p>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Vigdor, J.L., Ladd, H.F., &amp; Martinez, E. (2014)</span> — cross-reference Section 5. Scaling the digital divide: Home computer technology and student achievement. <span class="titlework">Economic Inquiry</span>, 52(3), 1103–1119. <a class="cite-link" href="https://onlinelibrary.wiley.com/doi/abs/10.1111/ecin.12089">doi:10.1111/ecin.12089</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>Expanded computer/broadband access produced persistent declines in reading and math, with the largest declines among disadvantaged students — direct evidence that device access alone widens, not narrows, socioeconomic achievement gaps.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Reich, J. (2020).</span> <span class="titlework">Failure to Disrupt: Why Technology Alone Can't Transform Education.</span> Harvard University Press.</p>
+        <div class="key-finding"><span class="label">Key finding</span>Synthesizes decades of evidence on the "EdTech Matthew Effect": free and scaled learning technologies are disproportionately used and benefited from by already-advantaged learners, so technology-first reforms tend to reproduce and amplify existing inequality.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">OECD (2023)</span> — cross-reference Section 4. PISA 2022, Volume II.</p>
+        <div class="key-finding"><span class="label">Key finding</span>Digital distraction harms are not evenly distributed: distraction and leisure device use at school are associated with larger performance losses among lower-SES students, compounding the gaps above.</div>
+      </article>
+
+      <p class="subsection-head">b. Discriminatory Surveillance, Filtering &amp; Discipline</p>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Center for Democracy &amp; Technology (Sept 2023).</span> <span class="titlework">Off Task: EdTech Threats to Student Privacy and Equity in the Age of AI.</span></p>
+        <div class="key-finding"><span class="label">Key finding</span>Schools' filtering software disproportionately blocks LGBTQ+ and race-related content (with Title I and special-education teachers more likely to report it), and student activity monitoring continues to produce discipline, outing, and law-enforcement contact that falls hardest on at-risk student groups.</div>
+        <p class="also-link cite-link"><a href="https://cdt.org/insights/report-off-task-edtech-threats-to-student-privacy-and-equity-in-the-age-of-ai/">cdt.org — Off Task report</a></p>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Center for Democracy &amp; Technology (Aug 2022).</span> <span class="titlework">Hidden Harms: The Misleading Promise of Monitoring Students Online;</span> and CDT research brief, <span class="titlework">Hidden Harms: Disproportionate Disciplinary Action</span> (Nov 2022).</p>
+        <div class="key-finding"><span class="label">Key finding</span>Surveys of students, parents, and teachers: monitoring software on school-issued devices is used more for discipline than safety. 48% of Black students and 55% of Hispanic students reported they or someone they knew got in trouble through monitoring, versus 41% of white students; 29% of LGBTQ+ students reported nonconsensual outing of sexual orientation or gender identity, and LGBTQ+ students were contacted by police at substantially higher rates (31% vs. 19%).</div>
+        <p class="also-link cite-link"><a href="https://cdt.org/insights/report-hidden-harms-the-misleading-promise-of-monitoring-students-online/">cdt.org — Hidden Harms report</a></p>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Laird, E., et al. / Center for Democracy &amp; Technology (2025).</span> <span class="titlework">Beyond the Screen: Parents' Experiences with Student Activity Monitoring in K-12 Schools.</span></p>
+        <div class="key-finding"><span class="label">Key finding</span>Follow-up parent research confirming Black, Hispanic, and LGBTQ+ students continue to report disproportionate harm from school device monitoring.</div>
+        <p class="also-link cite-link"><a href="https://cdt.org/insights/report-beyond-the-screen-parents-experiences-with-student-activity-monitoring-in-k-12-schools/">cdt.org — Beyond the Screen report</a></p>
+      </article>
+
+      <p class="subsection-head">c. Algorithmic Bias Built Into Classroom Tools</p>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Koenecke, A., Nam, A., Lake, E., Nudell, J., Quartey, M., Mengesha, Z., Toups, C., Rickford, J.R., Jurafsky, D., &amp; Goel, S. (2020).</span> Racial disparities in automated speech recognition. <span class="titlework">Proceedings of the National Academy of Sciences</span>, 117(14), 7684–7689. <a class="cite-link" href="https://www.pnas.org/doi/10.1073/pnas.1915768117">doi:10.1073/pnas.1915768117</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>All five major commercial speech-recognition systems (Amazon, Apple, Google, IBM, Microsoft) made roughly twice as many errors transcribing Black speakers as white speakers (word error rate 0.35 vs. 0.19) — the engines underlying voice-based reading tutors, literacy assessment, and assistive edtech systematically mis-hear Black students.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Liang, W., Yuksekgonul, M., Mao, Y., Wu, E., &amp; Zou, J. (2023).</span> GPT detectors are biased against non-native English writers. <span class="titlework">Patterns</span>, 4(7), 100779. doi:10.1016/j.patter.2023.100779</p>
+        <div class="key-finding"><span class="label">Key finding</span>Widely used AI-writing detectors misclassified more than half of essays by non-native English writers as "AI-generated" while showing near-perfect accuracy on native speakers' essays — meaning AI-cheating enforcement in schools structurally generates false accusations against English learners and immigrant students.</div>
+        <p class="also-link cite-link"><a href="https://www.sciencedirect.com/science/article/pii/S2666389923001307">sciencedirect.com/science/article/pii/S2666389923001307</a></p>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Yoder-Himes, D.R., et al. (2022).</span> Racial, skin tone, and sex disparities in automated proctoring software. <span class="titlework">Frontiers in Education</span>, 7, 881449. <a class="cite-link" href="https://www.frontiersin.org/journals/education/articles/10.3389/feduc.2022.881449/full">doi:10.3389/feduc.2022.881449</a></p>
+        <div class="key-finding"><span class="label">Key finding</span>First quantitative audit of a major automated exam-proctoring system: Black students and students with darker skin tones were significantly more likely to be flagged as potential cheaters requiring instructor review, with women with the darkest skin tones flagged most of all.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Buolamwini, J., &amp; Gebru, T. (2018).</span> Gender Shades: Intersectional accuracy disparities in commercial gender classification. <span class="titlework">Proceedings of Machine Learning Research</span>, 81, 77–91 (Conference on Fairness, Accountability and Transparency).</p>
+        <div class="key-finding"><span class="label">Key finding</span>Foundational audit of commercial facial-analysis systems: error rates of up to ~35% for darker-skinned women versus under 1% for lighter-skinned men — the upstream bias documented in education-specific systems above.</div>
+      </article>
+
+      <p class="subsection-head">d. Exploitative Design &amp; Data Extraction Targeting Disadvantaged Children</p>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Radesky, J., et al. (2022)</span> — cross-reference Section 9. Prevalence and characteristics of manipulative design in mobile applications used by children. <span class="titlework">JAMA Network Open</span>, 5(6), e2217641.</p>
+        <div class="key-finding"><span class="label">Key finding</span>Manipulative "dark pattern" design was most prevalent in apps used by children from lower-socioeconomic-status households; children's attention is exploited for monetization along class lines.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Zhao, F., Egelman, S., Weeks, H.M., Kaciroti, N., Miller, A.L., &amp; Radesky, J.S. (2020)</span> — cross-reference Section 9. Data collection practices of mobile applications played by preschool-aged children. <span class="titlework">JAMA Pediatrics</span>, 174(12), e203345.</p>
+        <div class="key-finding"><span class="label">Key finding</span>Pervasive third-party data transmission from preschoolers' apps; combined with the CDT findings above, the students whose data is most extracted and acted upon are those with the least power to contest it.</div>
+      </article>
+
+      <p class="subsection-head">e. Expert Analysis &amp; Reporting</p>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Aspen Tech Policy Hub.</span> <a href="https://www.aspentechpolicyhub.org/project/edtech-equity/">EdTech Equity Project</a>.</p>
+        <div class="key-finding"><span class="label">Key finding</span>Policy analysis of how racial bias enters edtech across the product lifecycle, from training data to design teams to deployment, and a framework for procurement-stage equity audits districts could adopt.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">Tanksley, T. (Dr. Tiera Tanksley).</span> <a href="https://docs.google.com/presentation/d/1uiRtaSxsWIr4-CMoS6NL5b2SCWWXGt6I_Qd21aRfzec/edit?slide=id.g3e509c66c21_1_604#slide=id.g3e509c66c21_1_604">Digital (In)Equity</a>.</p>
+        <div class="key-finding"><span class="label">Key finding</span>Scholarship applying critical race theory to edtech and AI in education, documenting how algorithmic tools surveil, misread, and discipline Black students; her peer-reviewed work on Black students' experiences of AI and "critical race algorithmic literacies" can be added here for academic settings.</div>
+      </article>
+
+      <article class="citation">
+        <p class="cite-text"><span class="authors">The Hechinger Report.</span> "<a href="https://hechingerreport.org/how-edtech-can-worsen-racial-inequality/">How EdTech Can Worsen Racial Inequality</a>."</p>
+        <div class="key-finding"><span class="label">Key finding</span>Accessible journalistic synthesis of the gap-widening and bias mechanisms documented in the peer-reviewed sources above.</div>
+      </article>
+
+      <div class="callout" style="margin-top:1.5rem;">
+        <strong class="tag">Taken together</strong>
+        (1) the best longitudinal evidence shows technology-first interventions widen achievement gaps (subsection a); (2) the same devices import a surveillance and discipline apparatus that falls hardest on Black, Hispanic, disabled, and LGBTQ+ students (subsection b); (3) the AI tools themselves measurably misjudge Black students' speech, English learners' writing, and darker-skinned students' faces (subsection c); and (4) the commercial design and data practices behind these products disproportionately exploit lower-income children (subsection d). True equity investments are the human and analog defaults with the strongest evidence base: teachers, books, tutoring, and outdoor time.
+      </div>
+    </section>
+
+    <!-- 12. Legal -->
+    <section class="doc-section" id="legal">
+      <div class="section-head"><span class="section-num">12</span><h2>Terms of Service &amp; Legal Context for DCPS</h2></div>
+      <p class="section-intro">This section is specific to D.C. Public Schools policy and U.S. federal law, included here as a model for how a district's own acceptable-use policy, vendor terms, and enforcement actions can be documented and cited.</p>
+
+      <article class="citation legal-entry">
+        <p class="cite-text"><span class="authors">DCPS Student and Staff Technology and Network Acceptable Use Policy</span>, effective January 20, 2026 (SY25-26), available at <a href="http://dcps.dc.gov/publication/student-and-staff-technology-and-network-acceptable-use-policy">dcps.dc.gov/publication/student-and-staff-technology-and-network-acceptable-use-policy</a>. <em>The Policy states its purpose is to comply with CIPA (47 U.S.C. § 254(h)(5)), COPPA (15 U.S.C. § 6501 et seq.), and D.C.'s Protecting Students Digital Privacy Act of 2016 (D.C. Law 21-218, D.C. Official Code § 38-831.01 et seq.).</em></p>
+      </article>
+
+      <article class="citation legal-entry">
+        <p class="cite-text"><span class="authors">Children's Online Privacy Protection Act (COPPA)</span>, 15 U.S.C. § 6501 et seq.; implementing regulations at 16 C.F.R. Part 312. <em>Where a school consents on behalf of parents, FTC guidance requires the school to provide parents notice of authorized platforms and their data practices. See FTC, COPPA Guidance for Ed Tech Companies and Schools (Apr. 2020), <a href="http://ftc.gov/business-guidance/blog/2020/04/coppa-guidance-ed-tech-companies-schools-during-coronavirus">ftc.gov/business-guidance/blog/2020/04/coppa-guidance-ed-tech-companies-schools-during-coronavirus</a>.</em></p>
+      </article>
+
+      <article class="citation legal-entry">
+        <p class="cite-text"><span class="authors">YouTube Terms of Service</span>, available at youtube.com/static?template=terms: "You may use the Service if you are at least 13 years old." Google Transparency Report, YouTube Community Guidelines Enforcement (Child Safety): "Based on YouTube's Terms of Service, YouTube users must be at least 13 years old to use YouTube unless they are enabled by a parent or legal guardian." Available at <a href="http://transparencyreport.google.com/youtube-policy/featured-policies/child-safety">transparencyreport.google.com/youtube-policy/featured-policies/child-safety</a>.</p>
+      </article>
+
+      <article class="citation legal-entry">
+        <p class="cite-text"><span class="authors">United States v. Google LLC and YouTube, LLC</span>, No. 1:19-cv-02642 (D.D.C. 2019). <em>The FTC brought an enforcement action for COPPA violations arising from collection of personal data from children. The matter settled for $170 million and resulted in restrictions on personalized advertising on children's content.</em></p>
+      </article>
+
+      <article class="citation legal-entry">
+        <p class="cite-text"><span class="authors">Children's Internet Protection Act (CIPA)</span>, 47 U.S.C. § 254(h)(5)(B). <em>CIPA requires schools receiving E-Rate funding to block or filter access to inappropriate content and to monitor minors' internet use on school networks. The DCPS Acceptable Use Policy (SY25-26) acknowledges this obligation at Section IV.B.2.</em></p>
+      </article>
+
+      <article class="citation legal-entry">
+        <p class="cite-text"><span class="authors">Protecting Students Digital Privacy Act of 2016, D.C. Law 21-218</span>, codified at D.C. Official Code § 38-831.01 et seq. <em>The Act restricts operators from using student data for non-educational commercial purposes and grants parents rights to request deletion of student data.</em></p>
+      </article>
+
+      <article class="citation legal-entry">
+        <p class="cite-text"><span class="authors">DCPS Acceptable Use Policy (SY25-26)</span>, Section IV.B.3.a. <em>Under COPPA's school-as-agent provision, 16 C.F.R. § 312.5, when a school consents on behalf of parents it must provide notice of authorized services and their data practices and give parents the option to withdraw consent. Parents have repeatedly requested from DCPS central offices: (1) an electronic inventory of platforms for which DCPS has consented on their behalf; and (2) a process by which to withdraw that consent. Both requests have been unaddressed.</em></p>
+      </article>
+
+      <article class="citation legal-entry">
+        <p class="cite-text"><span class="authors">OpenAI Help Center, "Is ChatGPT safe for all ages?"</span> <a href="http://help.openai.com/en/articles/8313401-is-chatgpt-safe-for-all-ages">help.openai.com/en/articles/8313401-is-chatgpt-safe-for-all-ages</a>: "ChatGPT is not meant for children under 13, and we require that children ages 13 to 18 obtain parental consent before using ChatGPT. … We advise caution with exposure to kids, even those who meet our age requirements, and if you are using ChatGPT in the education context for children under 13, the actual interaction with ChatGPT must be conducted by an adult."</p>
+      </article>
+
+      <article class="citation legal-entry">
+        <p class="cite-text"><span class="authors">Microsoft Support, "Microsoft Copilot age limits and parental controls,"</span> support.microsoft.com/en-us/topic/microsoft-copilot-age-limits-and-parental-controls-f79b47a6: the minimum age to use Copilot is 13. Microsoft 365 Copilot Chat FAQ: "Students under age 13 aren't eligible." <a href="http://learn.microsoft.com/en-us/copilot/faq">learn.microsoft.com/en-us/copilot/faq</a></p>
+      </article>
+
+      <article class="citation legal-entry">
+        <p class="cite-text"><span class="authors">2026 Canvas Security Incident.</span> <em>In May 2026, ransomware group ShinyHunters breached Instructure (Canvas), claiming access to data from approximately 275 million students, teachers, and staff at nearly 9,000 schools worldwide. Instructure confirmed unauthorized access on April 29 and May 7, 2026, exposing usernames, email addresses, course names, enrollment data, and messages. Multiple federal class-action lawsuits were filed.</em> See NPR, "Canvas data breach rattles colleges during finals period" (May 8, 2026); Higher Ed Dive, "Canvas owner reaches agreement with threat actors after data breach" (May 8, 2026).</p>
+      </article>
+    </section>
+
+    <!-- Evidence Notes -->
+    <section class="doc-section" id="evidence-notes">
+      <div class="section-head"><span class="section-num">＊</span><h2>Evidence Notes</h2></div>
+      <div class="callout">
+        Brain imaging studies (Section 1) are associational and mostly cross-sectional; lead authors themselves note causation is not proven. Framing them as "associations during the most formative window of brain development, warranting precaution in schools" is accurate, and matches the precautionary logic used by Sweden's Karolinska Institutet.
+      </div>
+    </section>
+
+    <!-- Additional Resources -->
+    <section class="doc-section" id="additional-resources">
+      <div class="section-head"><span class="section-num">＋</span><h2>Additional Resources</h2></div>
+
+      <div class="resource-group">
+        <h3>Resource libraries</h3>
+        <ol>
+          <li>Schools Beyond Screens and Distraction Free Schools Policy Project — <a href="https://docs.google.com/document/d/1T1Gsgcen7ma4S3h-me_LN-HzQIckkq6BKyw_JKRskQA/edit?tab=t.0">Resource Library</a></li>
+        </ol>
+      </div>
+
+      <div class="resource-group">
+        <h3>Model legislation / policy</h3>
+        <ol>
+          <li>LAUSD Screen Time Resolution — <a href="https://drive.google.com/file/d/11c6KTPtRJUquX6MKCowBhGLRngd2gv8g/view">Adopted June 2026</a></li>
+          <li>Schools Beyond Screens — <a href="https://www.schoolsbeyondscreens.com/reform-proposals">Reform Proposals</a></li>
+          <li>Distraction Free Schools — <a href="https://docs.google.com/document/d/1WizVyVv3yb7eZsk8NiPVkCpaZ06psGxyLeR7ybxf9No/edit?tab=t.0">Safe Schools Technology Act</a></li>
+          <li>Emily Cherkin — <a href="https://firstfish.substack.com/p/the-four-norms-of-edtech">Four Norms of EdTech</a></li>
+        </ol>
+      </div>
+
+      <div class="resource-group">
+        <h3>Other jurisdictions' policies or laws</h3>
+        <ol>
+          <li>Arlington Parents for Education — <a href="https://www.arlingtonparentsforeducation.org/ape-device-ed-tech-position-paper">Position Paper on Device Use</a></li>
+          <li>LA Unified School District — <a href="https://media.edlio.net/4e6ffa79/744e9d2e/c567ea81/2762d751b4d147acbce27fda6ee4e97c?_=BD4%20Final%20Amended%20Using%20Technology%20with%20Intention_%20Establishing%20Guidelines%20for%20Student%20Screen%20Time.pdf">Resolution</a> and Draft Policy (and <a href="https://willmaurer.substack.com/p/lausd-screen-time-policy-25-loopholes?r=1fjif&utm_medium=ios&triedRedirect=true">potential loopholes</a>)</li>
+          <li>State of Utah — <a href="https://le.utah.gov/Session/2026/bills/static/HB0273.html">H.B. 273 Classroom Technology Amendments</a></li>
+          <li>Montgomery County PS — <a href="https://static1.squarespace.com/static/61e6db7b96fc06260760d609/t/69b1d167a43a3f334dbe8abf/1773261159278/MCCPTA+Resolution+on+Intentional%2C+Effective%2C+and+Safe+Use+of+Technology%2C+including+Artificial+Intelligence%2C+in+MCPS+Schools+%28DA+Passed+1-27-26%29.pdf">Resolution on Intentional, Effective, and Safe Use of Technology, including Artificial Intelligence</a></li>
+          <li>Montgomery County PS — <a href="https://mccpta-my.sharepoint.com/personal/office_mccpta_org/_layouts/15/onedrive.aspx?id=%2Fpersonal%2Foffice%5Fmccpta%5Forg%2FDocuments%2FMCCPTA%2FBoard%2FIssues%2FResolutions%2F%28Approved%20by%20Delegates%29%20Digital%20Balance%20Resolution%2Epdf&parent=%2Fpersonal%2Foffice%5Fmccpta%5Forg%2FDocuments%2FMCCPTA%2FBoard%2FIssues%2FResolutions&ga=1">Resolution on Digital Balance</a></li>
+        </ol>
+      </div>
+
+      <div class="resource-group">
+        <h3>DC IMPACT and teacher ratings</h3>
+        <ol>
+          <li><a href="https://drive.google.com/file/d/1UWkxvwSqEu2ZDV9lvi5WPDipUkcHB44x/view">September 2025 Teacher-Assessed Student Achievement Data (TAS) Guidance</a></li>
+        </ol>
+      </div>
+    </section>
+  </main>
+  </main>
+</div>
+
+<footer>
+  <div class="wrap footer-grid">
+    <div>
+      <h4>This page</h4>
+      <p>A citations reference for Intentional Tech in Schools, compiled by Schools Beyond Screens &mdash; DC Chapter and adapted here to support our own SMFCSD advocacy.</p>
+    </div>
+    <div>
+      <h4>Office hours</h4>
+      <p>Email: <a href="mailto:smfcsd@intentionaltechinschools.com">smfcsd@intentionaltechinschools.com</a></p>
+      <p><a href="https://bit.ly/4uRRG7W" target="_blank" rel="noopener">Follow us on Facebook</a></p>
+      <p><a href="https://bit.ly/4vPoZb6" target="_blank" rel="noopener">Fill out our concerns form</a></p>
+    </div>
+    <div>
+      <h4>Take action</h4>
+      <p><a href="https://www.fournorms.com/campaigns/san-mateo-foster-city-school-district-parents-for-intentional-tech-petition-for-intentional-technology-use-in-san-mateo-foster-city-schools" target="_blank" rel="noopener">Sign the petition</a></p>
+      <p><a href="https://www.intentionaltechinschools.com/index.html">Back to the main site</a></p>
+      <p><a href="https://smfcsd-tech-analysis.onrender.com/" target="_blank" rel="noopener">Explore the data dashboard</a></p>
+    </div>
+  </div>
+  <div class="wrap footer-bottom">
+    <span>SMFCSD &middot; Citations: Child Health &amp; Well-Being</span>
+    <span>Compiled by Schools Beyond Screens &mdash; DC Chapter</span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var input = document.getElementById('search-input');
+  var count = document.getElementById('search-count');
+  var noResults = document.getElementById('no-results');
+  var citations = Array.prototype.slice.call(document.querySelectorAll('.citation'));
+  var sections = Array.prototype.slice.call(document.querySelectorAll('.doc-section'));
+  var total = citations.length;
+
+  function runSearch() {
+    var q = input.value.trim().toLowerCase();
+    if (!q) {
+      citations.forEach(function (c) { c.classList.remove('hidden'); });
+      sections.forEach(function (s) { s.style.display = ''; });
+      count.textContent = '';
+      noResults.style.display = 'none';
+      return;
+    }
+    var visible = 0;
+    citations.forEach(function (c) {
+      var match = c.textContent.toLowerCase().indexOf(q) !== -1;
+      c.classList.toggle('hidden', !match);
+      if (match) visible++;
+    });
+    sections.forEach(function (s) {
+      var hasVisible = s.querySelectorAll('.citation:not(.hidden)').length > 0;
+      var hasNoCitations = s.querySelectorAll('.citation').length === 0;
+      s.style.display = (hasVisible || hasNoCitations) ? '' : 'none';
+    });
+    count.textContent = visible + ' of ' + total + ' citations match \'' + input.value.trim() + '\'';
+    noResults.style.display = visible === 0 ? 'block' : 'none';
+  }
+
+  input.addEventListener('input', runSearch);
+
+  var toc = document.getElementById('toc');
+  var tocToggle = document.getElementById('toc-toggle');
+  tocToggle.addEventListener('click', function () {
+    var isOpen = toc.classList.toggle('open');
+    tocToggle.setAttribute('aria-expanded', isOpen);
+  });
+
+  var tocLinks = Array.prototype.slice.call(document.querySelectorAll('.toc-list a'));
+  var sectionMap = {};
+  tocLinks.forEach(function (link) {
+    var id = link.getAttribute('href').slice(1);
+    var el = document.getElementById(id);
+    if (el) sectionMap[id] = link;
+  });
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      var link = sectionMap[entry.target.id];
+      if (!link) return;
+      if (entry.isIntersecting) {
+        tocLinks.forEach(function (l) { l.classList.remove('active'); });
+        link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -75% 0px' });
+  Object.keys(sectionMap).forEach(function (id) {
+    observer.observe(document.getElementById(id));
+  });
+})();
+</script>
+
+</body>
+</html>
