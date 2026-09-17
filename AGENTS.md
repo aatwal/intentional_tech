@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
 
 ## What this repo is
 
@@ -27,9 +27,6 @@ manager at the repo root — most of it is self-contained HTML.
   one per year 2015–2025 (2020 excluded — COVID testing suspension). Nothing reads these at
   runtime (both dashboards consume the already-derived `DATA` blob); the only thing that reads
   them is `caaspp_ai_dashboard/verify_source_data.py`, an offline cross-check (see below).
-- `site-editor/` — a small Flask app that lets the two trusted maintainers edit this site by typing
-  a plain-English request, without either of them having their own GitHub/Claude account or using
-  git. See below.
 
 ## Running things
 
@@ -48,26 +45,6 @@ and, since `DATA` and `DISTRICT_OVERVIEW` are built at module load, most data-sh
 by curling `/api/chat` (expect a clean JSON `{"error": "Server is missing ANTHROPIC_API_KEY."}`
 if run without a key — a non-JSON/HTML response means something's wrong upstream of Flask, e.g. a
 gunicorn/proxy timeout, not an app bug).
-
-`site-editor/` (Flask app):
-```bash
-cd site-editor
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-export ANTHROPIC_API_KEY=sk-ant-...
-export GITHUB_TOKEN=ghp_...
-export SHARED_PASSCODE=...
-export FLASK_SECRET_KEY=...
-export REPO_URL=/path/to/a/throwaway/bare/repo   # never point local testing at the real remote
-python app.py               # http://localhost:8070
-```
-No test suite (it was verified once, ad hoc, against a disposable local bare repo standing in for
-GitHub — see its git history for that session if you need the pattern again). Sanity-check changes
-with `python3 -c "import app"`, and if you touch the git/tool plumbing, re-verify against a
-disposable local repo the same way rather than the real one: `git init --bare` somewhere in `/tmp`,
-seed it with a commit, point `REPO_URL` and `SITE_EDITOR_WORKDIR` at it, and exercise
-`ensure_workdir`/`edit_job`/`publish`/`discard` directly in a Python shell before ever running it
-against `aatwal/intentional_tech` itself.
 
 ## `caaspp_ai_dashboard/` architecture
 
@@ -118,7 +95,7 @@ chat can answer both broad ("which grade changed the most district-wide?") and n
 JS — keep them in sync if the achievement-band/change logic ever changes.
 
 **`lookup_caaspp_data`** is a third, on-demand path for anything outside those two fixed slices —
-e.g. a specific school × grade × subgroup combo nobody filtered to. It's a client-executed Claude
+e.g. a specific school × grade × subgroup combo nobody filtered to. It's a client-executed Codex
 tool, always included (not opt-in like web search, since it's still the dashboard's own data, not
 an external source): the model calls it with a school/grade/subject/subgroup, `run_lookup_tool()`
 resolves those to codes and returns one line via `describe_one()` — still never the raw dataset,
@@ -159,62 +136,6 @@ Set `ANTHROPIC_API_KEY` (and optionally `QUERY_LOG_SALT`, see query logging abov
 platform's environment settings, not in code. Currently deployed at
 `https://smfcsd-tech-analysis.onrender.com/`, which is also the redirect target hardcoded into
 `smfc_caaspp_dashboard.html`.
-
-## `site-editor/` architecture
-
-**Why this exists:** the two people who maintain this site day-to-day aren't engineers and don't
-want their own GitHub or Claude accounts, or a terminal. `site-editor/` is a small Flask app gated
-by one shared passcode (no per-user login) where a plain-English prompt becomes a reviewed PR-like
-flow: Claude edits files, the result lands on a new branch (never `main` directly), a diff is shown
-for approval, and only a click on **Publish** merges it live. Full details are in
-`site-editor/README.md`; this section is the parts worth knowing before touching the code.
-
-**Tool surface is deliberately narrow:** four tools only — `list_files`, `read_file`, `edit_file`
-(exact-match single-occurrence search/replace, same semantics as this CLI's own Edit tool),
-`write_file` (full create/overwrite). No shell/bash tool at all, so nothing it does can be more
-destructive than a bad file edit — no arbitrary commands, no way to touch anything outside a single
-git working directory. `safe_path()` additionally refuses any path that resolves outside the repo
-root, touches `.git/` internals, or falls under `site-editor/` itself — that last one specifically
-so a prompt can never modify or disable the tool that's currently running it.
-
-**State is a single in-memory dict (`STATE`), not a database, on purpose:** two trusted users, one
-edit in flight at a time by design — `/submit` refuses unless `STATE["status"] == "idle"` regardless
-of how the request arrives, not just because the UI happens to hide the form otherwise. This is also
-why the Render deploy command in `site-editor/README.md` pins `--workers 1`: a second worker process
-would have its own separate copy of `STATE`, so `/submit`, `/status`, and `/publish` could land on
-different workers and disagree about what's pending.
-
-**Editing runs in a background thread, not inline in the request**, specifically to route around
-the same class of problem documented above for `caaspp_ai_dashboard/` (gunicorn/proxy timeouts) —
-`/submit` returns almost immediately, and the page polls `/status` instead of holding one long HTTP
-request open across however many Claude round-trips a multi-file edit takes.
-
-**Working directory is a disposable clone, not the deploying host's own checkout:** `ensure_workdir()`
-clones fresh into `/tmp` (`SITE_EDITOR_WORKDIR`) if it isn't already there, and otherwise
-`fetch`+`reset --hard origin/main`+`clean -fd` before every edit — safe to call from a cold start on
-a host with ephemeral disk (Render), and guarantees each edit starts from a clean, current `main`
-rather than accumulating drift across requests.
-
-**The preview iframe is served straight from `WORKDIR`, not a copy:** `GET /preview/<path>` reads
-whatever's currently checked out there, reusing `safe_path()`'s same restrictions. This only makes
-sense — and is only enabled (`409` otherwise) — while `STATE["status"] == "ready"`, since that's the
-one window where `WORKDIR` sits on the finished feature branch rather than `main` (idle) or a
-half-written intermediate state (running). Relative links inside a previewed page resolve to other
-`/preview/...` URLs for free, since the browser resolves them against the iframe's own URL — that's
-why clicking nav links inside the preview works without any link-rewriting.
-
-**Git push auth:** `GITHUB_TOKEN` (a fine-grained PAT scoped to just this repo, Contents: read/write
-— see `site-editor/README.md`) gets spliced into the remote URL (`x-access-token:<token>@github.com/...`)
-by `authenticated_remote()`. `run_git()` scrubs that token out of any subprocess error text before it
-can reach a log line or the browser — if you add a new git call, route it through `run_git()` rather
-than calling `subprocess` directly, or that scrubbing gets bypassed.
-
-**Commit identity is a bot, not either individual user:** because access is one shared passcode
-rather than two accounts, there's no way to attribute a given change to a specific person at the git
-level — commits are authored as `GIT_AUTHOR_NAME`/`GIT_AUTHOR_EMAIL` (default "Site Editor Bot"),
-with the original prompt text included in the commit body for context. If per-person attribution
-ever becomes something that matters, that's a real change to the auth model (separate passcodes or
-accounts), not something fixable in the git plumbing alone.
 
 ## Editorial/visual conventions
 
