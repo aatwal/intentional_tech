@@ -122,6 +122,21 @@
   .save-msg{font-size:12px;color:var(--ok);}
   .storage-note{font-size:11.5px;color:var(--ink-soft);}
 
+  .flag-group{font-family:'Fraunces',Georgia,serif;font-size:18px;font-weight:600;margin:26px 0 10px;}
+  .flag-group:first-child{margin-top:0;}
+  .flag{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--flag);padding:14px 18px;margin-bottom:10px;}
+  .flag.q{border-left-color:var(--brass);}
+  .flag h3{font-size:14.5px;font-weight:600;margin:0 0 6px;}
+  .flag p{font-size:13px;line-height:1.6;margin:0;max-width:80ch;color:var(--ink);}
+  .flag .ask{margin-top:8px;font-size:12.5px;color:var(--ink-soft);}
+  .flag .ask strong{color:var(--ink);font-weight:600;}
+  .flag-foot{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;}
+  .flag-foot .sum{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:12px;color:var(--ink-soft);}
+  .linkbtn{background:none;border:1px solid var(--rule);padding:5px 10px;font-size:12px;cursor:pointer;color:var(--ink);}
+  .linkbtn:hover{border-color:var(--ink);}
+  .flag-lines{margin-top:10px;display:none;}
+  .flag.open .flag-lines{display:block;}
+  .flag-banner{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--flag);padding:10px 14px;margin-bottom:14px;font-size:13px;}
   [hidden]{display:none !important;}
 
   @media (max-width:640px){
@@ -154,6 +169,7 @@
 
   <nav class="tabs" role="tablist">
     <button role="tab" data-tab="payments" aria-selected="true">Payments<span class="count" id="tabCountP"></span></button>
+    <button role="tab" data-tab="flags" aria-selected="false">Flags<span class="count" id="tabCountF"></span></button>
     <button role="tab" data-tab="compare" aria-selected="false">Quotes vs. payments</button>
   </nav>
 
@@ -181,8 +197,15 @@
       <button type="button" class="btn ghost" id="pExpand">Expand all</button>
       <button type="button" class="btn ghost" id="pCsv" hidden>Download CSV</button>
     </div>
+    <div class="flag-banner" id="flagBanner" hidden><span id="flagBannerText"></span><button type="button" class="linkbtn" id="flagClear">Show all payments</button></div>
     <div class="ledger" id="pLedger"></div>
     <p class="storage-note" style="margin-top:14px;max-width:80ch">Resource names are the standard California SACS labels where the code is a statewide one; codes the district defines locally are labeled "Local (district-defined)". Account string: fund-resource-year-goal-function-object-site-manager.</p>
+  </section>
+
+  <!-- FLAGS -->
+  <section id="view-flags" role="tabpanel" hidden>
+    <div class="source-note">These are questions to raise with the district, not findings of wrongdoing. Red flags point to missing or conflicting records; brass flags point to spending worth an explanation. Where a flag involves specific payments, open them here or jump to them in the Payments tab.</div>
+    <div id="flagList"></div>
   </section>
 
   <!-- COMPARE -->
@@ -242,7 +265,7 @@ function parseUS(s){ const m=/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec((s||'').trim
 const tabs = document.querySelectorAll('nav.tabs button');
 tabs.forEach(b=>b.addEventListener('click',()=>{
   tabs.forEach(x=>x.setAttribute('aria-selected', x===b?'true':'false'));
-  ['payments','compare'].forEach(t=>document.getElementById('view-'+t).hidden = t!==b.dataset.tab);
+  ['payments','flags','compare'].forEach(t=>document.getElementById('view-'+t).hidden = t!==b.dataset.tab);
   if(b.dataset.tab==='compare') renderCompare();
 }));
 
@@ -264,6 +287,7 @@ function filteredLines(){
   const q = document.getElementById('pSearch').value.trim().toLowerCase();
   const f = document.getElementById('pFund').value, r = document.getElementById('pResource').value;
   return PAYLINES.filter(l=>{
+    if(activeFlag && !activeFlag.lines(l)) return false;
     if(f!=='all' && l.fund!==f) return false;
     if(r!=='all' && l.resource!==r) return false;
     if(!q) return true;
@@ -271,6 +295,7 @@ function filteredLines(){
   });
 }
 function renderPayments(){
+  const fb=document.getElementById('flagBanner'); fb.hidden=!activeFlag; if(activeFlag) document.getElementById('flagBannerText').textContent='Showing payments for flag: '+activeFlag.title;
   const lines = filteredLines();
   const groups = new Map();
   lines.forEach(l=>{ if(!groups.has(l.vid)) groups.set(l.vid,{vid:l.vid,vendor:l.vendor,lines:[],total:0,last:''}); const g=groups.get(l.vid); g.lines.push(l); g.total+=l.amount; if(l.sortDate>g.last) g.last=l.sortDate; });
@@ -343,6 +368,102 @@ document.getElementById('pCsv').addEventListener('click', async ()=>{
   try{ await downloads.save({filename:'smfcsd_obj5845_payments.csv', data:new Blob([csv],{type:'text/csv'})}); }catch(e){}
 });
 
+
+/* ---------- flags ---------- */
+const V = ids => l => ids.includes(l.vid);
+const FLAGS = [
+ {group:'The report itself', sev:'red', title:'Only half of calendar 2025 appears',
+  body:'The report was filtered to Jan 1 – Dec 31, 2025, but every payment falls between Jul 21 and Dec 18, 2025. Every requisition and PO is a FY 2025–26 document (REQ26/PO26); none are from FY 2024–25. The query appears to have searched only the current fiscal year.',
+  ask:'Rerun the same report against FY 2024–25 for Jan–Jun 2025.'},
+ {group:'The report itself', sev:'red', title:'Filters that could exclude records',
+  body:'The selection criteria include "Status = A" (likely active vendors only) and "JE = X". If Status = A means active vendors, anyone deactivated during 2025 would drop out of the report entirely.',
+  ask:'What do "Status = A" and "JE = X" mean? Rerun with those filters removed.'},
+ {group:'The report itself', sev:'q', title:'Only one account code is covered',
+  body:'Only object 5845 is included. Software paid from any other object code, or bought by P-card, is not visible here. The NWEA gap below suggests this matters.',
+  ask:'Provide the same report for all objects used for software, subscriptions, and licenses, plus P-card transactions with software vendors.'},
+
+ {group:'Quotes that don\'t match payments', sev:'red', title:'NWEA: $110,750 agreement, no payments',
+  body:'The MAP Growth agreement runs Aug 1, 2025 – Jul 31, 2026, squarely inside this window, but no NWEA payments appear under object 5845. It was coded to a different account, paid in 2026, or not paid.',
+  ask:'Which account and check paid the NWEA agreement?'},
+ {group:'Quotes that don\'t match payments', sev:'red', title:'Renaissance: three different numbers',
+  body:'The quote summary says $77,454.98 and the quote line items total $76,934.98, a $520 gap inside the vendor\'s own document. The district paid $76,920.06 on 8/11/2025 (PO26-00110), $14.92 below the line items.',
+  ask:'Request PO26-00110 and invoice INV5547286 to see which figure was approved.',
+  lines: l => l.vid==='000012'},
+ {group:'Quotes that don\'t match payments', sev:'q', title:'Amplify: FY27 quote is 3.2× FY26 payments',
+  body:'The district paid Amplify $15,976.67 in fall 2025. The FY27 Desmos Math quote is $51,000. If the 2025 payment was for the same product, that is a steep increase; if not, the district is adding a second Amplify platform.',
+  ask:'What product did invoice INV-393353 cover?',
+  lines: V(['002419'])},
+ {group:'Quotes that don\'t match payments', sev:'q', title:'Lumi Story AI: 40% admin fee, auto-renewing',
+  body:'Not yet in the payment data because the term starts Jun 1, 2026. The agreement adds a $25,000 admin fee to a $37,500 platform fee, and it renews automatically.',
+  ask:'What does the admin fee cover, and who approves renewal?'},
+
+ {group:'Spending that doesn\'t look like software', sev:'q', title:'Services and equipment coded as software',
+  body:'Object 5845 appears to be the software account, but these vendors are service providers, equipment sellers, or professional development. If miscoded, the software total is overstated, and real software may be coded elsewhere.',
+  ask:'Confirm what each payment bought and why it was coded to 5845.',
+  lines: V(['000182','000882','001948','001674','000066','001362','002805','001474'])},
+
+ {group:'Building fund paying for software', sev:'red', title:'Fund 21 paid $66,302 in software subscriptions',
+  body:'The Building Fund, which usually holds bond proceeds with restricted uses, paid Colbi Technologies, Box, and half of a DocuSign invoice. Colbi may be facilities-project software, which could be allowable.',
+  ask:'What are these subscriptions used for, and has the bond oversight committee reviewed them?',
+  lines: l => l.fund==='21'},
+
+ {group:'Visibility and purchasing patterns', sev:'q', title:'$203K through resellers with no product detail',
+  body:'CDW Government, Softchoice, and AMS.NET resell many products. The report doesn\'t show whether this money went to Google, Microsoft, security tools, or something else.',
+  ask:'Request the invoices for these payments.',
+  lines: V(['000077','001922','001955'])},
+ {group:'Visibility and purchasing patterns', sev:'q', title:'Same tools bought separately by each school',
+  body:'BrainPOP was bought on 7 separate POs, Scholastic on 6, and Lexia on 5. A district-wide agreement might cost less and would make total spending on each tool easier to track.',
+  ask:'Is there a district-level agreement or review for these tools?',
+  lines: V(['000855','002400','000694'])},
+ {group:'Visibility and purchasing patterns', sev:'q', title:'Employee reimbursed for a tool the district also buys',
+  body:'An employee was reimbursed $69.99 for Padlet with no PO, while the district also paid Padlet $1,500 directly. Small, but it shows tools being acquired outside the normal approval and privacy review process.',
+  ask:'Does reimbursed software go through the same data-privacy review as PO purchases?',
+  lines: V(['001152','001860'])},
+];
+
+let activeFlag = null;
+function lineTable(ls){
+  return `<div class="tbl-wrap"><table><thead><tr><th>Vendor</th><th>Date</th><th>PO</th><th>Invoice</th><th>Account</th><th class="num">Amount</th></tr></thead><tbody>${
+    ls.slice().sort((a,b)=>a.vendor.localeCompare(b.vendor)||b.sortDate.localeCompare(a.sortDate)).map(l=>`<tr><td>${esc(l.vendor)}</td><td class="mono">${l.date}</td><td class="mono">${esc(l.po||'—')}</td><td class="mono">${esc(l.inv)}</td><td class="mono">${esc(l.acct)}</td><td class="num mono ${l.amount<0?'neg':''}">${fmtMoney(l.amount)}</td></tr>`).join('')
+  }</tbody></table></div>`;
+}
+function renderFlags(){
+  let html='', grp=null;
+  FLAGS.forEach((f,i)=>{
+    if(f.group!==grp){ grp=f.group; html+=`<h2 class="flag-group">${esc(grp)}</h2>`; }
+    const ls = f.lines ? PAYLINES.filter(f.lines) : [];
+    const tot = ls.reduce((s,l)=>s+l.amount,0);
+    const nv = new Set(ls.map(l=>l.vid)).size;
+    html += `<div class="flag ${f.sev==='q'?'q':''}" data-flag="${i}">
+      <h3>${esc(f.title)}</h3><p>${esc(f.body)}</p>
+      <p class="ask"><strong>Ask:</strong> ${esc(f.ask)}</p>
+      ${ls.length?`<div class="flag-foot"><span class="sum">${fmtMoney(tot)} · ${ls.length} line${ls.length>1?'s':''} · ${nv} vendor${nv>1?'s':''}</span>
+        <button type="button" class="linkbtn" data-act="toggle" aria-expanded="false">Show payments</button>
+        <button type="button" class="linkbtn" data-act="jump">Open in Payments tab</button></div>
+        <div class="flag-lines">${lineTable(ls)}</div>`:''}
+    </div>`;
+  });
+  document.getElementById('flagList').innerHTML = html;
+  document.getElementById('tabCountF').textContent = FLAGS.length;
+}
+document.getElementById('flagList').addEventListener('click', e=>{
+  const b = e.target.closest('[data-act]'); if(!b) return;
+  const card = b.closest('.flag'), f = FLAGS[+card.dataset.flag];
+  if(b.dataset.act==='toggle'){
+    card.classList.toggle('open');
+    const o = card.classList.contains('open');
+    b.textContent = o ? 'Hide payments' : 'Show payments'; b.setAttribute('aria-expanded', o);
+  } else {
+    activeFlag = f;
+    ['pSearch'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('pFund').value='all'; document.getElementById('pResource').value='all';
+    PAYLINES.filter(f.lines).forEach(l=>openVendors.add(l.vid));
+    document.querySelector('[data-tab="payments"]').click();
+    renderPayments(); window.scrollTo(0,0);
+  }
+});
+document.getElementById('flagClear').addEventListener('click', ()=>{ activeFlag=null; renderPayments(); });
+
 /* ---------- compare ---------- */
 const REPORT_START = new Date(2025,6,21), REPORT_END = new Date(2025,11,18);
 const STOP = new Set(['the','inc','llc','ltd','corp','corporation','company','education','learning','software','systems','group']);
@@ -397,6 +518,7 @@ function renderCompare(){
 document.getElementById('stampDate').textContent = 'Compiled ' + new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
 initPayFilters();
 renderPayments();
+renderFlags();
 initDownloads();
 </script>
 </body>
