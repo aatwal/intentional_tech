@@ -4,152 +4,117 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>District Vendor Ledger</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#1c2331; --ink-soft:#5b6472; --paper:#eef1f5; --card:#ffffff;
-    --brass:#9c7a3c; --rule:#ccd1d8; --flag:#a5364a; --ok:#3b7a79;
-    --cat-assessment:#3b7a79; --cat-curriculum:#9c7a3c; --cat-ai:#6b4e71; --cat-materials:#5b6472;
-    --btn-ink:#fff; --tint:#f6f7f9;
+    --ink:#1c2b33; --muted:#6b6259; --paper:#f6f3ec; --panel:#ffffff; --line:#dfd8c8;
+    --accent:#2a6f6f; --gold:#d9a441; --rust:#b5493f; --tint:#efe8d8;
     box-sizing:border-box;
     padding-top:env(safe-area-inset-top,0px);
     padding-bottom:env(safe-area-inset-bottom,0px);
   }
-  @media (prefers-color-scheme: dark){
-    :root:not([data-theme="light"]){
-      --ink:#e6e9ee; --ink-soft:#9aa3b1; --paper:#141820; --card:#1c212b;
-      --brass:#c9a567; --rule:#343b48; --flag:#e07a8d; --ok:#6fb7b5;
-      --cat-assessment:#6fb7b5; --cat-curriculum:#c9a567; --cat-ai:#b597bb; --cat-materials:#9aa3b1;
-      --btn-ink:#141820; --tint:#222835;
-    }
-  }
-  :root[data-theme="dark"]{
-    --ink:#e6e9ee; --ink-soft:#9aa3b1; --paper:#141820; --card:#1c212b;
-    --brass:#c9a567; --rule:#343b48; --flag:#e07a8d; --ok:#6fb7b5;
-    --cat-assessment:#6fb7b5; --cat-curriculum:#c9a567; --cat-ai:#b597bb; --cat-materials:#9aa3b1;
-    --btn-ink:#141820; --tint:#222835;
-  }
   html{scroll-padding-top:env(safe-area-inset-top,0px);}
   *,*::before,*::after{box-sizing:border-box;}
-  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;padding:32px 20px 80px;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:'Iowan Old Style','Palatino Linotype',Georgia,serif;padding:32px 20px 80px;}
   .wrap{max-width:980px;margin:0 auto;}
   button,input,select{font:inherit;color:inherit;}
-  :focus-visible{outline:2px solid var(--brass);outline-offset:2px;}
-  .mono{font-family:'IBM Plex Mono',ui-monospace,Menlo,monospace;}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .mono,nav.tabs,.stats,.source-note,.toolbar,.flag-banner,.ledger,#cmpList,.storage-note,#flagList,.eyebrow,.sub,.stamp{
+    font-family:'Helvetica Neue',Arial,sans-serif;
+  }
 
-  header.letterhead{border-bottom:2px solid var(--ink);padding-bottom:18px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;}
-  .eyebrow{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--brass);margin:0 0 6px;}
-  h1{font-family:'Fraunces',Georgia,serif;font-weight:600;font-size:32px;margin:0;letter-spacing:-0.01em;}
-  .sub{font-size:13px;color:var(--ink-soft);margin-top:4px;}
-  .stamp{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;color:var(--ink-soft);text-align:right;line-height:1.5;}
+  header.letterhead{border-bottom:2px solid var(--ink);padding-bottom:20px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;}
+  .eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:0 0 8px;}
+  h1{font-family:'Iowan Old Style','Palatino Linotype',Georgia,serif;font-weight:600;font-size:30px;margin:0;line-height:1.15;}
+  .sub{font-size:13px;color:var(--muted);margin-top:4px;}
+  .stamp{font-size:11px;color:var(--muted);text-align:right;line-height:1.5;}
 
-  nav.tabs{display:flex;gap:0;margin-bottom:22px;border-bottom:1px solid var(--rule);overflow-x:auto;}
-  nav.tabs button{background:none;border:none;border-bottom:2px solid transparent;padding:10px 16px 11px;margin-bottom:-1px;cursor:pointer;font-size:14px;font-weight:500;color:var(--ink-soft);white-space:nowrap;}
-  nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--brass);font-weight:600;}
-  nav.tabs .count{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11.5px;color:var(--ink-soft);margin-left:6px;font-weight:400;}
+  nav.tabs{display:flex;gap:0;margin-bottom:22px;border-bottom:1px solid var(--line);overflow-x:auto;}
+  nav.tabs button{background:none;border:none;border-bottom:2px solid transparent;padding:10px 16px 11px;margin-bottom:-1px;cursor:pointer;font-size:14px;font-weight:700;letter-spacing:.02em;color:var(--muted);white-space:nowrap;}
+  nav.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);}
+  nav.tabs .count{font-size:11.5px;color:var(--muted);margin-left:6px;font-weight:400;}
 
   .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:22px;}
-  .stat-card{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--brass);padding:14px 16px;}
-  .stat-card .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-soft);margin-bottom:6px;}
-  .stat-card .value{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:22px;font-weight:500;}
+  .stat-card{background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:16px 18px;}
+  .stat-card .label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px;}
+  .stat-card .value{font-size:24px;font-weight:700;}
 
-  .source-note{background:var(--card);border:1px solid var(--rule);padding:12px 16px;font-size:12.5px;line-height:1.55;color:var(--ink-soft);margin-bottom:18px;max-width:80ch;}
+  .source-note{background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:12px 16px;font-size:12.5px;line-height:1.55;color:var(--muted);margin-bottom:18px;max-width:80ch;}
   .source-note strong{color:var(--ink);font-weight:600;}
-  .source-note .warn{color:var(--flag);}
+  .source-note .warn{color:var(--rust);}
 
   .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;align-items:center;}
-  .toolbar input[type=text],.toolbar select{font-size:13px;padding:9px 12px;border:1px solid var(--rule);background:var(--card);}
+  .toolbar input[type=text],.toolbar select{font-size:13px;padding:9px 12px;border:1px solid var(--line);border-radius:2px;background:var(--panel);}
   .toolbar input[type=text]{flex:1;min-width:180px;}
   .toolbar select{cursor:pointer;max-width:100%;}
-  .btn{font-size:13px;font-weight:600;padding:9px 16px;border:1px solid var(--ink);background:var(--ink);color:var(--btn-ink);cursor:pointer;}
-  .btn.ghost{background:transparent;color:var(--ink);}
+  .btn{font-size:13px;font-weight:700;padding:9px 16px;border:1px solid var(--accent);border-radius:2px;background:var(--accent);color:#fff;cursor:pointer;}
+  .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line);}
+  .btn.ghost:hover{border-color:var(--accent);}
   .btn[hidden]{display:none;}
 
   .ledger{border-top:1px solid var(--ink);}
-  .row{display:grid;grid-template-columns:36px 1fr auto auto auto;gap:14px;align-items:center;padding:14px 4px;border-bottom:1px solid var(--rule);}
-  .row.flagged{border-left:2px solid var(--flag);padding-left:8px;}
-  .seal{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11px;font-weight:500;color:#fff;flex-shrink:0;}
   .info .vendor{font-weight:600;font-size:14.5px;}
-  .info .product{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
-  .info .note{font-size:11.5px;color:var(--flag);margin-top:4px;}
-  .term{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:11.5px;color:var(--ink-soft);text-align:right;white-space:nowrap;}
-  .cat{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;padding:3px 8px;border:1px solid var(--rule);white-space:nowrap;}
-  .amount{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:15px;font-weight:500;text-align:right;white-space:nowrap;}
-  .del{background:none;border:none;color:var(--ink-soft);cursor:pointer;font-size:12px;padding:0 0 0 8px;}
-  .empty{padding:40px 4px;text-align:center;color:var(--ink-soft);font-size:13px;}
+  .term{font-size:11.5px;color:var(--muted);text-align:right;white-space:nowrap;}
+  .amount{font-size:15px;font-weight:600;text-align:right;white-space:nowrap;}
+  .empty{padding:40px 4px;text-align:center;color:var(--muted);font-size:13px;}
 
   /* payments */
-  .pv{border-bottom:1px solid var(--rule);}
+  .pv{border-bottom:1px solid var(--line);}
   .pv-head{width:100%;display:grid;grid-template-columns:18px 1fr auto auto;gap:14px;align-items:center;padding:13px 4px;background:none;border:none;text-align:left;cursor:pointer;}
   .pv-head:hover{background:var(--tint);}
-  .chev{font-size:11px;color:var(--ink-soft);transition:transform .15s;}
+  .chev{font-size:11px;color:var(--muted);transition:transform .15s;}
   .pv.open .chev{transform:rotate(90deg);}
-  .pv-meta{font-size:12px;color:var(--ink-soft);margin-top:3px;}
-  .pv-meta .mono{font-size:11.5px;}
+  .pv-meta{font-size:12px;color:var(--muted);margin-top:3px;}
   .chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
-  .chip{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:10.5px;padding:2px 6px;border:1px solid var(--rule);color:var(--ink-soft);white-space:nowrap;}
+  .chip{font-size:10.5px;padding:2px 6px;border:1px solid var(--line);border-radius:2px;color:var(--muted);white-space:nowrap;}
   .pv-body{display:none;padding:0 4px 16px 36px;}
   .pv.open .pv-body{display:block;}
   .tbl-wrap{overflow-x:auto;}
   table{border-collapse:collapse;width:100%;font-size:12px;}
-  th{text-align:left;font-weight:500;color:var(--ink-soft);font-size:11px;padding:6px 10px 6px 0;border-bottom:1px solid var(--rule);white-space:nowrap;}
-  td{padding:7px 10px 7px 0;border-bottom:1px dashed var(--rule);white-space:nowrap;vertical-align:top;}
+  th{text-align:left;font-weight:700;color:var(--muted);font-size:11px;padding:6px 10px 6px 0;border-bottom:1px solid var(--line);white-space:nowrap;}
+  td{padding:7px 10px 7px 0;border-bottom:1px dashed var(--line);white-space:nowrap;vertical-align:top;}
   td.num,th.num{text-align:right;padding-right:0;}
-  td .res{display:block;font-family:'Inter',sans-serif;font-size:11px;color:var(--ink-soft);white-space:normal;margin-top:2px;}
-  .neg{color:var(--flag);}
+  td .res{display:block;font-size:11px;color:var(--muted);white-space:normal;margin-top:2px;}
+  .neg{color:var(--rust);}
 
   /* compare */
-  .cmp{background:var(--card);border:1px solid var(--rule);padding:16px 18px;margin-bottom:12px;}
+  .cmp{background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:16px 18px;margin-bottom:12px;}
   .cmp-top{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:baseline;}
   .cmp-top .vendor{font-weight:600;font-size:15px;}
-  .cmp-top .product{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+  .cmp-top .product{font-size:12.5px;color:var(--muted);margin-top:2px;}
   .cmp-figs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px;}
-  .fig .label{font-size:11px;color:var(--ink-soft);margin-bottom:3px;}
-  .fig .val{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:15px;}
+  .fig .label{font-size:11px;color:var(--muted);margin-bottom:3px;}
+  .fig .val{font-size:15px;}
   .verdict{margin-top:12px;font-size:12.5px;line-height:1.55;max-width:80ch;}
-  .verdict.flag{color:var(--flag);}
-  .verdict.ok{color:var(--ok);}
-  .verdict.muted{color:var(--ink-soft);}
+  .verdict.flag{color:var(--rust);}
+  .verdict.ok{color:var(--accent);}
+  .verdict.muted{color:var(--muted);}
 
-  .add-panel{margin-top:28px;border-top:2px solid var(--ink);padding-top:18px;}
-  .add-panel h2{font-family:'Fraunces',Georgia,serif;font-size:18px;font-weight:600;margin:0 0 12px;}
-  .add-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-  .add-grid label{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-soft);display:block;margin-bottom:4px;}
-  .add-grid input,.add-grid select{width:100%;font-size:13px;padding:8px 10px;border:1px solid var(--rule);background:var(--card);}
-  .add-grid .full{grid-column:1/-1;}
-  .submit-row{margin-top:14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
-  .save-msg{font-size:12px;color:var(--ok);}
-  .storage-note{font-size:11.5px;color:var(--ink-soft);}
+  .storage-note{font-size:11.5px;color:var(--muted);}
 
-  .flag-group{font-family:'Fraunces',Georgia,serif;font-size:18px;font-weight:600;margin:26px 0 10px;}
+  .flag-group{font-family:'Iowan Old Style','Palatino Linotype',Georgia,serif;font-size:19px;font-weight:600;margin:26px 0 10px;}
   .flag-group:first-child{margin-top:0;}
-  .flag{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--flag);padding:14px 18px;margin-bottom:10px;}
-  .flag.q{border-left-color:var(--brass);}
-  .flag h3{font-size:14.5px;font-weight:600;margin:0 0 6px;}
+  .flag{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--rust);padding:14px 18px;margin-bottom:10px;}
+  .flag.q{border-left-color:var(--gold);}
+  .flag h3{font-size:14.5px;font-weight:700;margin:0 0 6px;}
   .flag p{font-size:13px;line-height:1.6;margin:0;max-width:80ch;color:var(--ink);}
-  .flag .ask{margin-top:8px;font-size:12.5px;color:var(--ink-soft);}
+  .flag .ask{margin-top:8px;font-size:12.5px;color:var(--muted);}
   .flag .ask strong{color:var(--ink);font-weight:600;}
   .flag-foot{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;}
-  .flag-foot .sum{font-family:'IBM Plex Mono',ui-monospace,monospace;font-size:12px;color:var(--ink-soft);}
-  .linkbtn{background:none;border:1px solid var(--rule);padding:5px 10px;font-size:12px;cursor:pointer;color:var(--ink);}
-  .linkbtn:hover{border-color:var(--ink);}
+  .flag-foot .sum{font-size:12px;color:var(--muted);}
+  .linkbtn{background:none;border:1px solid var(--line);border-radius:2px;padding:5px 10px;font-size:12px;cursor:pointer;color:var(--ink);}
+  .linkbtn:hover{border-color:var(--accent);}
   .flag-lines{margin-top:10px;display:none;}
   .flag.open .flag-lines{display:block;}
-  .flag-banner{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--card);border:1px solid var(--flag);padding:10px 14px;margin-bottom:14px;font-size:13px;}
+  .flag-banner{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--rust);border-radius:2px;padding:10px 14px;margin-bottom:14px;font-size:13px;}
   [hidden]{display:none !important;}
 
   @media (max-width:640px){
     body{padding:20px 14px 60px;}
     h1{font-size:26px;}
     .stats{grid-template-columns:1fr;}
-    .row{grid-template-columns:28px 1fr;}
-    .row .term,.row .cat,.row .amount{grid-column:2;text-align:left;}
-    .row .cat{justify-self:start;}
     .pv-head{grid-template-columns:14px 1fr auto;}
     .pv-head .chips{display:none;}
     .pv-body{padding-left:4px;}
-    .add-grid{grid-template-columns:1fr;}
     .cmp-figs{grid-template-columns:1fr 1fr;}
   }
   @media (prefers-reduced-motion: reduce){.chev{transition:none;}}
@@ -220,9 +185,6 @@
 
 <script>
 const PAY = {"vendors":{"000012":"Renaissance Learning, Inc.","000066":"CSBA","000077":"CDW Government Inc.","000132":"Aeries Software, LLC.","000161":"Follett Software, LLC.","000182":"Gopher Sports Equipment","000187":"Houghton Mifflin Harcourt","000366":"Riverside Insights","000437":"Teachers' Curriculum Institute","000468":"Western Psychological Services","000515":"MHS/Multi-Health Systems Inc.","000563":"Benchmark Education Company","000623":"Image One Corporation","000635":"Pearson Assessments","000694":"Lexia Learning Systems, LLC.","000745":"Learning A-Z","000776":"HeidiSongs","000813":"IXL Learning, Inc. {IXL Learning}","000849":"Canyon Creek Software","000855":"BrainPOP LLC","000882":"Paradigm Healthcare Serv. LLC","000967":"Powerschool Group LLC","000978":"PBISApps","000988":"Newsela Inc","000997":"MIND Education","001000":"Document Tracking Services,LLC","001028":"Box Inc","001057":"IT Management Corp","001152":"Jeannette Ramirez {Ramirez, Jeannette}","001198":"Makemusic","001222":"Colbi Technologies Inc","001272":"Theatrefolk LTD","001292":"Fitness Finders Inc","001302":"Enome Inc","001333":"Emics Inc","001344":"GTSoft, Inc","001353":"Seesaw Learning Inc","001362":"Art of Education University","001372":"Book Creator","001393":"Level Learning Inc","001431":"Lessonpix Inc","001474":"Institute for Multi-Sensory Ed","001540":"Docusign Inc","001648":"Education With an Apron","001673":"Active Internet Technologies L {Active Internet Tech Finalsite}","001674":"Paxton Patterson, LLC.","001729":"EMS LINQ LLC","001741":"Liminex Inc","001742":"Classlink Inc","001798":"Salesforce Inc","001860":"Padlet","001922":"Softchoice Corporation","001948":"Nikki Eddy Consulting, LLC.","001955":"AMS.NET, LLC","001973":"Bluebeam Inc","002014":"Incident IQ, LLC","002144":"Soundtrap Us Inc.","002194":"Mystery Science","002222":"34ED LLC","002260":"Transparent Classroom","002359":"Hive Technology, Inc.","002400":"Scholastic Classroom Magazines","002409":"The Zones of Regulation Inc.","002419":"Amplify Education, Inc","002435":"Learning Genie Inc","002485":"Summit K12 Holdings Inc.","002521":"Mandarin Matrix Inc.","002534":"Acquia Inc.","002537":"Kindersystems Inc.","002621":"Laprea Education, Inc.","002689":"Catholic Telemedia Network","002763":"Amira Learning, Inc.","002805":"PBL Works {Buck Institute}","002818":"PBC Guru, LLC","002833":"Everway, LLC.","002861":"UTJ Holdco, Inc. {Teaching Strategies, LLC.}","002862":"Project Wayfinder, Inc.","002984":"Impacter Education Corporation"},"lines":[["000012","11/20/2025","REQ26-01644","PO26-00699","731508","INV5595712","01-0118-0-1110-1000-5845-109-E001",52.8],["000012","11/04/2025","REQ26-01644","PO26-00699","727535","INV5595801","01-0118-0-1110-1000-5845-109-E001",1149.72],["000012","10/29/2025","REQ26-02125","PO26-01028","726452","INV5621134","01-9424-0-1131-1000-5845-120-P000",2939.35],["000012","08/13/2025","REQ26-00961","PO26-00316","707627","INV5574198","01-6300-0-1110-1000-5845-213-E000",4070.0],["000012","08/11/2025","REQ26-00383","PO26-00091","707060","INV5538605","01-9424-0-1110-1000-5845-114-P000",5552.4],["000012","08/11/2025","REQ26-00159","PO26-00110","707088","INV5547286","01-0612-0-0000-3160-5845-071-E000",76920.06],["000066","08/25/2025","REQ26-00772","PO26-00224","709773","INV-77736-F2D5M2","01-0609-0-0000-7110-5845-070-G000",17300.0],["000077","12/18/2025","REQ26-01045","PO26-00514","739101","ZR00848796","01-0610-0-0000-7700-5845-088-B000",73494.0],["000077","08/14/2025","REQ26-00777","PO26-00154","708094","AE7ZS3Q","01-0610-0-0000-7700-5845-088-B000",52974.0],["000132","07/24/2025","REQ26-00639","PO26-00162","703771","REN-11517","01-0610-0-0000-7700-5845-088-B000",64159.0],["000132","07/24/2025","REQ26-00639","PO26-00162","703771","REN-11517","01-0615-0-0000-2100-5845-074-L000",62653.5],["000132","07/24/2025","REQ26-00639","PO26-00162","703771","REN-11517","01-0621-0-0000-7200-5845-074-L000",19890.0],["000161","10/14/2025","REQ26-01266","PO26-00661","722101","1593130","01-0612-0-1110-1000-5845-071-E000",47011.14],["000182","11/13/2025","REQ26-01277","PO26-00456","729456","IN475784","01-0612-0-1137-1000-5845-071-E000",398.0],["000182","10/13/2025","REQ26-01277","PO26-00456","721718","IN469019","01-0612-0-1137-1000-5845-071-E000",50.0],["000182","09/29/2025","REQ26-01277","PO26-00456","718435","CR39075","01-0612-0-1137-1000-5845-071-E000",-38.18],["000182","09/29/2025","REQ26-01277","PO26-00456","718435","IN462876","01-0612-0-1137-1000-5845-071-E000",5373.0],["000187","08/13/2025","REQ26-00160","PO26-00111","707597","836773","01-0612-0-1140-1000-5845-071-E001",98150.0],["000366","12/18/2025","REQ26-02632","PO26-01343","739133","INV265805","01-0612-0-1110-1005-5845-071-E002",7491.65],["000437","12/01/2025","REQ26-01653","PO26-00686","733593","INV144518","01-6300-0-1110-1000-5845-071-E000",4277.0],["000437","09/15/2025","REQ26-01203","PO26-00411","714702","INV140421A","01-6300-0-1110-1000-5845-071-E000",77221.0],["000468","08/21/2025","REQ26-01040","PO26-00352","709178","WPS-527043","01-6500-0-5760-1110-5845-081-SOPT",840.0],["000515","08/06/2025","REQ26-00020","PO26-00002","706490","SIP00543580","01-0507-0-0000-3120-5845-081-L000",500.0],["000563","11/20/2025","REQ26-01873","PO26-00804","731186","585161","01-6300-0-1110-1000-5845-071-E000",540.78],["000563","09/29/2025","REQ26-00775","PO26-00172","718425","3602","01-6300-0-1110-1000-5845-071-E000",18607.5],["000563","08/07/2025","REQ26-00754","PO26-00137","706839","3311","01-0612-0-1110-1000-5845-071-E000",89108.87],["000623","08/25/2025","REQ26-00914","PO26-00334","710107","346076","13-5310-0-0000-3700-5845-032-B000",804.75],["000623","08/25/2025","REQ26-00914","PO26-00334","710107","346076","13-0000-0-0000-3700-5845-032-B000",2609.35],["000635","11/20/2025","REQ26-02148","PO26-01032","731169","30232365","01-6500-0-5760-1110-5845-081-SSDC",21060.0],["000694","09/29/2025","REQ26-00942","PO26-00241","718458","CI-00292546","01-3010-0-1110-1000-5845-122-E001",2000.0],["000694","09/15/2025","REQ26-00905","PO26-00279","714718","CI-00261186","01-3010-0-1110-1000-5845-122-E001",14400.0],["000694","09/02/2025","REQ26-01030","PO26-00367","712144","CI-00228636","01-3182-0-1110-1000-5845-121-E001",11050.0],["000694","08/28/2025","REQ26-00951","PO26-00404","711754","CI-00237221","01-0118-0-1110-1000-5845-310-E002",2000.0],["000694","08/25/2025","REQ26-00819","PO26-00313","709767","CI-00209714","01-6500-0-5760-1110-5845-081-S000",12915.0],["000745","08/27/2025","REQ26-01006","PO26-00391","711116","CI-00241492","01-9424-0-1110-1000-5845-126-P000",1488.0],["000776","09/30/2025","REQ26-01461","PO26-00580","718932","10938","01-9424-0-1110-1000-5845-114-P000",719.92],["000813","10/09/2025","REQ26-01014","PO26-00339","721072","S547020","01-9424-0-1110-1000-5845-120-P000",6562.5],["000813","09/29/2025","REQ26-00265","PO26-00469","718438","S553421","01-9424-0-1110-1000-5845-119-P000",2382.5],["000849","10/23/2025","REQ26-01738","PO26-00879","724414","2025-0151","01-0100-0-0000-2495-5845-216-P000",404.0],["000849","09/18/2025","REQ26-01148","PO26-00361","715704","2025-0147","01-9424-0-0000-2495-5845-213-P000",404.0],["000849","09/11/2025","REQ26-01112","PO26-00366","714115","2025-0148","01-0100-0-0000-2495-5845-211-P000",404.0],["000849","09/02/2025","REQ26-00941","PO26-00254","712177","2025-0046","01-9424-0-0000-2495-5845-215-P000",404.0],["000855","10/21/2025","REQ26-01518","PO26-00597","723720","US593302","01-6300-0-1110-1000-5845-112-E000",5715.0],["000855","09/29/2025","REQ26-01092","PO26-00383","718504","US586586","01-6300-0-1110-1000-5845-310-E000",3575.0],["000855","09/29/2025","REQ26-01092","PO26-00383","718504","US586586","01-0118-0-1110-1000-5845-310-E001",475.0],["000855","09/24/2025","REQ26-00272","PO26-00684","717158","US583211","01-9424-0-1110-1000-5845-119-P000",5715.0],["000855","09/04/2025","REQ26-00927","PO26-00284","712675","US583091","01-6300-0-1110-1000-5845-215-E000",4187.5],["000855","09/02/2025","REQ26-00421","PO26-00094","712173","US583215","01-9424-0-1110-1000-5845-114-P000",5715.0],["000855","09/02/2025","REQ26-01013","PO26-00338","712173","US585854","01-9424-0-1131-1000-5845-120-P000",5715.0],["000855","08/21/2025","REQ26-00919","PO26-00239","709197","US569210","01-9424-0-1110-1000-5845-126-P000",4500.0],["000882","12/09/2025","REQ26-00962","PO26-00476","735717","SHN4101 DEC","01-9640-0-0000-7200-5845-081-L000",1259.5],["000882","12/01/2025","REQ26-00962","PO26-00476","733612","SHN3940 NOV","01-9640-0-0000-7200-5845-081-L000",1259.5],["000882","11/06/2025","REQ26-00962","PO26-00476","728111","SHN3763 OCT","01-9640-0-0000-7200-5845-081-L000",1259.5],["000882","10/02/2025","REQ26-00962","PO26-00476","719356","SHN3610 SEP","01-9640-0-0000-7200-5845-081-L000",1259.5],["000882","08/28/2025","REQ26-00962","PO26-00476","711757","SHN3456 AUG","01-9640-0-0000-7200-5845-081-L000",1259.5],["000882","08/28/2025","REQ26-00962","PO26-00476","711757","SHN3299 JUL","01-9640-0-0000-7200-5845-081-L000",1259.5],["000967","09/29/2025","REQ26-01145","PO26-00398","718395","INV469014","01-0621-0-0000-7200-5845-074-L000",21407.19],["000967","08/27/2025","REQ26-01144","PO26-00399","711120","INV451088","01-0621-0-0000-7200-5845-074-L000",8420.28],["000978","09/22/2025","REQ26-01571","PO26-00692","716205","INV00080700","01-3010-0-1110-1004-5845-317-E003",400.0],["000988","09/30/2025","REQ26-01642","PO26-00698","718909","INV50295","01-0118-0-1110-1000-5845-109-E001",1614.0],["000988","09/09/2025","REQ26-01025","PO26-00351","713582","INV50725","01-9398-0-1110-1000-5845-121-E000",2300.0],["000997","10/02/2025","REQ26-01202","PO26-00486","719339","1253356","01-6300-0-1130-1000-5845-071-E000",134000.0],["001000","07/21/2025","REQ26-00162","PO26-00079","703032","9440311","01-0612-0-0000-2100-5845-071-E000",6050.0],["001028","09/23/2025","REQ26-01488","PO26-00564","716734","INV12955752","21-9030-0-0000-8500-5845-099-B000",1800.0],["001057","12/02/2025","REQ26-02261","PO26-01129","733976","14215","01-0610-0-0000-7700-5845-088-B000",6719.2],["001057","10/07/2025","REQ26-01457","PO26-00578","720495","14068","01-0610-0-0000-7700-5845-088-B000",3910.0],["001057","09/04/2025","REQ26-00708","PO26-00174","712678","13778","01-0610-0-0000-7700-5845-088-B000",14798.65],["001152","12/15/2025","REQ26-02517","","737169","PADLET 7-25 TO 7-26","01-0615-0-1110-1000-5845-074-L000",69.99],["001198","08/25/2025","REQ26-00964","PO26-00318","710097","INV-MM6875625","01-6300-0-1110-1000-5845-205-E000",16912.07],["001222","10/29/2025","REQ26-01726","PO26-00953","726435","16475","21-9030-0-0000-8500-5845-099-B000",45000.0],["001222","08/14/2025","REQ26-00036","PO26-00049","708096","15913","21-9030-0-0000-8500-5845-099-B000",15500.0],["001272","09/29/2025","REQ26-01077","PO26-00753","718467","1368476","01-9424-0-1110-1000-5845-215-P016",444.0],["001292","10/14/2025","REQ26-01088","PO26-00754","722099","INV18433","01-9424-0-1137-1000-5845-215-P010",199.95],["001302","10/02/2025","REQ26-00019","PO26-00139","719347","2416667-3","01-6500-0-5760-1110-5845-081-S000",21211.75],["001333","09/11/2025","REQ26-01229","PO26-00489","714098","3923","01-0614-0-0000-7400-5845-072-H000",59483.0],["001344","08/21/2025","REQ26-00643","PO26-00143","709164","062519","63-0010-0-0000-6000-5845-329-L000",6800.0],["001353","08/14/2025","REQ26-00773","PO26-00180","708092","2025-14178","01-6300-0-1110-1000-5845-071-E000",5500.0],["001362","10/14/2025","REQ26-01620","PO26-00740","722081","325387","01-6300-0-1110-1000-5845-205-E000",6330.0],["001372","12/08/2025","REQ26-01925","PO26-00993","735311","R-25-INV-3222","01-6300-0-1110-1000-5845-323-E000",1053.0],["001393","08/13/2025","REQ26-00257","PO26-00086","707604","LC-10001946","01-6300-0-1110-1000-5845-071-E000",29600.0],["001431","12/17/2025","REQ26-01474","PO26-00581","738419","14171","01-0118-0-1110-1000-5845-109-E001",180.0],["001431","12/11/2025","REQ26-01656","PO26-00759","736390","14439","01-6500-0-5760-1110-5845-081-S000",826.2],["001474","12/01/2025","REQ26-02194","PO26-01088","733630","238716","01-0612-0-1140-1000-5845-071-E001",125.0],["001540","10/07/2025","REQ26-00224","PO26-00083","720485","111100559093","01-8150-0-0000-8110-5845-099-B099",4002.0],["001540","10/07/2025","REQ26-00224","PO26-00083","720485","111100559093","21-9030-0-0000-8500-5845-099-B000",4002.0],["001648","08/21/2025","REQ26-01130","PO26-00377","709184","1031","01-3182-0-1110-1000-5845-121-E001",1828.0],["001673","09/15/2025","REQ26-00724","PO26-00470","714709","INV083854","01-0620-0-0000-7180-5845-070-G000",5200.0],["001673","09/11/2025","REQ26-00724","PO26-00470","714112","INV083860","01-0620-0-0000-7180-5845-070-G000",4500.0],["001674","08/25/2025","REQ26-00848","PO26-00298","709780","PSI-0009158 SMFCSD","01-9124-0-1147-1000-5845-071-E000",3800.0],["001674","08/21/2025","REQ26-00849","PO26-00299","709214","PSI-0009159 SMFCSD","01-9124-0-1147-1000-5845-071-E000",3800.0],["001674","08/21/2025","REQ26-00851","PO26-00300","709214","PSI-0009160 SMFCSD","01-9124-0-1147-1000-5845-071-E000",3800.0],["001729","08/07/2025","REQ26-01034","PO26-00306","706850","C-135448","13-5310-0-0000-3700-5845-032-B000",15855.0],["001729","08/06/2025","REQ26-00609","PO26-00177","706434","C-136332","13-5310-0-0000-3700-5845-032-B000",2568.5],["001729","08/06/2025","REQ26-01034","PO26-00306","706484","C-136326","13-5310-0-0000-3700-5845-032-B000",495.0],["001741","07/21/2025","REQ26-00472","PO26-00114","703019","INV-131650","01-0615-0-1110-1000-5845-074-L000",88941.6],["001742","07/22/2025","REQ26-00590","PO26-00122","703462","INV20676","01-0610-0-0000-7700-5845-088-B000",45897.4],["001798","11/10/2025","REQ26-01520","PO26-00612","728799","35550192","01-0612-0-1110-1000-5845-071-E000",33515.4],["001860","08/21/2025","REQ26-01089","PO26-00324","709182","WW3808117","01-0100-0-1110-1000-5845-215-P000",1500.0],["001922","09/15/2025","REQ26-00475","PO26-00096","714726","97140941","01-0610-0-0000-7700-5845-088-B000",12500.0],["001948","12/17/2025","REQ26-00198","PO26-00081","738408","10474","01-7435-0-1110-1003-5845-074-L000",2100.0],["001948","10/29/2025","REQ26-00198","PO26-00081","726436","10472-R1","01-7435-0-1110-1003-5845-074-L000",7900.0],["001955","10/13/2025","REQ26-01581","PO26-00734","721722","0094059","01-0625-0-0000-7700-5845-088-B000",62819.4],["001955","10/07/2025","REQ26-01510","PO26-00584","720472","0093973","01-0625-0-0000-7700-5845-088-B000",1400.28],["001973","08/13/2025","REQ26-00821","PO26-00182","707613","2437318","01-8150-0-0000-8110-5845-099-B099",830.0],["002014","07/24/2025","REQ26-00479","PO26-00097","703780","10890","01-0610-0-0000-7700-5845-088-B000",38191.94],["002144","09/24/2025","REQ26-01612","PO26-00739","717470","USIN102079","01-9424-0-1110-1000-5845-213-P000",399.0],["002194","07/31/2025","REQ26-00420","PO26-00067","705734","306110","01-9424-0-1110-1000-5845-114-P000",1999.0],["002222","11/10/2025","REQ26-02016","PO26-00983","728827","INV7136","01-0100-0-0000-2700-5845-213-P000",695.0],["002260","12/04/2025","REQ26-00967","PO26-01057","734593","120143","01-0107-0-1110-1000-5845-327-E001",694.0],["002260","11/10/2025","REQ26-00967","PO26-01057","728821","118362 OCT 2025","01-0107-0-1110-1000-5845-327-E001",694.0],["002260","11/10/2025","REQ26-00967","PO26-01057","728821","116582 SEP 2025","01-0107-0-1110-1000-5845-327-E001",697.06],["002260","11/10/2025","REQ26-00967","PO26-01057","728821","115010 AUG 2025","01-0107-0-1110-1000-5845-327-E001",584.71],["002359","12/04/2025","REQ26-02199","PO26-01081","734583","82831","01-0612-0-1110-1000-5845-082-E000",1728.0],["002400","12/01/2025","REQ26-02296","PO26-01253","733618","M7617647","01-9424-0-1110-1000-5845-216-P034",1279.08],["002400","11/24/2025","REQ26-01522","PO26-01252","732718","M7656904","01-6300-0-1110-1000-5845-323-E000",1629.4],["002400","10/29/2025","REQ26-01586","PO26-00694","726454","M7659524","01-6300-0-1110-1000-5845-215-E000",230.76],["002400","10/09/2025","REQ26-01528","PO26-00690","721089","M7590254 4","01-6300-0-1110-1000-5845-126-E000",2365.05],["002400","09/15/2025","REQ26-01478","PO26-00562","714724","M7590213","01-0100-0-1110-1000-5845-112-P000",2778.91],["002400","08/14/2025","REQ26-00384","PO26-00065","708102","M7595710","01-9424-0-1110-1000-5845-114-P000",1141.25],["002409","10/27/2025","REQ26-01755","PO26-00857","725122","8219","01-0615-0-0000-2100-5845-074-L000",120.0],["002419","09/02/2025","REQ26-00498","PO26-00117","712147","INV-393353","01-7810-0-1140-1000-5845-071-E000",15976.67],["002435","09/15/2025","REQ26-01042","PO26-00386","714717","INV-4253","12-6105-0-0001-2700-5845-329-L000",6794.15],["002435","09/15/2025","REQ26-01042","PO26-00386","714717","INV-4253","63-0010-0-0000-6000-5845-329-L000",2911.78],["002485","08/06/2025","REQ26-00616","PO26-00190","706441","INV003429","01-2600-0-1131-1002-5845-082-E001",18080.0],["002521","07/21/2025","REQ26-00256","PO26-00085","703009","MMINC-2506006","01-6300-0-1110-1000-5845-071-E000",29700.0],["002534","08/25/2025","REQ26-00719","PO26-00168","709770","SI-79120","01-0620-0-0000-7180-5845-070-G000",5781.91],["002537","08/04/2025","REQ26-00943","PO26-00242","706026","INV29741","12-6105-0-0001-2700-5845-329-L000",4843.74],["002621","10/29/2025","REQ26-01786","PO26-00842","726443","W1OHJLMQ-0001","01-9424-0-1110-1000-5845-310-P000",179.0],["002689","12/17/2025","REQ26-02337","PO26-01259","738433","ASF2526-99","01-4035-0-1110-1000-5845-402-E000",7650.0],["002763","10/13/2025","REQ26-00263","PO26-00369","721714","SIN031453","01-3010-0-1110-1000-5845-317-E001",4072.5],["002805","12/04/2025","REQ26-02003","PO26-00956","734568","INV-11171","01-0612-0-1110-1000-5845-071-E000",5000.0],["002818","08/14/2025","REQ26-00222","PO26-00331","708104","INV-505089","01-9424-0-1110-1000-5845-310-P000",1175.0],["002833","09/29/2025","REQ26-00824","PO26-00183","718495","00258919N","01-6500-0-5760-1190-5845-081-SAAC",277.5],["002861","09/30/2025","REQ26-00792","PO26-00263","718919","INV227793","12-6105-0-0001-2700-5845-329-L000",1394.75],["002861","09/30/2025","REQ26-00792","PO26-00263","718919","INV227793","63-0010-0-0000-6000-5845-329-L000",597.75],["002861","09/08/2025","REQ26-00792","PO26-00263","713109","INV222685","63-0010-0-0000-6000-5845-329-L000",3450.0],["002861","09/08/2025","REQ26-00792","PO26-00263","713109","INV222685","12-6105-0-0001-2700-5845-329-L000",8050.0],["002861","09/04/2025","REQ26-00792","PO26-00263","712687","INV224952","63-0010-0-0000-6000-5845-329-L000",597.75],["002861","09/04/2025","REQ26-00792","PO26-00263","712687","INV224952","12-6105-0-0001-2700-5845-329-L000",1394.75],["002862","08/14/2025","REQ26-00363","PO26-00311","708091","5437","01-0615-0-1110-1000-5845-074-L000",2470.0],["002984","12/04/2025","REQ26-02303","PO26-01258","734570","IMP-1029","01-6332-0-1110-4100-5845-122-L002",15000.0],["002984","11/24/2025","REQ26-02301","PO26-01191","732659","IMP-1028","01-6332-0-1110-4100-5845-121-L002",15000.0]]};
-
-const CAT_COLOR = {assessment:'var(--cat-assessment)',curriculum:'var(--cat-curriculum)',ai:'var(--cat-ai)',materials:'var(--cat-materials)'};
-const CAT_LABEL = {assessment:'Assessment',curriculum:'Curriculum / Software',ai:'AI Platform',materials:'Printed Materials'};
 
 const seedData = [
   {id:'seed-1', vendor:'Amplify', product:'Desmos Math digital licenses, Grades 6–8, Alg 1', category:'curriculum', amount:51000, start:'07/01/2026', end:'06/30/2027', contact:'Amy Burke', note:'', flagged:false},
@@ -507,7 +469,7 @@ function renderCompare(){
       <div class="cmp-figs">
         <div class="fig"><div class="label">Quoted</div><div class="val">${fmtMoney(a.amount)}</div></div>
         <div class="fig"><div class="label">Paid to vendor (obj 5845, Jul–Dec 2025)</div><div class="val">${lines.length?fmtMoney(paid):'—'}</div></div>
-        <div class="fig"><div class="label">Matched in report</div><div class="val" style="font-family:Inter,sans-serif;font-size:13px">${names?esc(names):'No match'}</div></div>
+        <div class="fig"><div class="label">Matched in report</div><div class="val" style="font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px">${names?esc(names):'No match'}</div></div>
       </div>
       <div class="verdict ${cls}">${esc(verdict)}</div>
     </div>`;
