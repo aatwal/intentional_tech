@@ -8,7 +8,7 @@
   :root{
     --ink:#1c2b33; --muted:#6b6259; --paper:#f6f3ec; --panel:#ffffff; --line:#dfd8c8;
     --accent:#2a6f6f; --gold:#d9a441; --orange:#c8763c; --rust:#b5493f; --tint:#efe8d8;
-    --rust-bg:#f4e4e2; --orange-bg:#f7eae2; --gold-bg:#f9f1e3;
+    --rust-bg:#e9c8c5; --orange-bg:#efd6c5; --gold-bg:#f4e4c6;
     box-sizing:border-box;
     padding-top:env(safe-area-inset-top,0px);
     padding-bottom:env(safe-area-inset-bottom,0px);
@@ -342,7 +342,7 @@ const FLAGS = [
  {group:'The report itself', sev:'red', title:'Only half of calendar 2025 appears',
   body:'The report was filtered to Jan 1 – Dec 31, 2025, but every payment falls between Jul 21 and Dec 18, 2025. Every requisition and PO is a FY 2025–26 document (REQ26/PO26); none are from FY 2024–25. The query appears to have searched only the current fiscal year.',
   ask:'Rerun the same report against FY 2024–25 for Jan–Jun 2025.'},
- {group:'The report itself', sev:'orange', title:'Filters that could exclude records',
+ {group:'The report itself', sev:'red', title:'Filters that could exclude records',
   body:'The selection criteria include "Status = A" (likely active vendors only) and "JE = X". If Status = A means active vendors, anyone deactivated during 2025 would drop out of the report entirely.',
   ask:'What do "Status = A" and "JE = X" mean? Rerun with those filters removed.'},
  {group:'The report itself', sev:'yellow', title:'Only one account code is covered',
