@@ -1,6 +1,6 @@
 # CAASPP Dashboard: AI Chat Edition
 
-Same 10-year CAASPP dashboard as `../smfc_caaspp_dashboard.html`
+Same 11-year CAASPP dashboard as `../smfc_caaspp_dashboard.html`
 (identical charts and filters), plus a chat panel for asking questions about
 the currently selected data. This variant needs a small Python server; it is
 **not** a drop-in replacement for the static file, which stays a standalone,
@@ -27,7 +27,7 @@ Then open <http://localhost:8060>.
 
 ## How the chat is grounded
 
-The full 10-year dataset (`data/caaspp_data.json`, extracted from the same
+The full 11-year dataset (`data/caaspp_data.json`, extracted from the same
 source as the static dashboard) is loaded once at startup. On each chat turn,
 the server does **not** send the whole dataset to Claude: that's ~4.5MB of
 JSON, too large and too expensive per message. Instead it builds a compact
@@ -38,23 +38,19 @@ as the system prompt. This keeps answers grounded in real numbers, keeps
 requests small, and means the chat's scope follows the filters: asking about
 a different school/grade means changing the filter first.
 
-## Regenerating `data/caaspp_data.json`
+## Regenerating the data
 
-If the static dashboard's embedded data is ever updated, re-extract it:
+`build_data.py` rebuilds DATA from the raw CDE research files in `../caaspp_files/` and writes
+both copies: `data/caaspp_data.json` and the embedded `const DATA = ...` line in
+`templates/index.html`. After adding a new year's file there:
 
 ```bash
-cd ..
-python3 -c "
-import json
-with open('smfc_caaspp_dashboard.html', encoding='utf-8') as f:
-    for line in f:
-        if line.startswith('const DATA = '):
-            raw = line[len('const DATA = '):].rstrip('\n').rstrip(';')
-            json.dump(json.loads(raw), open('caaspp_ai_dashboard/data/caaspp_data.json', 'w'))
-            break
-"
+python3 build_data.py --dry-run   # report what would change
+python3 build_data.py             # write both copies
+python3 verify_source_data.py -v  # cross-check every value against the source files
 ```
 
-Note `templates/index.html` in this directory also carries its own copy of
-that same embedded `DATA` blob (for the charts, which run client-side same as
-the static version); keep the two in sync if you regenerate one.
+`build_data.py` refuses to write if any year already in the existing JSON would come out
+different (pass `--force` only for a deliberate correction, e.g. CDE re-issuing an old file).
+Subgroup names/categories aren't in the research files, so a new subgroup id needs a name added
+to `subgroups` in the JSON before it will build.
