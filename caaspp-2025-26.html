@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2025–26 CAASPP Results: What Changed · SMFCSD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600;700&family=Spectral:ital@1&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #FFFFFF;
+    --card: #F7FAFB;
+    --ink: #20303B;
+    --ink-soft: #5B6B75;
+    --blue: #2F6BB6;
+    --blue-deep: #1E4A78;
+    --blue-pale: #EAF2FB;
+    --green: #7FAF4D;
+    --green-deep: #55793A;
+    --green-pale: #F0F6E9;
+    --yellow: #E3A912;
+    --yellow-pale: #FBF1D8;
+    --red: #B3382C;
+    --red-pale: #F7E2DF;
+    --orange: #C4622A;
+    --orange-pale: #FBEADD;
+    --line: #E2E8ED;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--white);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+  }
+  h1, h2, h3 {
+    font-family: 'Spectral', serif;
+    font-weight: 700;
+    color: var(--blue-deep);
+    margin: 0;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 28px; }
+
+  /* ---------------- header ---------------- */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: var(--white);
+    border-bottom: 3px solid var(--green);
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
+  .brand-text {
+    font-family: 'Spectral', serif;
+    font-weight: 700;
+    font-size: 1.7rem;
+    color: var(--blue-deep);
+    line-height: 1.15;
+  }
+  .brand-text span {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 500;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    color: var(--green-deep);
+    margin-top: 3px;
+    text-transform: uppercase;
+  }
+  nav.links { display: flex; gap: 26px; font-weight: 600; font-size: 0.92rem; }
+  nav.links a { text-decoration: none; color: var(--ink-soft); }
+  nav.links a:hover { color: var(--blue); }
+  .nav-cta {
+    background: var(--green);
+    color: #143012;
+    padding: 9px 18px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    border-radius: 0;
+    white-space: nowrap;
+  }
+  .nav-cta:hover { background: #6d9a41; }
+
+  /* ---------------- page intro band ---------------- */
+  .page-hero {
+    background: var(--blue-deep);
+    color: #fff;
+    padding: 48px 0 42px;
+  }
+  .page-hero .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #B7DE85;
+  }
+  .page-hero h1 {
+    color: #fff;
+    font-size: 2.3rem;
+    line-height: 1.18;
+    margin-top: 8px;
+  }
+  .page-hero p {
+    margin-top: 16px;
+    font-size: 1.05rem;
+    color: #C9DBEC;
+    max-width: 70ch;
+  }
+
+  main { padding: 8px 0 60px; }
+
+  .intro-note {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin: 32px 0 8px;
+    font-size: 0.96rem;
+    color: var(--ink-soft);
+  }
+  .intro-note strong { color: var(--ink); }
+
+  /* ---------------- headline stats ---------------- */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 28px 0 8px; }
+  .stat {
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--blue);
+    padding: 18px 20px;
+    background: var(--white);
+  }
+  .stat.c-green { border-top-color: var(--green); }
+  .stat.c-yellow { border-top-color: var(--yellow); }
+  .stat .k {
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .stat .v {
+    font-family: 'Spectral', serif;
+    font-weight: 700;
+    font-size: 2.1rem;
+    color: var(--blue-deep);
+    line-height: 1.15;
+    margin-top: 6px;
+  }
+  .stat .d { font-size: 0.92rem; color: var(--ink-soft); margin-top: 4px; }
+
+  /* ---------------- sections ---------------- */
+  .section { padding: 34px 0 6px; }
+  .section h2 { font-size: 1.65rem; line-height: 1.2; }
+  .section .lede { color: var(--ink-soft); margin: 8px 0 18px; max-width: 70ch; }
+  .section p { max-width: 70ch; }
+  .section ul { padding-left: 1.2em; max-width: 70ch; }
+  .section li { margin-bottom: 8px; }
+
+  .table-scroll { overflow-x: auto; margin: 6px 0 14px; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
+  }
+  th, td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; white-space: normal; }
+  thead th {
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-bottom: 2px solid var(--blue-deep);
+  }
+  tbody tr:hover { background: var(--card); }
+  .up { color: var(--green-deep); font-weight: 600; }
+  .down { color: var(--red); font-weight: 600; }
+  .flat { color: var(--ink-soft); }
+  .small-n { color: var(--ink-soft); font-size: 0.85rem; }
+
+  .callout {
+    background: var(--yellow-pale);
+    border-left: 4px solid var(--yellow);
+    padding: 16px 20px;
+    margin: 18px 0;
+    max-width: 78ch;
+  }
+  .callout strong { color: var(--ink); }
+
+  .school-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 12px; }
+  .school-card { border: 1px solid var(--line); padding: 16px 18px; background: var(--card); }
+  .school-card h3 { font-size: 1.15rem; margin-bottom: 8px; }
+  .school-card.c-green { border-top: 4px solid var(--green); }
+  .school-card.c-red { border-top: 4px solid var(--red); }
+  .school-card.c-blue { border-top: 4px solid var(--blue); }
+  .school-card ul { margin: 0; padding-left: 1.1em; font-size: 0.93rem; }
+  .school-card li { margin-bottom: 6px; }
+
+  .notes { font-size: 0.9rem; color: var(--ink-soft); }
+  .notes p { margin: 0 0 10px; }
+
+  footer { background: var(--blue-deep); color: #C9DBEC; padding: 48px 0 30px; }
+  .footer-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 30px; }
+  footer h4 {
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #fff;
+    font-size: 0.82rem;
+    margin-bottom: 14px;
+  }
+  footer a { color: #B7DE85; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  footer p { margin: 0 0 9px; font-size: 0.95rem; }
+  .footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.15);
+    margin-top: 34px;
+    padding-top: 18px;
+    font-size: 0.82rem;
+    color: #9FB6C9;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  @media (max-width: 860px) {
+    .footer-grid { grid-template-columns: 1fr; }
+    nav.links {
+      order: 3;
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px 20px;
+      padding-top: 10px;
+      margin-top: 2px;
+      border-top: 1px solid var(--line);
+    }
+    .page-hero h1 { font-size: 1.85rem; }
+    .stats, .school-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) {
+    .wrap { padding: 0 16px; }
+    th, td { padding: 8px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="index.html">
+      <div class="brand-text">Intentional Tech in Schools<span>SMFCSD Parent Coalition</span></div>
+    </a>
+    <nav class="links">
+      <a href="index.html#voices">Voices</a>
+      <a href="index.html#needed">What's needed</a>
+      <a href="index.html#involved">Get involved</a>
+      <a href="generative-ai.html">Generative AI</a>
+      <a href="faq.html">FAQ</a>
+    </nav>
+    <a class="nav-cta" href="https://www.fournorms.com/campaigns/san-mateo-foster-city-school-district-parents-for-intentional-tech-petition-for-intentional-technology-use-in-san-mateo-foster-city-schools">Sign the petition</a>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <div class="eyebrow">CAASPP results · 2025–26 vs 2024–25</div>
+    <h1>2025–26 test scores: what changed from last year</h1>
+    <p>District results held steady after several years of decline: ELA was flat and Math rose about a point. Underneath, both disadvantaged and non-disadvantaged students held or improved, but a growing share of disadvantaged students kept the district average from moving.</p>
+  </div>
+</section>
+
+<main class="wrap">
+
+  <div class="intro-note">
+    <strong>How to read this page:</strong> every figure is the percentage of students who met or exceeded the standard on California's CAASPP test (called "Proficient and above" in CDE's 2026 files, the same measure under a new name). Changes are in percentage points, comparing 2025–26 with 2024–25. This compares two years of one test, so a single year's change isn't a confirmed trend, especially for small schools and small student groups.
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="k">ELA, district</div>
+      <div class="v">52.7%</div>
+      <div class="d">No change from 2024–25 (52.7%)</div>
+    </div>
+    <div class="stat c-green">
+      <div class="k">Math, district</div>
+      <div class="v">50.5%</div>
+      <div class="d"><span class="up">+1.1</span> from 2024–25 (49.4%)</div>
+    </div>
+    <div class="stat c-yellow">
+      <div class="k">Disadvantaged share of tested students</div>
+      <div class="v">45%</div>
+      <div class="d">Up from 40% in 2024–25</div>
+    </div>
+  </div>
+
+  <section class="section">
+    <h2>District overall</h2>
+    <p class="lede">ELA stopped declining and Math ticked up for the first time since 2021–22.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Subject</th><th>2024–25</th><th>2025–26</th><th>Change</th><th>Students tested</th></tr></thead>
+        <tbody>
+          <tr><td>ELA</td><td>52.7</td><td>52.7</td><td class="flat">0.0</td><td>6,252 → 6,031</td></tr>
+          <tr><td>Math</td><td>49.4</td><td>50.5</td><td class="up">+1.1</td><td>6,318 → 6,072</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <ul>
+      <li><strong>ELA was flat.</strong> Each of the four achievement levels moved by less than half a point.</li>
+      <li><strong>Math improved slightly at both ends.</strong> Fewer students scored at the lowest level (32.7% → 31.3%) and more at the top (32.6% → 33.6%).</li>
+    </ul>
+  </section>
+
+  <section class="section">
+    <h2>More disadvantaged students, but both groups held or improved</h2>
+    <p class="lede">The share of tested students counted as socioeconomically disadvantaged rose from 40% to 45%. Within each group, results held or went up.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Group</th><th>ELA 24–25</th><th>ELA 25–26</th><th>Change</th><th>Math 24–25</th><th>Math 25–26</th><th>Change</th></tr></thead>
+        <tbody>
+          <tr><td>Not disadvantaged</td><td>70.3</td><td>74.2</td><td class="up">+3.9</td><td>67.3</td><td>72.8</td><td class="up">+5.5</td></tr>
+          <tr><td>Disadvantaged</td><td>26.5</td><td>26.7</td><td class="up">+0.2</td><td>22.7</td><td>23.6</td><td class="up">+0.9</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout">
+      <strong>Why the district average barely moved:</strong> more students are now in the lower-scoring group, which pulls the average down even when both groups improve. With 2024–25's student mix held constant, 2025–26 would have been about <strong>55.1% in ELA</strong> (vs 52.7% actual) and <strong>53.1% in Math</strong> (vs 50.5% actual).
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>By grade</h2>
+    <p class="lede">Grade 3 rose the most in both subjects, though last year's grade 3 was unusually low. Grade 4 fell in both.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Grade</th><th>ELA 24–25</th><th>ELA 25–26</th><th>Change</th><th>Math 24–25</th><th>Math 25–26</th><th>Change</th></tr></thead>
+        <tbody>
+          <tr><td>Grade 3</td><td>42.6</td><td>47.9</td><td class="up">+5.3</td><td>50.3</td><td>57.3</td><td class="up">+7.0</td></tr>
+          <tr><td>Grade 4</td><td>50.5</td><td>47.2</td><td class="down">−3.3</td><td>52.2</td><td>49.8</td><td class="down">−2.4</td></tr>
+          <tr><td>Grade 5</td><td>53.8</td><td>53.9</td><td class="up">+0.1</td><td>50.0</td><td>48.4</td><td class="down">−1.6</td></tr>
+          <tr><td>Grade 6</td><td>56.2</td><td>54.4</td><td class="down">−1.8</td><td>46.5</td><td>46.1</td><td class="down">−0.4</td></tr>
+          <tr><td>Grade 7</td><td>57.1</td><td>55.3</td><td class="down">−1.8</td><td>48.4</td><td>52.3</td><td class="up">+3.9</td></tr>
+          <tr><td>Grade 8</td><td>55.6</td><td>56.8</td><td class="up">+1.2</td><td>49.4</td><td>48.9</td><td class="down">−0.5</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p><strong>Following the same class forward a year</strong> (e.g. last year's 3rd graders as this year's 4th graders):</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Class</th><th>ELA</th><th>Change</th><th>Math</th><th>Change</th></tr></thead>
+        <tbody>
+          <tr><td>Grade 3 → 4</td><td>42.6 → 47.2</td><td class="up">+4.6</td><td>50.3 → 49.8</td><td class="down">−0.5</td></tr>
+          <tr><td>Grade 4 → 5</td><td>50.5 → 53.9</td><td class="up">+3.4</td><td>52.2 → 48.4</td><td class="down">−3.8</td></tr>
+          <tr><td>Grade 5 → 6</td><td>53.8 → 54.4</td><td class="up">+0.6</td><td>50.0 → 46.1</td><td class="down">−3.9</td></tr>
+          <tr><td>Grade 6 → 7</td><td>56.2 → 55.3</td><td class="down">−0.9</td><td>46.5 → 52.3</td><td class="up">+5.8</td></tr>
+          <tr><td>Grade 7 → 8</td><td>57.1 → 56.8</td><td class="down">−0.3</td><td>48.4 → 48.9</td><td class="up">+0.5</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Student groups</h2>
+    <p class="lede">Most groups moved by less than 2 points. Students with disabilities were the only group down in both subjects by more than a point.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Group</th><th>ELA 25–26</th><th>Change</th><th>Math 25–26</th><th>Change</th><th>Tested</th></tr></thead>
+        <tbody>
+          <tr><td>Students with disabilities</td><td>13.8</td><td class="down">−1.5</td><td>13.8</td><td class="down">−1.4</td><td>669</td></tr>
+          <tr><td>English learners</td><td>6.5</td><td class="down">−0.2</td><td>9.2</td><td class="down">−0.4</td><td>1,451</td></tr>
+          <tr><td>Hispanic or Latino</td><td>23.0</td><td class="down">−1.0</td><td>19.1</td><td class="up">+0.8</td><td>2,508</td></tr>
+          <tr><td>Asian</td><td>83.2</td><td class="up">+0.9</td><td>85.6</td><td class="down">−1.1</td><td>1,470</td></tr>
+          <tr><td>White</td><td>70.7</td><td class="down">−0.8</td><td>69.2</td><td class="up">+1.5</td><td>958</td></tr>
+          <tr><td>Two or more races</td><td>70.4</td><td class="down">−0.3</td><td>66.1</td><td class="up">+1.0</td><td>691</td></tr>
+          <tr><td>Filipino</td><td>67.9</td><td class="up">+1.7</td><td>57.5</td><td class="down">−2.3</td><td>224</td></tr>
+          <tr><td>Black or African American <span class="small-n">(small group)</span></td><td>40.5</td><td class="down">−11.9</td><td>31.7</td><td class="up">+0.8</td><td>42</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="notes">"Tested" is the number of students tested in ELA in 2025–26. The large ELA drop for Black students comes from just 42 students, so a handful of students can shift it a lot; it isn't a reliable signal on its own.</p>
+  </section>
+
+  <section class="section">
+    <h2>Schools</h2>
+    <p class="lede">Most schools moved by less than 4 points. Schools with about 90–150 students tested can swing that much from year to year without a real change behind it.</p>
+    <div class="school-grid">
+      <div class="school-card c-green">
+        <h3>Up in both subjects</h3>
+        <ul>
+          <li><strong>Audubon:</strong> ELA +8.6, Math +4.2</li>
+          <li><strong>LEAD:</strong> ELA +5.8, Math +4.4</li>
+          <li><strong>Baywood:</strong> ELA +2.7, Math +6.5</li>
+          <li><strong>Bayside Academy:</strong> ELA +2.7, Math +3.8</li>
+        </ul>
+      </div>
+      <div class="school-card c-red">
+        <h3>Down in both subjects</h3>
+        <ul>
+          <li><strong>Highlands:</strong> ELA −7.8, Math −6.5</li>
+          <li><strong>San Mateo Park:</strong> ELA −7.0, Math −4.0; now 3.6% in ELA and 5.6% in Math</li>
+        </ul>
+      </div>
+      <div class="school-card c-blue">
+        <h3>Mixed</h3>
+        <ul>
+          <li><strong>Abbott Middle:</strong> Math +4.6, ELA +0.6</li>
+          <li><strong>Sunnybrae:</strong> Math +5.6, ELA −0.5</li>
+          <li><strong>Beach Park:</strong> ELA +5.8, Math −4.0</li>
+          <li><strong>College Park:</strong> ELA +4.0, Math −3.5</li>
+          <li><strong>Borel Middle:</strong> ELA −3.9, Math −1.4</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="table-scroll" style="margin-top:22px">
+      <table>
+        <thead><tr><th>School</th><th>ELA 24–25</th><th>ELA 25–26</th><th>Change</th><th>Math 24–25</th><th>Math 25–26</th><th>Change</th></tr></thead>
+        <tbody>
+          <tr><td>Abbott Middle</td><td>41.0</td><td>41.6</td><td class="up">+0.6</td><td>28.5</td><td>33.1</td><td class="up">+4.6</td></tr>
+          <tr><td>Audubon Elementary</td><td>60.6</td><td>69.2</td><td class="up">+8.6</td><td>68.8</td><td>73.0</td><td class="up">+4.2</td></tr>
+          <tr><td>Bayside Academy</td><td>47.7</td><td>50.4</td><td class="up">+2.7</td><td>38.5</td><td>42.3</td><td class="up">+3.8</td></tr>
+          <tr><td>Baywood Elementary</td><td>58.4</td><td>61.1</td><td class="up">+2.7</td><td>59.9</td><td>66.4</td><td class="up">+6.5</td></tr>
+          <tr><td>Beach Park Elementary</td><td>67.0</td><td>72.8</td><td class="up">+5.8</td><td>78.1</td><td>74.1</td><td class="down">−4.0</td></tr>
+          <tr><td>Beresford Elementary</td><td>35.6</td><td>38.0</td><td class="up">+2.4</td><td>44.2</td><td>40.9</td><td class="down">−3.3</td></tr>
+          <tr><td>Borel Middle</td><td>48.3</td><td>44.4</td><td class="down">−3.9</td><td>38.2</td><td>36.8</td><td class="down">−1.4</td></tr>
+          <tr><td>Bowditch Middle</td><td>74.8</td><td>73.7</td><td class="down">−1.1</td><td>73.2</td><td>71.7</td><td class="down">−1.5</td></tr>
+          <tr><td>Brewer Island Elementary</td><td>70.9</td><td>73.6</td><td class="up">+2.7</td><td>75.3</td><td>77.2</td><td class="up">+1.9</td></tr>
+          <tr><td>College Park Elementary</td><td>78.3</td><td>82.3</td><td class="up">+4.0</td><td>86.7</td><td>83.2</td><td class="down">−3.5</td></tr>
+          <tr><td>Fiesta Gardens International Elementary</td><td>23.5</td><td>23.6</td><td class="up">+0.1</td><td>26.8</td><td>24.1</td><td class="down">−2.7</td></tr>
+          <tr><td>Foster City Elementary</td><td>73.5</td><td>68.3</td><td class="down">−5.2</td><td>76.1</td><td>75.4</td><td class="down">−0.7</td></tr>
+          <tr><td>George Hall Elementary</td><td>68.4</td><td>67.1</td><td class="down">−1.3</td><td>64.1</td><td>66.5</td><td class="up">+2.4</td></tr>
+          <tr><td>Highlands Elementary</td><td>60.1</td><td>52.3</td><td class="down">−7.8</td><td>63.1</td><td>56.6</td><td class="down">−6.5</td></tr>
+          <tr><td>Laurel Elementary</td><td>20.3</td><td>15.7</td><td class="down">−4.6</td><td>18.3</td><td>17.9</td><td class="down">−0.4</td></tr>
+          <tr><td>LEAD Elementary</td><td>11.3</td><td>17.1</td><td class="up">+5.8</td><td>14.9</td><td>19.3</td><td class="up">+4.4</td></tr>
+          <tr><td>Meadow Heights Elementary</td><td>46.8</td><td>47.6</td><td class="up">+0.8</td><td>48.0</td><td>50.8</td><td class="up">+2.8</td></tr>
+          <tr><td>North Shoreview Montessori</td><td>74.9</td><td>74.1</td><td class="down">−0.8</td><td>72.2</td><td>70.0</td><td class="down">−2.2</td></tr>
+          <tr><td>Parkside Montessori</td><td>70.3</td><td>70.6</td><td class="up">+0.3</td><td>59.9</td><td>63.9</td><td class="up">+4.0</td></tr>
+          <tr><td>San Mateo Park Elementary</td><td>10.6</td><td>3.6</td><td class="down">−7.0</td><td>9.6</td><td>5.6</td><td class="down">−4.0</td></tr>
+          <tr><td>Sunnybrae Elementary</td><td>19.9</td><td>19.4</td><td class="down">−0.5</td><td>16.5</td><td>22.1</td><td class="up">+5.6</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section notes">
+    <h2>Sources &amp; notes</h2>
+    <p>Data: California Department of Education CAASPP research files for San Mateo-Foster City School District, 2024–25 and 2025–26 (Smarter Balanced, grades 3–8). Figures are rounded to one decimal place.</p>
+    <p>Starting in 2025–26, CDE labels the four achievement levels Advanced / Proficient / Developing / Minimal instead of Standard Exceeded / Met / Nearly Met / Not Met. This page treats them as the same four levels.</p>
+    <p>CDE hides results for groups with 10 or fewer students with scores. "Disadvantaged" means CDE's "socioeconomically disadvantaged" student group. Its share of tested students jumped from about 31% to 42% in 2023–24, which may reflect a change in how students are classified rather than a change in who attends; the data alone can't say which.</p>
+    <p>For every year, school, grade and student group, see the <a href="https://smfcsd-tech-analysis.onrender.com/" target="_blank" rel="noopener">interactive CAASPP dashboard</a>.</p>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap footer-grid">
+    <div>
+      <h4>Intentional Tech in Schools</h4>
+      <p>A coalition of SMFCSD parents, teachers, and community members working alongside district leaders for thoughtful, evidence-based use of classroom technology.</p>
+    </div>
+    <div>
+      <h4>Office hours</h4>
+      <p>Email: <a href="mailto:smfcsd@intentionaltechinschools.com">smfcsd@intentionaltechinschools.com</a></p>
+      <p><a href="https://bit.ly/4uRRG7W" target="_blank" rel="noopener">Follow us on Facebook</a></p>
+      <p><a href="https://bit.ly/4vPoZb6" target="_blank" rel="noopener">Fill out our concerns form</a></p>
+    </div>
+    <div>
+      <h4>Take action</h4>
+      <p><a href="https://www.fournorms.com/campaigns/san-mateo-foster-city-school-district-parents-for-intentional-tech-petition-for-intentional-technology-use-in-san-mateo-foster-city-schools" target="_blank" rel="noopener">Sign the petition</a></p>
+      <p><a href="https://www.smfcsd.net/board-of-trustees/smfcsd-by-trustee-area-map" target="_blank" rel="noopener">Find your board trustee</a></p>
+      <p><a href="https://smfcsd-tech-analysis.onrender.com/" target="_blank" rel="noopener">Explore the data dashboard</a></p>
+    </div>
+  </div>
+  <div class="wrap footer-bottom">
+    <span>SMFCSD &middot; Educational Technology Progress Report</span>
+    <span>Updated October 2026</span>
+  </div>
+</footer>
+
+</body>
+</html>
