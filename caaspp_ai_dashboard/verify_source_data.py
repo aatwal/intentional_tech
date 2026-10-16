@@ -26,13 +26,17 @@ Checks, per (school, grade, subject, student-group, year) combination found in D
 2019-20 has no file (CAASPP testing was suspended statewide for COVID-19) and is skipped, same
 as everywhere else in this codebase.
 
-CDE changed this research-file format twice across 2015-2025, so column names and the delimiter
-both vary by year:
+CDE changed this research-file format three times across 2015-2026, so column names and the
+delimiter both vary by year:
   - 2015-2019: comma-delimited, quoted, "Test Id" / "Subgroup ID" / "Students Tested"
   - 2021-2023: caret-delimited, "Test ID" / "Student Group ID" / "Students Tested"
   - 2024-2025: caret-delimited, "Test ID" / "Student Group ID" / "Total Students Tested"
-"Percentage Standard Met and Above", "Area N Percentage Above Standard", "School Code", and
-"Grade" are spelled identically across all three eras. Delimiter and column names are resolved
+  - 2026: as 2024-2025, but the achievement levels are relabeled -- "Percentage Advanced /
+    Proficient / Developing / Minimal", "Percentage Proficient and Above", and "Area N Percentage
+    Above Proficient" in place of Standard Exceeded / Met / Nearly Met / Not Met, "Standard Met
+    and Above", and "Area N Percentage Above Standard". Treated as the same four levels (a label
+    change only), mapped to the same DATA fields.
+"School Code" and "Grade" are spelled identically across all four eras. Delimiter and column names are resolved
 per-file below rather than assumed, since guessing wrong here would silently produce a validator
 that's confidently checking the wrong columns.
 
@@ -57,13 +61,13 @@ SOURCE_GLOB = os.path.join(SOURCE_DIR, "sb_ca*_all_41_69039_csv_v*.txt")
 
 CLAIM_AREAS = 4  # DATA always stores 4 claim series even for Math (3 real + 1 zero-filled)
 
-# DATA field name -> source column name, for the four achievement bands (spelled identically
-# across all three format eras, unlike Test ID/Student Group ID/tested above).
+# DATA field name -> source column candidates, for the four achievement bands. Spelled
+# identically across the first three format eras; 2026 renamed them (see module docstring).
 BAND_FIELDS = {
-    "exceeded": "Percentage Standard Exceeded",
-    "met": "Percentage Standard Met",
-    "nearly": "Percentage Standard Nearly Met",
-    "not_met": "Percentage Standard Not Met",
+    "exceeded": ["Percentage Standard Exceeded", "Percentage Advanced"],
+    "met": ["Percentage Standard Met", "Percentage Proficient"],
+    "nearly": ["Percentage Standard Nearly Met", "Percentage Developing"],
+    "not_met": ["Percentage Standard Not Met", "Percentage Minimal"],
 }
 
 
@@ -86,6 +90,11 @@ def parse_int(raw):
 TEST_ID_COLS = ["Test ID", "Test Id"]
 SUBGROUP_ID_COLS = ["Student Group ID", "Subgroup ID"]
 TESTED_COLS = ["Total Students Tested", "Students Tested"]
+MET_ABOVE_COLS = ["Percentage Standard Met and Above", "Percentage Proficient and Above"]
+
+
+def claim_cols(area):
+    return [f"Area {area} Percentage Above Standard", f"Area {area} Percentage Above Proficient"]
 
 
 def field(row, candidates):
@@ -142,7 +151,7 @@ def check_file(path, data_records, year_index, mismatches, checked_counter):
             continue
 
         checked_counter[0] += 1
-        src_met_above = parse_pct(source_row["Percentage Standard Met and Above"])
+        src_met_above = parse_pct(field(source_row, MET_ABOVE_COLS))
         if src_met_above != data_met_above:
             mismatches.append(f"{rec_key}: met_above DATA={data_met_above} source={src_met_above}")
 
@@ -153,7 +162,7 @@ def check_file(path, data_records, year_index, mismatches, checked_counter):
 
         for band_field, source_col in BAND_FIELDS.items():
             data_band = rec[band_field][year_index]
-            src_band = parse_pct(source_row[source_col])
+            src_band = parse_pct(field(source_row, source_col))
             if src_band != data_band:
                 mismatches.append(
                     f"{rec_key}: {band_field} DATA={data_band} source={src_band}"
@@ -163,7 +172,7 @@ def check_file(path, data_records, year_index, mismatches, checked_counter):
         if claims:
             for i in range(CLAIM_AREAS):
                 data_claim = claims[i][year_index] if i < len(claims) else None
-                src_claim = parse_pct(source_row[f"Area {i + 1} Percentage Above Standard"])
+                src_claim = parse_pct(field(source_row, claim_cols(i + 1)))
                 if src_claim != data_claim:
                     mismatches.append(
                         f"{rec_key}: claim[{i}] DATA={data_claim} source={src_claim}"
