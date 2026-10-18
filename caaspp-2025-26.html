@@ -166,6 +166,7 @@
   /* ---------------- sections ---------------- */
   .section { padding: 34px 0 6px; }
   .section h2 { font-size: 1.65rem; line-height: 1.2; }
+  .section h3.subhead { font-size: 1.2rem; margin: 22px 0 8px; }
   .section .lede { color: var(--ink-soft); margin: 8px 0 18px; max-width: 70ch; }
   .section p { max-width: 70ch; }
   .section ul { padding-left: 1.2em; max-width: 70ch; }
@@ -194,6 +195,9 @@
   .down { color: var(--red); font-weight: 600; }
   .flat { color: var(--ink-soft); }
   .small-n { color: var(--ink-soft); font-size: 0.85rem; }
+  .match { color: var(--green-deep); font-weight: 600; }
+  .nomatch { color: var(--orange); font-weight: 600; }
+  td.wrap-cell { white-space: normal; text-align: left; min-width: 200px; }
 
   .callout {
     background: var(--yellow-pale);
@@ -462,9 +466,67 @@
     </div>
   </section>
 
+  <section class="section">
+    <h2>How the district's report compares</h2>
+    <p class="lede">In July 2026 SMFCSD published its <a href="https://online.flippingbook.com/view/516334849/" target="_blank" rel="noopener">25/26 Districtwide Student Achievement &amp; Climate report</a>. We checked the CAASPP charts on its pages 5–7 against CDE's research files, the same data used on this page. Figures are percent "Advanced or Proficient" (meeting or exceeding the standard). The report's "2023" and "2026" are the spring tests, labeled 2022–23 and 2025–26 elsewhere on this page.</p>
+
+    <h3 class="subhead">Page 5: Math, all grades</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Group, year</th><th>Report</th><th>CDE data</th><th>Match?</th></tr></thead>
+        <tbody>
+          <tr><td>Facing hardship, 2026</td><td>23.6%</td><td>23.6%</td><td class="wrap-cell match">Exact, all four levels</td></tr>
+          <tr><td>Facing hardship, 2023</td><td>17.7%</td><td>17.6%</td><td class="wrap-cell match">Rounding (0.1)</td></tr>
+          <tr><td>Not facing hardship, 2026</td><td>73.9%</td><td>72.8%</td><td class="wrap-cell nomatch">Report 1.1 higher</td></tr>
+          <tr><td>Not facing hardship, 2023</td><td>66.9%</td><td>66.2%</td><td class="wrap-cell nomatch">Report 0.7 higher</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 class="subhead">Page 6: grade 8 Math</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Group, year</th><th>Report</th><th>CDE data</th><th>Match?</th></tr></thead>
+        <tbody>
+          <tr><td>Not facing hardship, 2026</td><td>72%</td><td>72.0%</td><td class="wrap-cell match">Exact, all four levels</td></tr>
+          <tr><td>Not facing hardship, 2023</td><td>57.7%</td><td>57.1%</td><td class="wrap-cell nomatch">Report 0.6 higher</td></tr>
+          <tr><td>Facing hardship, 2026</td><td>21.5%</td><td>21.6%</td><td class="wrap-cell match">Rounding (0.1)</td></tr>
+          <tr><td>Facing hardship, 2023</td><td>17.6%</td><td>17.5%</td><td class="wrap-cell nomatch">Total close, but levels off by up to 1 pt (see below)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="notes">In the 2023 "facing hardship" chart, the Advanced and Proficient labels (6.6% and 11.1%) are the same as page 5's all-grades figures for that group. They don't add up to the chart's own 17.6% total (6.6 + 11.1 = 17.7), and CDE's grade 8 data shows 6.9% and 10.6%, so they were likely copied from the all-grades chart. The page's text also says "compared to eighth graders four years ago", but 2023 to 2026 is three years.</p>
+
+    <h3 class="subhead">Page 7: ELA, all grades</h3>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Group, year</th><th>Report</th><th>CDE data</th><th>Match?</th></tr></thead>
+        <tbody>
+          <tr><td>Facing hardship, 2026</td><td>26.7%</td><td>26.7%</td><td class="wrap-cell match">Exact, all four levels</td></tr>
+          <tr><td>Facing hardship, 2023</td><td>21.9%</td><td>21.6%</td><td class="wrap-cell nomatch">Report 0.3 higher</td></tr>
+          <tr><td>Not facing hardship, 2026</td><td>74.5%</td><td>74.2%</td><td class="wrap-cell nomatch">Report 0.3 higher</td></tr>
+          <tr><td>Not facing hardship, 2023</td><td>71.4%</td><td>71.0%</td><td class="wrap-cell nomatch">Report 0.4 higher</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="notes">The 2023 "facing hardship" chart labels one segment "Standard Met" (the old level name) while the rest use the new Advanced/Proficient names.</p>
+
+    <h3 class="subhead">What stands out</h3>
+    <ul>
+      <li><strong>The 2026 "facing hardship" figures match CDE's data exactly</strong> on all three pages.</li>
+      <li><strong>The "not facing hardship" group is always 0.3–1.1 points higher in the report</strong>, in both years. The district may define that group differently from CDE's "not socioeconomically disadvantaged"; the report doesn't say.</li>
+      <li><strong>The 2023 figures are often off by 0.1–0.6 points</strong>, which may mean the district used an earlier release of CDE's 2023 results.</li>
+    </ul>
+
+    <div class="callout">
+      <strong>Why both groups can improve while the district declines:</strong> the report's message is that students facing and not facing economic hardship both gained from 2023 to 2026, and CDE's data agrees. But over the same years the district-wide ELA figure fell from 55.6% to 52.7%, and Math was flat (51.0% to 50.5%). The share of tested students classified as facing hardship rose from about 31% to 45% in that time (in ELA, 2,006 to 2,733 students facing hardship and 4,445 to 3,298 not). If the students who changed groups score below the "not facing hardship" average but above the "facing hardship" average, moving them raises <em>both</em> groups' averages without any student's score changing. Statisticians call this the Will Rogers effect. Until it's clear why so many more students are classified as facing hardship, the per-group gains can't be read as improvement on their own.
+    </div>
+    <p class="notes">We read the report's figures from its charts, since they aren't published as data. A few labels are small, so a misreading of 0.1 is possible.</p>
+  </section>
+
   <section class="section notes">
     <h2>Sources &amp; notes</h2>
-    <p>Data: California Department of Education CAASPP research files for San Mateo-Foster City School District, 2024–25 and 2025–26 (Smarter Balanced, grades 3–8). Figures are rounded to one decimal place.</p>
+    <p>Data: California Department of Education CAASPP research files for San Mateo-Foster City School District, 2024–25 and 2025–26 (Smarter Balanced, grades 3–8), plus 2022–23 for the comparison with SMFCSD's July 2026 Student Achievement &amp; Climate report. Figures are rounded to one decimal place.</p>
     <p>Starting in 2025–26, CDE labels the four achievement levels Advanced / Proficient / Developing / Minimal instead of Standard Exceeded / Met / Nearly Met / Not Met. This page treats them as the same four levels.</p>
     <p>CDE hides results for groups with 10 or fewer students with scores. "Disadvantaged" means CDE's "socioeconomically disadvantaged" student group. Its share of tested students jumped from about 31% to 42% in 2023–24, which may reflect a change in how students are classified rather than a change in who attends; the data alone can't say which.</p>
     <p>For every year, school, grade and student group, see the <a href="https://smfcsd-tech-analysis.onrender.com/" target="_blank" rel="noopener">interactive CAASPP dashboard</a>.</p>
