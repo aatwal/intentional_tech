@@ -128,6 +128,39 @@
   .tab-btn:hover{ color:var(--ink); }
   .tab-btn.active{ color:var(--ink); border-bottom-color:var(--accent); }
   .tab-panel.hidden{ display:none; }
+
+  .stat .ctx{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11.5px;color:var(--muted);margin-top:4px;}
+  .sw-picker{display:flex; gap:14px; flex-wrap:wrap; margin-bottom:16px;}
+  .sw-picker select{min-width:240px;}
+  .sw-scope{font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;color:var(--muted);font-weight:400;}
+  .sw-table-panel{padding:0;}
+  .sw-table-wrap{max-height:460px; overflow:auto;}
+  .sw-table{width:100%; border-collapse:collapse; font-family:'Helvetica Neue',Arial,sans-serif; font-size:13px; font-variant-numeric:tabular-nums;}
+  .sw-table th, .sw-table td{padding:8px 12px; border-bottom:1px solid var(--line); text-align:right; white-space:nowrap;}
+  .sw-table th:nth-child(2), .sw-table td:nth-child(2){text-align:left; white-space:normal;}
+  .sw-table thead th{
+    position:sticky; top:0; background:var(--panel); z-index:1; cursor:pointer; user-select:none;
+    font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--muted); font-weight:700;
+    border-bottom:2px solid var(--ink);
+  }
+  .sw-table thead th:hover{color:var(--ink);}
+  .sw-table thead th.sorted::after{content:' ▾';}
+  .sw-table thead th.sorted.asc::after{content:' ▴';}
+  .sw-table tbody tr{cursor:pointer;}
+  .sw-table tbody tr:hover{background:var(--paper);}
+  .sw-table tbody tr.home{background:#e3f1ef; font-weight:700;}
+  .sw-table tbody tr.selected td:nth-child(2){box-shadow:inset 3px 0 0 #5b4fa0;}
+  .sw-table .up{color:var(--accent);} .sw-table .down{color:var(--rust);}
+  .sw-table .na{color:var(--muted);}
+  .sw-notes{font-size:12.5px;}
+  .sw-search{display:flex; align-items:center; gap:12px; margin-bottom:10px; font-family:'Helvetica Neue',Arial,sans-serif;}
+  .sw-search input{
+    flex:0 1 360px; font-family:inherit; font-size:14px; padding:8px 10px;
+    border:1px solid var(--line); border-radius:2px; background:#fff; color:var(--ink);
+  }
+  .sw-search input:focus{outline:2px solid var(--accent); outline-offset:-1px;}
+  .sw-search-count{font-size:12px; color:var(--muted);}
+  .sw-table tr.no-match td{text-align:center; color:var(--muted); cursor:default;}
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-4gMczTqTJAUQDgR06ZZUV.js"></script>
@@ -147,7 +180,8 @@
 
   <div class="tab-nav">
     <button type="button" class="tab-btn active" data-tab="dashboard">Dashboard</button>
-    <button type="button" class="tab-btn" data-tab="chat">Ask about the data</button>
+    <button type="button" class="tab-btn" data-tab="chat">Ask about SMFCSD's data</button>
+    <button type="button" class="tab-btn" data-tab="statewide">Statewide comparison</button>
   </div>
 
   <div id="tabDashboard" class="tab-panel">
@@ -269,8 +303,103 @@
 
   </div>
 
+  <div id="tabStatewide" class="tab-panel hidden">
+  <div class="filter-bar">
+    <div class="filter-group">
+      <label for="swSubjectSel">Subject</label>
+      <select id="swSubjectSel">
+        <option value="ela">ELA</option>
+        <option value="math">Math</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="swYearSel">Year</label>
+      <select id="swYearSel"></select>
+    </div>
+    <div class="filter-note">Grades 3–8, All Students. Districts ranked against every California district reporting grades 3–8.</div>
+  </div>
+
+  <p class="empty-msg" id="swLoading">Loading statewide data…</p>
+
+  <div id="swContent" class="hidden">
+  <div class="stat-row" id="swStatRow"></div>
+
+  <section>
+    <h2><span class="idx">01</span>Where SMFCSD falls among California districts</h2>
+    <p class="desc" id="swDistDesc"></p>
+    <div class="panel">
+      <div class="legend">
+        <span><span class="dot" style="background:#00897c"></span>Includes SMFCSD</span>
+        <span><span class="dot" style="background:#cfc6b3"></span>Other districts</span>
+      </div>
+      <div class="chart-box" style="height:260px;"><canvas id="swDistChart" role="img" aria-label="Histogram of California districts by percent meeting or exceeding standard"></canvas></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="idx">02</span>SMFCSD vs San Mateo County and California</h2>
+    <p class="desc">Percent meeting or exceeding standard in grades 3–8, every year. 2020–21 testing was optional, so fewer districts reported that year.</p>
+    <div class="panel">
+      <div class="chart-box" style="height:300px;"><canvas id="swTrendChart" role="img" aria-label="Trend lines for SMFCSD, San Mateo County, and California"></canvas></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="idx">03</span>SMFCSD's standing over time</h2>
+    <p class="desc">Share of California districts that SMFCSD outscored each year. 50% would be exactly in the middle.</p>
+    <div class="panel">
+      <div class="chart-box" style="height:240px;"><canvas id="swRankChart" role="img" aria-label="SMFCSD percentile among California districts by year"></canvas></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="idx">04</span>Explore any county or district</h2>
+    <p class="desc">Pick a county to list its districts, then pick a district (or click one in the table) to compare its trend with its county, California, and SMFCSD.</p>
+    <div class="panel">
+      <div class="sw-picker">
+        <div class="filter-group">
+          <label for="swCountySel">County</label>
+          <select id="swCountySel"></select>
+        </div>
+        <div class="filter-group">
+          <label for="swDistrictSel">District</label>
+          <select id="swDistrictSel"></select>
+        </div>
+      </div>
+      <div class="chart-box" style="height:300px;"><canvas id="swExploreChart" role="img" aria-label="Trend for the selected district compared with its county, California, and SMFCSD"></canvas></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="idx">05</span>Districts<span class="sw-scope" id="swTableScope"></span></h2>
+    <p class="desc">Statewide rank among districts reporting grades 3–8 for the selected subject and year. Click a column to sort, or a district to chart it above.</p>
+    <div class="sw-search">
+      <input type="search" id="swDistrictSearch" placeholder="Search districts by name or county…" autocomplete="off" aria-label="Search districts">
+      <span class="sw-search-count" id="swSearchCount" aria-live="polite"></span>
+    </div>
+    <div class="panel sw-table-panel">
+      <div class="sw-table-wrap">
+        <table class="sw-table" id="swDistrictTable"></table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="idx">06</span>Counties</h2>
+    <p class="desc">All 58 counties, ranked for the selected subject and year. County figures include every public school in the county, charters and county-run programs included.</p>
+    <div class="panel sw-table-panel">
+      <div class="sw-table-wrap">
+        <table class="sw-table" id="swCountyTable"></table>
+      </div>
+    </div>
+  </section>
+
+  <p class="desc wide sw-notes"><strong>About these numbers:</strong> CDE's statewide research files, All Students only. Each district is scored on grades 3–8 combined: the grade-level results weighted by students with scores, leaving out grades CDE suppressed (10 or fewer students). That keeps high-school and unified districts comparable to SMFCSD, which is K–8. County offices of education are listed but not ranked. 2014–15 and 2015–16 figures are built from whole-number percentages, so they can differ from CDE's own totals by up to half a point. Starting in 2025–26 CDE calls this measure "Proficient and above".</p>
+  </div>
+  </div>
+
   <div id="tabChat" class="tab-panel hidden">
-    <h2>Ask about the data</h2>
+    <h2>Ask about SMFCSD's data</h2>
     <p class="desc wide">Ask anything about the district's CAASPP results &mdash; district-wide trends, any grade, any school &mdash; or narrow in on whatever subject/school/grade/group is currently filtered on the Dashboard tab. Answers reason over the dashboard's data, not outside sources unless you turn on web search below.</p>
     <div class="panel">
       <div class="chat-quick" id="chatQuick"></div>
@@ -735,13 +864,336 @@ document.getElementById('gradeSel').addEventListener('change', render);
 document.getElementById('subgroupSel').addEventListener('change', render);
 document.getElementById('startYearSel').addEventListener('change', render);
 
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
-    document.getElementById('tabDashboard').classList.toggle('hidden', btn.dataset.tab !== 'dashboard');
-    document.getElementById('tabChat').classList.toggle('hidden', btn.dataset.tab !== 'chat');
+// Tabs: ?tab=chat or ?tab=statewide opens that tab on load (no parameter = Dashboard), and
+// switching tabs rewrites the URL in place so the address bar is always shareable.
+const TAB_NAMES = ['dashboard', 'chat', 'statewide'];
+function showTab(name){
+  if(!TAB_NAMES.includes(name)) name = 'dashboard';
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.getElementById('tabDashboard').classList.toggle('hidden', name !== 'dashboard');
+  document.getElementById('tabStatewide').classList.toggle('hidden', name !== 'statewide');
+  document.getElementById('tabChat').classList.toggle('hidden', name !== 'chat');
+  if(name === 'statewide') openStatewide();
+  const url = new URL(location.href);
+  if(name === 'dashboard') url.searchParams.delete('tab'); else url.searchParams.set('tab', name);
+  if(url.href !== location.href) history.replaceState(null, '', url);
+}
+document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+
+// ── Statewide comparison ─────────────────────────────────────────────────────
+// Loaded on first open from data/statewide.json (built by build_statewide.py), so the main
+// dashboard doesn't pay for it. Colors follow the entity everywhere on this tab.
+const SW_COLORS = {smfcsd:'#00897c', county:'#c18a2b', state:'#b23f36', picked:'#5b4fa0', other:'#cfc6b3'};
+const SW_HOME_COUNTY = '41';
+let SW = null, swLoading = null;
+const sw = {sort:{district:{key:'rank', asc:true}, county:{key:'rank', asc:true}}, picked:null};
+
+function openStatewide(){
+  if(SW || swLoading) return;
+  swLoading = fetch('/data/statewide.json')
+    .then(r => { if(!r.ok) throw new Error(r.status); return r.json(); })
+    .then(data => { SW = data; swInit(); })
+    .catch(err => {
+      swLoading = null;
+      document.getElementById('swLoading').textContent = `Couldn't load statewide data (${err.message}). Reload to try again.`;
+    });
+}
+
+function swSubject(){ return document.getElementById('swSubjectSel').value; }
+function swYear(){ return +document.getElementById('swYearSel').value; }
+function swDistrict(id){ return SW.districts.find(d => d.id === id); }
+function swCountyName(code){ const c = SW.counties.find(c => c.code === code); return c ? c.name : code; }
+function swFmt(v){ return v === null || v === undefined ? '—' : v.toFixed(1) + '%'; }
+function swPts(v){ return v === null || v === undefined ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1) + ' pts'; }
+
+// Districts ranked for a subject/year: county offices excluded, only districts with a score.
+function swRanked(subj, yi){
+  const pool = SW.districts.filter(d => !d.coe && d[subj][yi] !== null);
+  const sorted = pool.slice().sort((a,b) => b[subj][yi] - a[subj][yi]);
+  const rank = new Map();  // ties share a rank (1, 2, 2, 4, ...)
+  sorted.forEach((d, i) => rank.set(d.id, i > 0 && d[subj][yi] === sorted[i-1][subj][yi] ? rank.get(sorted[i-1].id) : i + 1));
+  return {pool, rank};
+}
+function swPercentile(d, subj, yi, pool){
+  if(pool.length < 2) return null;
+  const below = pool.filter(o => o[subj][yi] < d[subj][yi]).length;
+  return below / (pool.length - 1) * 100;
+}
+
+// Ends each line with its name, nudged apart so labels don't collide.
+const swEndLabels = {
+  id:'swEndLabels',
+  afterDatasetsDraw(chart){
+    const {ctx, chartArea} = chart;
+    const items = [];
+    chart.data.datasets.forEach((ds, i) => {
+      const meta = chart.getDatasetMeta(i);
+      if(meta.hidden) return;
+      for(let j = ds.data.length - 1; j >= 0; j--){
+        if(ds.data[j] !== null){ items.push({y: meta.data[j].y, x: meta.data[j].x, label: ds.shortLabel || ds.label, color: ds.borderColor}); break; }
+      }
+    });
+    items.sort((a,b) => a.y - b.y);
+    for(let i = 1; i < items.length; i++) if(items[i].y - items[i-1].y < 13) items[i].y = items[i-1].y + 13;
+    ctx.save();
+    ctx.font = "600 11px 'Helvetica Neue', Arial, sans-serif";
+    ctx.textBaseline = 'middle';
+    items.forEach(it => {
+      ctx.fillStyle = it.color;
+      ctx.beginPath(); ctx.arc(chartArea.right + 10, it.y, 3.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#1c2b33';
+      ctx.fillText(it.label, chartArea.right + 18, it.y);
+    });
+    ctx.restore();
+  }
+};
+
+function swLineChart(canvasId, series, yOpts){
+  destroy(canvasId);
+  const datasets = series.map(s => ({
+    label: s.label, shortLabel: s.short, data: s.data, borderColor: s.color, backgroundColor: s.color,
+    borderWidth: 2, tension: .25, pointRadius: 3, pointHoverRadius: 5, spanGaps: true,
+    pointBorderColor: '#fff', pointBorderWidth: 1
+  }));
+  const all = datasets.flatMap(d => d.data).filter(v => v !== null);
+  const y = yOpts || {min: Math.max(0, Math.floor((Math.min(...all) - 5) / 5) * 5), max: Math.min(100, Math.ceil((Math.max(...all) + 5) / 5) * 5)};
+  charts[canvasId] = new Chart(document.getElementById(canvasId), {
+    type: 'line',
+    data: {labels: SW.years, datasets},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      layout: {padding: {right: 150}},
+      interaction: {mode: 'index', intersect: false},
+      plugins: {
+        legend: {display: datasets.length > 1, position: 'top', align: 'start', labels: {boxWidth: 8, boxHeight: 8, usePointStyle: true, font: {size: 11}}},
+        tooltip: {callbacks: {label: c => `${c.dataset.label}: ${y.fmt ? y.fmt(c.raw) : swFmt(c.raw)}`}}
+      },
+      scales: {
+        x: {grid: {display: false}},
+        y: {min: y.min, max: y.max, ticks: {callback: v => v + '%'}, grid: {color: '#e9e3d6'}}
+      }
+    },
+    plugins: [swEndLabels]
   });
-});
+}
+
+function swInit(){
+  const yearSel = document.getElementById('swYearSel');
+  yearSel.innerHTML = SW.years.map((y, i) => `<option value="${i}">${y}</option>`).join('');
+  yearSel.value = SW.years.length - 1;
+  const countySel = document.getElementById('swCountySel');
+  countySel.innerHTML = `<option value="">All counties</option>` +
+    SW.counties.map(c => `<option value="${c.code}">${c.name}</option>`).join('');
+  countySel.value = SW_HOME_COUNTY;
+  sw.picked = SW.smfcsd;
+  swFillDistricts();
+  ['swSubjectSel', 'swYearSel'].forEach(id => document.getElementById(id).addEventListener('change', swRender));
+  countySel.addEventListener('change', () => {
+    swFillDistricts();
+    const first = document.getElementById('swDistrictSel').value;
+    if(first) sw.picked = first;
+    swRender();
+  });
+  document.getElementById('swDistrictSel').addEventListener('change', e => { sw.picked = e.target.value; swRender(); });
+  document.getElementById('swDistrictSearch').addEventListener('input', swApplySearch);
+  document.getElementById('swLoading').classList.add('hidden');
+  document.getElementById('swContent').classList.remove('hidden');
+  swRender();
+}
+
+function swFillDistricts(){
+  const county = document.getElementById('swCountySel').value;
+  const list = SW.districts.filter(d => !county || d.county === county);
+  const sel = document.getElementById('swDistrictSel');
+  sel.innerHTML = list.map(d => `<option value="${d.id}">${d.name}${d.coe ? ' (county office)' : ''}${county ? '' : ' · ' + swCountyName(d.county)}</option>`).join('');
+  if(list.some(d => d.id === sw.picked)) sel.value = sw.picked;
+}
+
+function swRender(){
+  const subj = swSubject(), yi = swYear(), year = SW.years[yi];
+  const subjName = subj === 'ela' ? 'ELA' : 'Math';
+  const home = swDistrict(SW.smfcsd);
+  const homeCounty = SW.counties.find(c => c.code === SW_HOME_COUNTY);
+  const {pool, rank} = swRanked(subj, yi);
+  const v = home[subj][yi];
+
+  // Stat tiles
+  const pct = v === null ? null : swPercentile(home, subj, yi, pool);
+  const vsState = v === null || SW.state[subj][yi] === null ? null : v - SW.state[subj][yi];
+  const vsCounty = v === null || homeCounty[subj][yi] === null ? null : v - homeCounty[subj][yi];
+  const tile = (num, lbl, ctx, cls) => `<div class="stat"><div class="num ${cls || ''}">${num}</div><div class="lbl">${lbl}</div>${ctx ? `<div class="ctx">${ctx}</div>` : ''}</div>`;
+  const cls = d => d === null ? '' : d >= 0 ? 'up' : 'down';
+  document.getElementById('swStatRow').innerHTML =
+    tile(swFmt(v), `SMFCSD ${subjName}, ${year}`, 'Grades 3–8, meeting or exceeding standard') +
+    tile(v === null ? '—' : `#${rank.get(home.id)} <span style="font-size:14px;font-weight:400;color:var(--muted)">of ${pool.length}</span>`, 'Rank among districts', pct === null ? '' : `Higher than ${Math.round(pct)}% of districts`) +
+    tile(swPts(vsState), 'vs California', `California: ${swFmt(SW.state[subj][yi])}`, cls(vsState)) +
+    tile(swPts(vsCounty), 'vs San Mateo County', `County: ${swFmt(homeCounty[subj][yi])}`, cls(vsCounty));
+
+  // Distribution
+  const bins = Array.from({length: 20}, (_, i) => ({lo: i * 5, n: 0, home: false}));
+  pool.forEach(d => {
+    const b = bins[Math.min(19, Math.floor(d[subj][yi] / 5))];
+    b.n++; if(d.id === home.id) b.home = true;
+  });
+  document.getElementById('swDistDesc').textContent = v === null
+    ? `SMFCSD has no ${subjName} result for ${year}.`
+    : `${pool.length} California districts by percent of grade 3–8 students meeting or exceeding the ${subjName} standard in ${year}. SMFCSD (${swFmt(v)}) is in the highlighted bar; the statewide figure is ${swFmt(SW.state[subj][yi])}.`;
+  destroy('swDistChart');
+  charts.swDistChart = new Chart(document.getElementById('swDistChart'), {
+    type: 'bar',
+    data: {
+      labels: bins.map(b => `${b.lo}–${b.lo + 5}%`),
+      datasets: [{label: 'Districts', data: bins.map(b => b.n),
+        backgroundColor: bins.map(b => b.home ? SW_COLORS.smfcsd : SW_COLORS.other),
+        hoverBackgroundColor: bins.map(b => b.home ? '#006e64' : '#b9ae97'),
+        borderRadius: {topLeft: 4, topRight: 4}, borderSkipped: 'bottom',
+        borderColor: '#fff', borderWidth: {left: 1, right: 1}, categoryPercentage: 1, barPercentage: 1}]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {legend: {display: false},
+        tooltip: {callbacks: {
+          title: items => `${items[0].label} meeting or exceeding standard`,
+          label: c => `${c.raw} district${c.raw === 1 ? '' : 's'}${bins[c.dataIndex].home ? ' (includes SMFCSD)' : ''}`
+        }}},
+      scales: {
+        x: {grid: {display: false}, ticks: {maxRotation: 0, autoSkip: true, callback(val, i){ return i % 2 === 0 ? bins[i].lo + '%' : ''; }}},
+        y: {beginAtZero: true, title: {display: true, text: 'Districts'}, grid: {color: '#e9e3d6'}, ticks: {precision: 0}}
+      }
+    }
+  });
+
+  // SMFCSD vs county vs state
+  swLineChart('swTrendChart', [
+    {label: 'SMFCSD', short: 'SMFCSD', data: home[subj], color: SW_COLORS.smfcsd},
+    {label: 'San Mateo County', short: 'San Mateo County', data: homeCounty[subj], color: SW_COLORS.county},
+    {label: 'California', short: 'California', data: SW.state[subj], color: SW_COLORS.state},
+  ]);
+
+  // Percentile over time
+  const pctSeries = SW.years.map((_, i) => {
+    if(home[subj][i] === null) return null;
+    const r = swRanked(subj, i);
+    const p = swPercentile(home, subj, i, r.pool);
+    return p === null ? null : Math.round(p * 10) / 10;
+  });
+  swLineChart('swRankChart', [{label: 'SMFCSD outscored', short: 'SMFCSD', data: pctSeries, color: SW_COLORS.smfcsd}],
+    {min: 0, max: 100, fmt: v => v === null ? '—' : `${Math.round(v)}% of districts`});
+
+  // Explorer
+  const picked = swDistrict(sw.picked) || home;
+  const pickedCounty = SW.counties.find(c => c.code === picked.county);
+  const series = [];
+  if(picked.id !== home.id) series.push({label: picked.name, short: picked.name.length > 22 ? picked.name.slice(0, 21) + '…' : picked.name, data: picked[subj], color: SW_COLORS.picked});
+  series.push({label: 'SMFCSD', short: 'SMFCSD', data: home[subj], color: SW_COLORS.smfcsd});
+  series.push({label: `${pickedCounty.name} County`, short: `${pickedCounty.name} County`, data: pickedCounty[subj], color: SW_COLORS.county});
+  series.push({label: 'California', short: 'California', data: SW.state[subj], color: SW_COLORS.state});
+  swLineChart('swExploreChart', series);
+
+  swDistrictTable(subj, yi, pool, rank);
+  swCountyTable(subj, yi);
+}
+
+function swChangeCell(cur, prev){
+  if(cur === null || prev === null || prev === undefined) return '<td class="na">—</td>';
+  const d = cur - prev;
+  return `<td class="${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${swPts(d)}</td>`;
+}
+
+function swSortRows(rows, sort){
+  const dir = sort.asc ? 1 : -1;
+  return rows.sort((a, b) => {
+    const x = a[sort.key], y = b[sort.key];
+    if(x === null || x === undefined) return 1;
+    if(y === null || y === undefined) return -1;
+    return (typeof x === 'string' ? x.localeCompare(y) : x - y) * dir;
+  });
+}
+
+function swTable(tableId, cols, rows, sortState, onRow){
+  const table = document.getElementById(tableId);
+  table.innerHTML =
+    `<thead><tr>${cols.map(c => `<th data-key="${c.key}" class="${sortState.key === c.key ? 'sorted' + (sortState.asc ? ' asc' : '') : ''}">${c.label}</th>`).join('')}</tr></thead>` +
+    `<tbody>${rows.map(r => `<tr data-id="${r.id}" class="${r.cls || ''}">${cols.map(c => c.cell(r)).join('')}</tr>`).join('')}</tbody>`;
+  table.querySelectorAll('th').forEach(th => th.addEventListener('click', () => {
+    const k = th.dataset.key;
+    if(sortState.key === k) sortState.asc = !sortState.asc;
+    else { sortState.key = k; sortState.asc = (k === 'rank' || k === 'name'); }
+    swRender();
+  }));
+  if(onRow) table.querySelectorAll('tbody tr').forEach(tr => tr.addEventListener('click', () => onRow(tr.dataset.id)));
+}
+
+function swDistrictTable(subj, yi, pool, rank){
+  const county = document.getElementById('swCountySel').value;
+  document.getElementById('swTableScope').textContent = county ? ` · ${swCountyName(county)} County` : ' · all counties';
+  const rows = SW.districts.filter(d => (!county || d.county === county) && d[subj][yi] !== null).map(d => ({
+    id: d.id, name: d.name, coe: d.coe, county: swCountyName(d.county),
+    rank: d.coe ? null : rank.get(d.id), score: d[subj][yi], prev: yi > 0 ? d[subj][yi - 1] : null,
+    change: yi > 0 && d[subj][yi - 1] !== null ? d[subj][yi] - d[subj][yi - 1] : null,
+    tested: d[subj + '_n'][yi],
+    cls: [d.id === SW.smfcsd ? 'home' : '', d.id === sw.picked ? 'selected' : ''].join(' ').trim()
+  }));
+  swSortRows(rows, sw.sort.district);
+  swTable('swDistrictTable', [
+    {key: 'rank', label: 'Rank', cell: r => `<td>${r.rank === null ? '<span class="na">—</span>' : r.rank}</td>`},
+    {key: 'name', label: 'District', cell: r => `<td>${r.name}${r.coe ? ' <span class="na">(county office, not ranked)</span>' : ''}${county ? '' : ` <span class="na">· ${r.county}</span>`}</td>`},
+    {key: 'score', label: 'Met or exceeded', cell: r => `<td>${swFmt(r.score)}</td>`},
+    {key: 'change', label: 'vs prior year', cell: r => swChangeCell(r.score, r.prev)},
+    {key: 'tested', label: 'Students with scores', cell: r => `<td>${r.tested === null ? '—' : r.tested.toLocaleString()}</td>`},
+  ], rows, sw.sort.district, id => {
+    if(!id) return;
+    sw.picked = id;
+    const sel = document.getElementById('swDistrictSel');
+    if([...sel.options].some(o => o.value === id)) sel.value = id;
+    swRender();
+    document.getElementById('swExploreChart').scrollIntoView({behavior: 'smooth', block: 'center'});
+  });
+  swApplySearch();
+}
+
+// Filters the rendered district rows in place (no re-render), matching district or county name.
+function swApplySearch(){
+  const q = document.getElementById('swDistrictSearch').value.trim().toLowerCase();
+  const tbody = document.querySelector('#swDistrictTable tbody');
+  if(!tbody) return;
+  tbody.querySelector('tr.no-match')?.remove();
+  const rows = [...tbody.querySelectorAll('tr')];
+  let shown = 0;
+  rows.forEach(tr => {
+    const hit = !q || tr.cells[1].textContent.toLowerCase().includes(q);
+    tr.classList.toggle('hidden', !hit);
+    if(hit) shown++;
+  });
+  if(q && !shown) tbody.insertAdjacentHTML('beforeend', `<tr class="no-match"><td colspan="5">No districts match “${q.replace(/[<>&"]/g, '')}”.</td></tr>`);
+  document.getElementById('swSearchCount').textContent = q ? `${shown} of ${rows.length} districts` : '';
+}
+
+function swCountyTable(subj, yi){
+  const scored = SW.counties.filter(c => c[subj][yi] !== null);
+  const rows = SW.counties.map(c => ({
+    id: c.code, name: c.name,
+    rank: c[subj][yi] === null ? null : 1 + scored.filter(o => o[subj][yi] > c[subj][yi]).length,
+    score: c[subj][yi], prev: yi > 0 ? c[subj][yi - 1] : null,
+    change: yi > 0 && c[subj][yi] !== null && c[subj][yi - 1] !== null ? c[subj][yi] - c[subj][yi - 1] : null,
+    tested: c[subj + '_n'][yi],
+    cls: c.code === SW_HOME_COUNTY ? 'home' : ''
+  }));
+  swSortRows(rows, sw.sort.county);
+  swTable('swCountyTable', [
+    {key: 'rank', label: 'Rank', cell: r => `<td>${r.rank === null ? '<span class="na">—</span>' : r.rank}</td>`},
+    {key: 'name', label: 'County', cell: r => `<td>${r.name}</td>`},
+    {key: 'score', label: 'Met or exceeded', cell: r => `<td>${swFmt(r.score)}</td>`},
+    {key: 'change', label: 'vs prior year', cell: r => swChangeCell(r.score, r.prev)},
+    {key: 'tested', label: 'Students with scores', cell: r => `<td>${r.tested === null ? '—' : r.tested.toLocaleString()}</td>`},
+  ], rows, sw.sort.county, code => {
+    document.getElementById('swCountySel').value = code;
+    swFillDistricts();
+    sw.picked = document.getElementById('swDistrictSel').value || sw.picked;
+    swRender();
+    document.getElementById('swDistrictTable').scrollIntoView({behavior: 'smooth', block: 'start'});
+  });
+}
 
 // ── AI Chat ──────────────────────────────────────────────────────────────────
 const QUICK_QUESTIONS = [
@@ -831,6 +1283,7 @@ document.getElementById('footerNote').innerHTML =
   <p><strong>Sources &amp; Notes:</strong> CAASPP districtwide research files for San Mateo-Foster City, 2014–15 through 2025–26, combined with CDE's official student group reference file. Data for 2019–20 are unavailable due to the COVID-19 testing suspension. Starting in 2025–26, CDE labels the four achievement levels Advanced / Proficient / Developing / Minimal; they're shown here as the same levels previously labeled Standard Exceeded / Met / Nearly Met / Not Met.</p>`;
 
 render();
+showTab(new URLSearchParams(location.search).get('tab'));
 </script>
 </body>
 </html>

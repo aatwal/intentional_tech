@@ -54,3 +54,16 @@ python3 verify_source_data.py -v  # cross-check every value against the source f
 different (pass `--force` only for a deliberate correction, e.g. CDE re-issuing an old file).
 Subgroup names/categories aren't in the research files, so a new subgroup id needs a name added
 to `subgroups` in the JSON before it will build.
+
+## Statewide comparison data
+
+The "Statewide comparison" tab reads `data/statewide.json`, built from CDE's statewide
+All-Students research files (one `sb_caYYYY_1_csv_vN/` folder per year in
+`../caaspp_files/california/`, kept out of git because they total ~224MB):
+
+```bash
+python3 build_statewide.py
+```
+
+It scores every district on grades 3–8 combined and checks that SMFCSD's figures match this
+dashboard's own published values.

@@ -1,1 +1,5 @@
 .DS_Store
+
+# Statewide CAASPP research files (~224MB); build_statewide.py reads them locally and
+# commits only its output, caaspp_ai_dashboard/data/statewide.json.
+caaspp_files/california/
