@@ -91,8 +91,12 @@ All-Students research files in `../caaspp_files/california/` — those raw files
 gitignored, so only the JSON is committed. Every entity is scored on grades 3–8 combined
 (grade-level "met and above" weighted by students with scores), so unified/high-school districts
 are comparable to K–8 SMFCSD. County offices of education (district codes 10xxx) and State Board
-charters ("SBE - " names) get a `kind` and are listed but not ranked. The tab fetches the JSON on first open (via the existing `/data/<file>` route), so the
-main dashboard doesn't pay for it. The chat doesn't see this data yet — it's SMFCSD-only.
+charters ("SBE - " names) get a `kind` and are listed but not ranked. After any rebuild, run **`verify_statewide_data.py -v`**: an independent cross-check (it doesn't
+import `build_statewide.py`) that recomputes every value from the raw files, compares SMFCSD
+against `caaspp_data.json`, checks the grades 3–8 method against CDE's own all-grades totals, and
+checks the ranking exclusions; non-zero exit on any failure. Like the build, it needs the
+gitignored raw files. The tab fetches the JSON on first open (via the existing `/data/<file>`
+route), so the main dashboard doesn't pay for it. The chat doesn't see this data yet — it's SMFCSD-only.
 The chat is the last section of the Dashboard tab (it used to be its own tab; old `?tab=chat` links
 scroll to it). `?tab=statewide` opens the statewide tab; `showTab()` keeps the URL in sync.
 
