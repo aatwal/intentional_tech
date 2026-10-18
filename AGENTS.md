@@ -85,6 +85,16 @@ same four levels — see the script's docstring), so both scripts resolve column
 rather than by position; don't add a new year's file without checking its header still matches one
 of the four known eras.
 
+**Statewide comparison tab** (`?tab=statewide`) ranks SMFCSD against every California district. Its
+data is `data/statewide.json` (~300KB), built by **`build_statewide.py`** from CDE's statewide
+All-Students research files in `../caaspp_files/california/` — those raw files are ~224MB and
+gitignored, so only the JSON is committed. Every entity is scored on grades 3–8 combined
+(grade-level "met and above" weighted by students with scores), so unified/high-school districts
+are comparable to K–8 SMFCSD; county offices of education are flagged `coe` by name and not
+ranked. The tab fetches the JSON on first open (via the existing `/data/<file>` route), so the
+main dashboard doesn't pay for it. The chat doesn't see this data yet — it's SMFCSD-only.
+Tabs open from `?tab=chat` / `?tab=statewide`; `showTab()` keeps the URL in sync.
+
 **Chat grounding — the important design constraint:** the full dataset is ~4.5MB (~6,700
 school×grade×subject×subgroup records). It is never sent to the model. Instead `app.py` builds a
 compact plain-text summary per request:
