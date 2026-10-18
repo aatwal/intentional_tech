@@ -406,7 +406,7 @@
 
   <section>
     <h2><span class="idx">05</span>Districts<span class="sw-scope" id="swTableScope"></span></h2>
-    <p class="desc">Statewide rank among districts reporting grades 3–8 for the selected subject and year. Click a column to sort, or a district to chart it above.</p>
+    <p class="desc">Statewide rank among districts reporting grades 3–8 for the selected subject and year. Student counts are grade 3–8 students with scores. Click a column to sort, or a district to chart it above.</p>
     <div class="sw-search">
       <input type="search" id="swDistrictSearch" placeholder="Search districts by name or county…" autocomplete="off" aria-label="Search districts">
       <span class="sw-search-count" id="swSearchCount" aria-live="polite"></span>
@@ -422,7 +422,7 @@
 
   <section>
     <h2><span class="idx">06</span>Counties</h2>
-    <p class="desc">All 58 counties, ranked for the selected subject and year. County figures include every public school in the county, charters and county-run programs included.</p>
+    <p class="desc">All 58 counties, ranked for the selected subject and year. County figures include every public school in the county, charters and county-run programs included. Student counts are grade 3–8 students with scores.</p>
     <div class="panel sw-table-panel">
       <div class="sw-table-wrap">
         <table class="sw-table" id="swCountyTable"></table>
@@ -1214,19 +1214,23 @@ function swTable(tableId, cols, rows, sortState, onRow){
   if(onRow) table.querySelectorAll('tbody tr').forEach(tr => tr.addEventListener('click', () => onRow(tr.dataset.id)));
 }
 
-// Per-subject columns: rank, score, change (and students with scores when only one subject shows).
-function swSubjectCols(subjs){
+// Per-subject columns: rank, score, change, students with scores. The change column names the
+// year it's measured from (the previous year in the data, so 2020–21 compares with 2018–19).
+function swSubjectCols(subjs, yi){
   const dual = subjs.length > 1;
+  const prev = yi > 0 ? SW.years[yi - 1] : null;
   const rankCol = s => ({key: 'rank_' + s, label: dual ? `${SW_SUBJ_NAME[s]} rank` : 'Rank',
     cell: r => `<td>${r['rank_' + s] === null || r['rank_' + s] === undefined ? '<span class="na">—</span>' : r['rank_' + s]}</td>`});
   const rest = s => [
     {key: 'score_' + s, label: dual ? SW_SUBJ_NAME[s] : 'Met or exceeded', cell: r => `<td>${swFmt(r['score_' + s])}</td>`},
-    {key: 'change_' + s, label: dual ? `${SW_SUBJ_NAME[s]} change` : 'vs prior year', cell: r => swChangeCell(r['score_' + s], r['prev_' + s])},
+    {key: 'change_' + s, label: prev ? (dual ? `${SW_SUBJ_NAME[s]} vs ${prev}` : `vs ${prev}`) : (dual ? `${SW_SUBJ_NAME[s]} change` : 'Change'),
+      cell: r => swChangeCell(r['score_' + s], r['prev_' + s])},
   ];
-  const tested = s => dual ? [] : [{key: 'tested_' + s, label: 'Students with scores', cell: r => `<td>${r['tested_' + s] === null ? '—' : r['tested_' + s].toLocaleString()}</td>`}];
+  const tested = s => [{key: 'tested_' + s, label: dual ? `${SW_SUBJ_NAME[s]} students` : 'Students with scores',
+    cell: r => `<td>${r['tested_' + s] === null || r['tested_' + s] === undefined ? '—' : r['tested_' + s].toLocaleString()}</td>`}];
   // Name column stays second so the search box and left alignment find it.
   return nameCol => dual
-    ? [rankCol('ela'), nameCol, ...rest('ela'), rankCol('math'), ...rest('math')]
+    ? [rankCol('ela'), nameCol, ...rest('ela'), ...tested('ela'), rankCol('math'), ...rest('math'), ...tested('math')]
     : [rankCol(subjs[0]), nameCol, ...rest(subjs[0]), ...tested(subjs[0])];
 }
 
@@ -1250,7 +1254,7 @@ function swDistrictTable(subjs, yi, ranked){
     ...swSubjectFields(d, yi, s => d.kind || !ranked[s] ? null : (ranked[s].rank.get(d.id) ?? null)),
     cls: [d.id === SW.smfcsd ? 'home' : '', d.id === sw.picked ? 'selected' : ''].join(' ').trim()
   }));
-  const cols = swSubjectCols(subjs)({key: 'name', label: 'District', cell: r => `<td>${r.name}${r.kind ? ` <span class="na">(${SW_KIND_LABEL[r.kind]}, not ranked)</span>` : ''}${county ? '' : ` <span class="na">· ${r.county}</span>`}</td>`});
+  const cols = swSubjectCols(subjs, yi)({key: 'name', label: 'District', cell: r => `<td>${r.name}${r.kind ? ` <span class="na">(${SW_KIND_LABEL[r.kind]}, not ranked)</span>` : ''}${county ? '' : ` <span class="na">· ${r.county}</span>`}</td>`});
   swValidSort(sw.sort.district, cols);
   swSortRows(rows, sw.sort.district);
   swTable('swDistrictTable', cols, rows, sw.sort.district, id => {
@@ -1289,7 +1293,7 @@ function swCountyTable(subjs, yi){
     ...swSubjectFields(c, yi, s => c[s][yi] === null ? null : 1 + scored[s].filter(o => o[s][yi] > c[s][yi]).length),
     cls: c.code === SW_HOME_COUNTY ? 'home' : ''
   }));
-  const cols = swSubjectCols(subjs)({key: 'name', label: 'County', cell: r => `<td>${r.name}</td>`});
+  const cols = swSubjectCols(subjs, yi)({key: 'name', label: 'County', cell: r => `<td>${r.name}</td>`});
   swValidSort(sw.sort.county, cols);
   swSortRows(rows, sw.sort.county);
   swTable('swCountyTable', cols, rows, sw.sort.county, code => {
