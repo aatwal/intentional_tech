@@ -116,17 +116,16 @@
   .chat-websearch input{cursor:pointer;}
   .chat-websearch-hint{color:var(--muted); font-size:11.5px;}
 
-  .tab-nav{
-    display:flex; gap:28px; margin:22px 0 30px; border-bottom:1px solid var(--line);
-    font-family:'Helvetica Neue',Arial,sans-serif;
-  }
+  /* View tabs live in the header as large buttons, so they read as the page's main navigation. */
+  .tab-nav{display:flex; flex-wrap:wrap; gap:10px; margin-top:18px; font-family:'Helvetica Neue',Arial,sans-serif;}
   .tab-btn{
-    background:none; border:none; cursor:pointer; font-family:inherit;
-    font-size:13.5px; font-weight:700; letter-spacing:.02em; color:var(--muted);
-    padding:0 2px 12px; margin-bottom:-1px; border-bottom:2px solid transparent;
+    cursor:pointer; font-family:inherit; font-size:15px; font-weight:700; letter-spacing:.01em;
+    color:var(--ink); background:var(--panel); border:1px solid var(--line); border-radius:2px;
+    padding:11px 22px; min-height:44px; transition:border-color .12s ease, background .12s ease;
   }
-  .tab-btn:hover{ color:var(--ink); }
-  .tab-btn.active{ color:var(--ink); border-bottom-color:var(--accent); }
+  .tab-btn:hover{border-color:var(--accent); color:var(--accent);}
+  .tab-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .tab-btn.active, .tab-btn.active:hover{background:var(--accent); border-color:var(--accent); color:#fff; cursor:default;}
   .tab-panel.hidden{ display:none; }
 
   .stat .ctx{font-family:'Helvetica Neue',Arial,sans-serif;font-size:11.5px;color:var(--muted);margin-top:4px;}
@@ -135,7 +134,7 @@
   .sw-explore-title{font-size:24px; margin-bottom:6px;}
   /* Not sticky like the top bar; the left stripe matches the selected district's chart line. */
   .filter-bar.sw-explore-bar{position:static; margin:14px 0 30px; border-left:4px solid #5b4fa0;}
-  .sw-explore-bar select{min-width:240px;}
+  .sw-explore-bar select{min-width:200px;}
   .sw-scope{font-family:'Helvetica Neue',Arial,sans-serif;font-size:13px;color:var(--muted);font-weight:400;}
   .sw-table-panel{padding:0;}
   .sw-table-wrap{max-height:460px; overflow:auto;}
@@ -160,14 +159,22 @@
   .sw-stats{margin:0 0 36px;}
   .sw-stats .stat-row{margin-bottom:18px;}
   .sw-stats .stat-row:last-child{margin-bottom:0;}
-  .sw-search{display:flex; align-items:center; gap:12px; margin-bottom:10px; font-family:'Helvetica Neue',Arial,sans-serif;}
-  .sw-search input{
-    flex:0 1 360px; font-family:inherit; font-size:14px; padding:8px 10px;
+  .sw-combo{position:relative;}
+  .sw-combo input{
+    font-family:'Helvetica Neue',Arial,sans-serif; font-size:14px; padding:8px 10px; width:340px; max-width:100%;
     border:1px solid var(--line); border-radius:2px; background:#fff; color:var(--ink);
   }
-  .sw-search input:focus{outline:2px solid var(--accent); outline-offset:-1px;}
-  .sw-search-count{font-size:12px; color:var(--muted);}
-  .sw-table tr.no-match td{text-align:center; color:var(--muted); cursor:default;}
+  .sw-combo input:focus{outline:2px solid var(--accent); outline-offset:-1px;}
+  .sw-combo-list{
+    position:absolute; top:100%; left:0; z-index:30; width:420px; max-width:90vw; max-height:320px; overflow-y:auto;
+    margin:4px 0 0; padding:4px 0; list-style:none; background:#fff; border:1px solid var(--line);
+    box-shadow:0 6px 18px rgba(28,43,51,0.14); font-size:13.5px;
+  }
+  .sw-combo-list li{display:flex; justify-content:space-between; gap:12px; padding:7px 12px; cursor:pointer;}
+  .sw-combo-list li .na{white-space:nowrap; font-size:12px;}
+  .sw-combo-list li.active, .sw-combo-list li:hover{background:var(--paper);}
+  .sw-combo-list li.empty{color:var(--muted); cursor:default;}
+  .sw-combo-list li mark{background:none; color:var(--accent); font-weight:700;}
 </style>
 <!-- Privacy-friendly analytics by Plausible -->
 <script async src="https://plausible.io/js/pa-4gMczTqTJAUQDgR06ZZUV.js"></script>
@@ -183,14 +190,13 @@
     <div class="eyebrow">CAASPP · San Mateo-Foster City School District</div>
     <h1>11-year CAASPP trends, filterable by subject, grade, school &amp; student group</h1>
     <p class="sub">Pick a subject, school, grade, and student group below; every chart updates together. 2014–15 through 2025–26 (2019–20 has no data: CAASPP testing was suspended statewide for COVID-19).</p>
+    <nav class="tab-nav" role="tablist" aria-label="Dashboard views">
+      <button type="button" class="tab-btn active" role="tab" aria-selected="true" aria-controls="tabDashboard" data-tab="dashboard">SMFCSD dashboard</button>
+      <button type="button" class="tab-btn" role="tab" aria-selected="false" aria-controls="tabStatewide" data-tab="statewide">Statewide comparison</button>
+    </nav>
   </header>
 
-  <div class="tab-nav">
-    <button type="button" class="tab-btn active" data-tab="dashboard">Dashboard</button>
-    <button type="button" class="tab-btn" data-tab="statewide">Statewide comparison</button>
-  </div>
-
-  <div id="tabDashboard" class="tab-panel">
+  <div id="tabDashboard" class="tab-panel" role="tabpanel">
   <div class="filter-bar">
     <div class="filter-group">
       <label for="subjectSel">Subject</label>
@@ -327,7 +333,7 @@
 
   </div>
 
-  <div id="tabStatewide" class="tab-panel hidden">
+  <div id="tabStatewide" class="tab-panel hidden" role="tabpanel">
   <div class="filter-bar">
     <div class="filter-group">
       <label for="swSubjectSel">Subject</label>
@@ -381,7 +387,7 @@
   <div class="sw-explore-head">
     <div class="eyebrow">Explore</div>
     <h2 class="sw-explore-title">Any county or district</h2>
-    <p class="desc wide">Everything above is about SMFCSD. Use these menus to look at any other county or district: the County menu sets which districts the table lists, and the District menu picks the one to chart (or click a district in the table).</p>
+    <p class="desc wide">Everything above is about SMFCSD. Use these to look at any other county or district: type in the District box to find any district in California, or pick a County to list its districts in the table (click one to chart it).</p>
   </div>
 
   <div class="filter-bar sw-explore-bar">
@@ -389,9 +395,11 @@
       <label for="swCountySel">County</label>
       <select id="swCountySel"></select>
     </div>
-    <div class="filter-group">
-      <label for="swDistrictSel">District</label>
-      <select id="swDistrictSel"></select>
+    <div class="filter-group sw-combo">
+      <label for="swDistrictInput">District</label>
+      <input id="swDistrictInput" type="text" role="combobox" aria-expanded="false" aria-controls="swDistrictList"
+             aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Type a district name…">
+      <ul id="swDistrictList" class="sw-combo-list hidden" role="listbox" aria-label="Matching districts"></ul>
     </div>
     <div class="filter-note">Changes sections 04 and 05 below. Subject and year come from the menus at the top.</div>
   </div>
@@ -407,10 +415,6 @@
   <section>
     <h2><span class="idx">05</span>Districts<span class="sw-scope" id="swTableScope"></span></h2>
     <p class="desc">Statewide rank among districts reporting grades 3–8 for the selected subject and year. Student counts are grade 3–8 students with scores. Click a column to sort, or a district to chart it above.</p>
-    <div class="sw-search">
-      <input type="search" id="swDistrictSearch" placeholder="Search districts by name or county…" autocomplete="off" aria-label="Search districts">
-      <span class="sw-search-count" id="swSearchCount" aria-live="polite"></span>
-    </div>
     <div class="panel sw-table-panel">
       <div class="sw-table-wrap">
         <table class="sw-table" id="swDistrictTable"></table>
@@ -889,7 +893,10 @@ function showTab(name){
   // The chat used to be its own tab; old ?tab=chat links land on its Dashboard section.
   const toChat = name === 'chat';
   if(!TAB_NAMES.includes(name)) name = 'dashboard';
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === name);
+    b.setAttribute('aria-selected', b.dataset.tab === name ? 'true' : 'false');
+  });
   document.getElementById('tabDashboard').classList.toggle('hidden', name !== 'dashboard');
   document.getElementById('tabStatewide').classList.toggle('hidden', name !== 'statewide');
   if(name === 'statewide') openStatewide();
@@ -1032,27 +1039,135 @@ function swInit(){
     SW.counties.map(c => `<option value="${c.code}">${c.name}</option>`).join('');
   countySel.value = SW_HOME_COUNTY;
   sw.picked = SW.smfcsd;
-  swFillDistricts();
   ['swSubjectSel', 'swYearSel'].forEach(id => document.getElementById(id).addEventListener('change', swRender));
   countySel.addEventListener('change', () => {
-    swFillDistricts();
-    const first = document.getElementById('swDistrictSel').value;
-    if(first) sw.picked = first;
+    // Keep the charted district if it's in the new county; otherwise chart that county's first district.
+    const county = countySel.value, cur = swDistrict(sw.picked);
+    if(county && cur.county !== county) sw.picked = swFirstDistrictIn(county) || sw.picked;
     swRender();
   });
-  document.getElementById('swDistrictSel').addEventListener('change', e => { sw.picked = e.target.value; swRender(); });
-  document.getElementById('swDistrictSearch').addEventListener('input', swApplySearch);
+  swComboInit();
   document.getElementById('swLoading').classList.add('hidden');
   document.getElementById('swContent').classList.remove('hidden');
   swRender();
 }
 
-function swFillDistricts(){
-  const county = document.getElementById('swCountySel').value;
-  const list = SW.districts.filter(d => !county || d.county === county);
-  const sel = document.getElementById('swDistrictSel');
-  sel.innerHTML = list.map(d => `<option value="${d.id}">${d.name}${d.kind ? ` (${SW_KIND_LABEL[d.kind]})` : ''}${county ? '' : ' · ' + swCountyName(d.county)}</option>`).join('');
-  if(list.some(d => d.id === sw.picked)) sel.value = sw.picked;
+function swFirstDistrictIn(county){
+  if(county === SW_HOME_COUNTY) return SW.smfcsd;  // San Mateo County: start on SMFCSD
+  const list = SW.districts.filter(d => d.county === county);
+  return (list.find(d => !d.kind) || list[0] || {}).id;
+}
+
+// Charts a district. Choosing one outside the selected county switches the County menu to it,
+// so the chart, menus, and table always agree.
+function swPickDistrict(id){
+  const d = swDistrict(id);
+  if(!d) return;
+  sw.picked = id;
+  const countySel = document.getElementById('swCountySel');
+  if(countySel.value && countySel.value !== d.county) countySel.value = d.county;
+  swRender();
+}
+
+// ── District search + select (ARIA combobox). Searches every district statewide.
+const swCombo = {matches: [], active: -1};
+function swComboEsc(t){ return t.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function swComboMatches(q){
+  q = q.trim().toLowerCase();
+  if(!q){  // nothing typed: the selected county's districts (or SMFCSD's county)
+    const county = document.getElementById('swCountySel').value || SW_HOME_COUNTY;
+    return SW.districts.filter(d => d.county === county);
+  }
+  const scored = [];
+  SW.districts.forEach(d => {
+    const name = d.name.toLowerCase(), county = swCountyName(d.county).toLowerCase();
+    let score = -1;
+    if(name.startsWith(q)) score = 0;
+    else if(name.includes(' ' + q)) score = 1;
+    else if(name.includes(q)) score = 2;
+    else if(county.startsWith(q)) score = 3;
+    if(score >= 0) scored.push([score, d]);
+  });
+  return scored.sort((a, b) => a[0] - b[0] || a[1].name.localeCompare(b[1].name)).map(x => x[1]).slice(0, 100);
+}
+function swComboRender(){
+  const input = document.getElementById('swDistrictInput'), list = document.getElementById('swDistrictList');
+  const q = input.value.trim();
+  const hl = name => {
+    if(!q) return swComboEsc(name);
+    const i = name.toLowerCase().indexOf(q.toLowerCase());
+    return i < 0 ? swComboEsc(name) : swComboEsc(name.slice(0, i)) + '<mark>' + swComboEsc(name.slice(i, i + q.length)) + '</mark>' + swComboEsc(name.slice(i + q.length));
+  };
+  list.innerHTML = swCombo.matches.length
+    ? swCombo.matches.map((d, i) => `<li id="swOpt${i}" role="option" data-id="${d.id}" aria-selected="${i === swCombo.active}" class="${i === swCombo.active ? 'active' : ''}">
+        <span>${hl(d.name)}</span><span class="na">${swCountyName(d.county)}${d.kind ? ' · ' + SW_KIND_LABEL[d.kind] : ''}</span></li>`).join('')
+    : `<li class="empty" role="option" aria-disabled="true">No districts match “${swComboEsc(q)}”</li>`;
+  input.setAttribute('aria-activedescendant', swCombo.active >= 0 ? 'swOpt' + swCombo.active : '');
+  list.querySelector('li.active')?.scrollIntoView({block: 'nearest'});
+}
+function swComboOpen(){
+  const input = document.getElementById('swDistrictInput');
+  swCombo.matches = swComboMatches(input === document.activeElement && input.dataset.typed ? input.value : '');
+  swCombo.active = swCombo.matches.findIndex(d => d.id === sw.picked);
+  document.getElementById('swDistrictList').classList.remove('hidden');
+  input.setAttribute('aria-expanded', 'true');
+  swComboRender();
+}
+function swComboClose(){
+  const input = document.getElementById('swDistrictInput');
+  document.getElementById('swDistrictList').classList.add('hidden');
+  input.setAttribute('aria-expanded', 'false');
+  input.removeAttribute('aria-activedescendant');
+  delete input.dataset.typed;
+  const d = swDistrict(sw.picked);
+  if(d) input.value = d.name;
+}
+function swComboChoose(i){
+  const d = swCombo.matches[i];
+  if(!d) return;
+  swComboClose();
+  document.getElementById('swDistrictInput').blur();
+  swPickDistrict(d.id);
+  swScrollTableToPicked();
+}
+function swComboInit(){
+  const input = document.getElementById('swDistrictInput'), list = document.getElementById('swDistrictList');
+  input.addEventListener('focus', () => { input.select(); swComboOpen(); });
+  input.addEventListener('input', () => {
+    input.dataset.typed = '1';
+    swCombo.matches = swComboMatches(input.value);
+    swCombo.active = swCombo.matches.length ? 0 : -1;
+    list.classList.remove('hidden'); input.setAttribute('aria-expanded', 'true');
+    swComboRender();
+  });
+  input.addEventListener('keydown', e => {
+    const open = !list.classList.contains('hidden');
+    if(e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+      e.preventDefault();
+      if(!open){ swComboOpen(); return; }
+      const n = swCombo.matches.length;
+      if(n) swCombo.active = (swCombo.active + (e.key === 'ArrowDown' ? 1 : -1) + n) % n;
+      swComboRender();
+    } else if(e.key === 'Enter'){
+      e.preventDefault();
+      if(open) swComboChoose(swCombo.active >= 0 ? swCombo.active : 0);
+    } else if(e.key === 'Escape'){
+      swComboClose(); input.blur();
+    }
+  });
+  input.addEventListener('blur', () => setTimeout(() => { if(document.activeElement !== input) swComboClose(); }, 120));
+  list.addEventListener('mousedown', e => e.preventDefault());  // keep focus so the click lands
+  list.addEventListener('click', e => {
+    const li = e.target.closest('li[data-id]');
+    if(li) swComboChoose(swCombo.matches.findIndex(d => d.id === li.dataset.id));
+  });
+}
+
+// Brings the charted district's row into view inside the table (without moving the page).
+function swScrollTableToPicked(){
+  const wrap = document.querySelector('#swDistrictTable').closest('.sw-table-wrap');
+  const row = document.querySelector(`#swDistrictTable tr[data-id="${sw.picked}"]`);
+  if(wrap && row) wrap.scrollTop = row.offsetTop - wrap.clientHeight / 2 + row.offsetHeight / 2;
 }
 
 function swSubjects(){ const m = swSubject(); return m === 'both' ? ['ela', 'math'] : [m]; }
@@ -1127,6 +1242,8 @@ function swRender(){
   // Explorer
   const picked = swDistrict(sw.picked) || home;
   const pickedCounty = SW.counties.find(c => c.code === picked.county);
+  const comboInput = document.getElementById('swDistrictInput');
+  if(document.activeElement !== comboInput) comboInput.value = picked.name;
   document.getElementById('swExploreHeading').textContent = picked.id === home.id
     ? `SMFCSD vs ${pickedCounty.name} County and California`
     : `${picked.name} vs ${pickedCounty.name} County, California, and SMFCSD`;
@@ -1259,31 +1376,9 @@ function swDistrictTable(subjs, yi, ranked){
   swSortRows(rows, sw.sort.district);
   swTable('swDistrictTable', cols, rows, sw.sort.district, id => {
     if(!id) return;
-    sw.picked = id;
-    const sel = document.getElementById('swDistrictSel');
-    if([...sel.options].some(o => o.value === id)) sel.value = id;
-    swRender();
+    swPickDistrict(id);
     document.getElementById('swExploreBox').scrollIntoView({behavior: 'smooth', block: 'center'});
   });
-  swApplySearch();
-}
-
-// Filters the rendered district rows in place (no re-render), matching district or county name.
-function swApplySearch(){
-  const q = document.getElementById('swDistrictSearch').value.trim().toLowerCase();
-  const table = document.getElementById('swDistrictTable');
-  const tbody = table.querySelector('tbody');
-  if(!tbody) return;
-  tbody.querySelector('tr.no-match')?.remove();
-  const rows = [...tbody.querySelectorAll('tr')];
-  let shown = 0;
-  rows.forEach(tr => {
-    const hit = !q || tr.cells[1].textContent.toLowerCase().includes(q);
-    tr.classList.toggle('hidden', !hit);
-    if(hit) shown++;
-  });
-  if(q && !shown) tbody.insertAdjacentHTML('beforeend', `<tr class="no-match"><td colspan="${table.querySelectorAll('thead th').length}">No districts match “${q.replace(/[<>&"]/g, '')}”.</td></tr>`);
-  document.getElementById('swSearchCount').textContent = q ? `${shown} of ${rows.length} districts` : '';
 }
 
 function swCountyTable(subjs, yi){
@@ -1298,8 +1393,7 @@ function swCountyTable(subjs, yi){
   swSortRows(rows, sw.sort.county);
   swTable('swCountyTable', cols, rows, sw.sort.county, code => {
     document.getElementById('swCountySel').value = code;
-    swFillDistricts();
-    sw.picked = document.getElementById('swDistrictSel').value || sw.picked;
+    if(swDistrict(sw.picked).county !== code) sw.picked = swFirstDistrictIn(code) || sw.picked;
     swRender();
     document.getElementById('swDistrictTable').scrollIntoView({behavior: 'smooth', block: 'start'});
   });
