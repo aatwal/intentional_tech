@@ -62,8 +62,12 @@ All-Students research files (one `sb_caYYYY_1_csv_vN/` folder per year in
 `../caaspp_files/california/`, kept out of git because they total ~224MB):
 
 ```bash
-python3 build_statewide.py
+python3 build_statewide.py          # write data/statewide.json
+python3 verify_statewide_data.py -v # cross-check it against the raw files
 ```
 
-It scores every district on grades 3–8 combined and checks that SMFCSD's figures match this
-dashboard's own published values.
+It scores every district on grades 3–8 combined. `verify_statewide_data.py` re-reads the raw
+files with its own code (it doesn't reuse the build script) and checks that every value
+recomputes exactly, that SMFCSD's figures match this dashboard's own data, that the grades 3–8
+method agrees with CDE's own totals for K–8 districts, and that county offices and State Board
+charters are excluded from rankings. It exits non-zero if any check fails.

@@ -32,6 +32,7 @@ name per file.
 Usage:
     cd caaspp_ai_dashboard
     python3 build_statewide.py
+    python3 verify_statewide_data.py -v   # independent cross-check of the output
 """
 import csv
 import glob
