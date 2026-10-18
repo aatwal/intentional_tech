@@ -411,7 +411,7 @@
     </div>
   </section>
 
-  <p class="desc wide sw-notes"><strong>About these numbers:</strong> CDE's statewide research files, All Students only. Each district is scored on grades 3–8 combined: the grade-level results weighted by students with scores, leaving out grades CDE suppressed (10 or fewer students). That keeps high-school and unified districts comparable to SMFCSD, which is K–8. County offices of education are listed but not ranked. 2014–15 and 2015–16 figures are built from whole-number percentages, so they can differ from CDE's own totals by up to half a point. Starting in 2025–26 CDE calls this measure "Proficient and above".</p>
+  <p class="desc wide sw-notes"><strong>About these numbers:</strong> CDE's statewide research files, All Students only. Each district is scored on grades 3–8 combined: the grade-level results weighted by students with scores, leaving out grades CDE suppressed (10 or fewer students). That keeps high-school and unified districts comparable to SMFCSD, which is K–8. County offices of education and State Board of Education-authorized charters (which CDE lists as their own one-school "districts") are listed but not ranked. 2014–15 and 2015–16 figures are built from whole-number percentages, so they can differ from CDE's own totals by up to half a point. Starting in 2025–26 CDE calls this measure "Proficient and above".</p>
   </div>
   </div>
 
@@ -908,13 +908,15 @@ function openStatewide(){
 function swSubject(){ return document.getElementById('swSubjectSel').value; }
 function swYear(){ return +document.getElementById('swYearSel').value; }
 function swDistrict(id){ return SW.districts.find(d => d.id === id); }
+// County offices ("coe") and State Board charters ("sbe") are listed but never ranked.
+const SW_KIND_LABEL = {coe: 'county office', sbe: 'State Board charter'};
 function swCountyName(code){ const c = SW.counties.find(c => c.code === code); return c ? c.name : code; }
 function swFmt(v){ return v === null || v === undefined ? '—' : v.toFixed(1) + '%'; }
 function swPts(v){ return v === null || v === undefined ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toFixed(1) + ' pts'; }
 
 // Districts ranked for a subject/year: county offices excluded, only districts with a score.
 function swRanked(subj, yi){
-  const pool = SW.districts.filter(d => !d.coe && d[subj][yi] !== null);
+  const pool = SW.districts.filter(d => !d.kind && d[subj][yi] !== null);
   const sorted = pool.slice().sort((a,b) => b[subj][yi] - a[subj][yi]);
   const rank = new Map();  // ties share a rank (1, 2, 2, 4, ...)
   sorted.forEach((d, i) => rank.set(d.id, i > 0 && d[subj][yi] === sorted[i-1][subj][yi] ? rank.get(sorted[i-1].id) : i + 1));
@@ -1011,7 +1013,7 @@ function swFillDistricts(){
   const county = document.getElementById('swCountySel').value;
   const list = SW.districts.filter(d => !county || d.county === county);
   const sel = document.getElementById('swDistrictSel');
-  sel.innerHTML = list.map(d => `<option value="${d.id}">${d.name}${d.coe ? ' (county office)' : ''}${county ? '' : ' · ' + swCountyName(d.county)}</option>`).join('');
+  sel.innerHTML = list.map(d => `<option value="${d.id}">${d.name}${d.kind ? ` (${SW_KIND_LABEL[d.kind]})` : ''}${county ? '' : ' · ' + swCountyName(d.county)}</option>`).join('');
   if(list.some(d => d.id === sw.picked)) sel.value = sw.picked;
 }
 
@@ -1134,8 +1136,8 @@ function swDistrictTable(subj, yi, pool, rank){
   const county = document.getElementById('swCountySel').value;
   document.getElementById('swTableScope').textContent = county ? ` · ${swCountyName(county)} County` : ' · all counties';
   const rows = SW.districts.filter(d => (!county || d.county === county) && d[subj][yi] !== null).map(d => ({
-    id: d.id, name: d.name, coe: d.coe, county: swCountyName(d.county),
-    rank: d.coe ? null : rank.get(d.id), score: d[subj][yi], prev: yi > 0 ? d[subj][yi - 1] : null,
+    id: d.id, name: d.name, kind: d.kind, county: swCountyName(d.county),
+    rank: d.kind ? null : rank.get(d.id), score: d[subj][yi], prev: yi > 0 ? d[subj][yi - 1] : null,
     change: yi > 0 && d[subj][yi - 1] !== null ? d[subj][yi] - d[subj][yi - 1] : null,
     tested: d[subj + '_n'][yi],
     cls: [d.id === SW.smfcsd ? 'home' : '', d.id === sw.picked ? 'selected' : ''].join(' ').trim()
@@ -1143,7 +1145,7 @@ function swDistrictTable(subj, yi, pool, rank){
   swSortRows(rows, sw.sort.district);
   swTable('swDistrictTable', [
     {key: 'rank', label: 'Rank', cell: r => `<td>${r.rank === null ? '<span class="na">—</span>' : r.rank}</td>`},
-    {key: 'name', label: 'District', cell: r => `<td>${r.name}${r.coe ? ' <span class="na">(county office, not ranked)</span>' : ''}${county ? '' : ` <span class="na">· ${r.county}</span>`}</td>`},
+    {key: 'name', label: 'District', cell: r => `<td>${r.name}${r.kind ? ` <span class="na">(${SW_KIND_LABEL[r.kind]}, not ranked)</span>` : ''}${county ? '' : ` <span class="na">· ${r.county}</span>`}</td>`},
     {key: 'score', label: 'Met or exceeded', cell: r => `<td>${swFmt(r.score)}</td>`},
     {key: 'change', label: 'vs prior year', cell: r => swChangeCell(r.score, r.prev)},
     {key: 'tested', label: 'Students with scores', cell: r => `<td>${r.tested === null ? '—' : r.tested.toLocaleString()}</td>`},

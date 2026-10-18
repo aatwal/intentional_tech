@@ -15,9 +15,15 @@ The statewide "_1_" files are All Students only. Every entity is scored on one m
   is K-8. For SMFCSD itself this equals its published all-grades figure (checked at the end).
 
 Entities kept: the state, all 58 counties (CDE's county roll-up rows), and every district
-entity (Type ID 6). County offices of education are flagged `coe` (detected by name) so the
-dashboard can leave them out of district rankings. Charter schools are school-level entities
-in CDE's files and aren't included.
+entity (Type ID 6). Two kinds of district-level entity aren't school districts and get a `kind`
+so the dashboard lists them but leaves them out of rankings:
+  - "coe": county offices of education. CDE gives every one a district code in the 10xxx range
+    (10017-10587); matching on that, not the name, catches the ones whose names CDE truncates
+    ("...Office of Educatio") or words differently ("Department of Education",
+    "Superintendent of Schools").
+  - "sbe": State Board of Education-authorized charters, which CDE lists as their own
+    single-school "districts" (names start "SBE - ", sometimes "Sbe - ").
+Other charter schools are school-level entities in CDE's files and aren't included.
 
 Format eras: 2015-2019 comma-delimited, 2021+ caret-delimited, 2026 relabels the achievement
 levels ("Proficient and Above"); several files are Latin-1, not UTF-8. Columns are resolved by
@@ -74,6 +80,15 @@ def year_files():
     return out
 
 
+def district_kind(district_code, name):
+    """None for a school district; "coe" / "sbe" for entities left out of rankings (see docstring)."""
+    if re.fullmatch(r"10\d{3}", district_code):
+        return "coe"
+    if name.upper().startswith("SBE - "):  # CDE also spells it "Sbe - " in some years
+        return "sbe"
+    return None
+
+
 def num(raw):
     raw = (raw or "").strip()
     return None if raw in ("", "*") else float(raw)
@@ -84,7 +99,7 @@ def main():
     labels = [v.year_label_for(y) for y, _, _ in files]
     n = len(labels)
 
-    # entity key -> {"name", "county", "coe", "ela": [...], "math": [...], "ela_n": [...], ...}
+    # entity key -> {"names", "county", "ela": [...], "math": [...], "ela_n": [...], ...}
     state = None
     counties, districts = {}, {}
 
@@ -154,13 +169,11 @@ def main():
         if all(x is None for s in SUBJECTS.values() for x in d[s]):
             continue
         name = latest_name(d["names"])
-        out_districts.append({
-            "id": f"{cc}|{dc}",
-            "name": name,
-            "county": cc,
-            "coe": "office of education" in name.lower(),
-            **pack(d),
-        })
+        entry = {"id": f"{cc}|{dc}", "name": name, "county": cc}
+        kind = district_kind(dc, name)
+        if kind:
+            entry["kind"] = kind
+        out_districts.append({**entry, **pack(d)})
     out_districts.sort(key=lambda d: (d["name"], d["id"]))
 
     out = {
@@ -174,7 +187,8 @@ def main():
     with open(OUT_PATH, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, separators=(",", ":"))
     print(f"\nWrote {OUT_PATH}: {len(out_counties)} counties, {len(out_districts)} districts "
-          f"({sum(d['coe'] for d in out_districts)} county offices), "
+          f"({sum(d.get('kind') == 'coe' for d in out_districts)} county offices, "
+          f"{sum(d.get('kind') == 'sbe' for d in out_districts)} State Board charters; not ranked), "
           f"{os.path.getsize(OUT_PATH) / 1024:.0f} KB")
 
     # Sanity check: SMFCSD is K-8, so its grade 3-8 figure should match the district dashboard's
