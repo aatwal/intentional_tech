@@ -143,6 +143,25 @@
   }
   .callout strong { color: var(--ink); }
 
+  /* ---------------- closing question ---------------- */
+  .big-question {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--hardship);
+    border-radius: 2px;
+    padding: 36px 32px;
+    margin: 40px 0 8px;
+    text-align: center;
+  }
+  .big-question .eyebrow { margin-bottom: 14px; }
+  .big-question p {
+    font-size: clamp(1.6rem, 4vw, 2.4rem);
+    line-height: 1.25;
+    font-weight: 600;
+    max-width: 30ch;
+    margin: 0 auto;
+  }
+
   .notes { font-family: 'Helvetica Neue',Arial,sans-serif; font-size: 0.82rem; color: var(--muted); }
   .notes p { margin: 0 0 10px; }
 
@@ -401,10 +420,15 @@
         <ul>
           <li>"Both groups improved" isn't enough, on its own, to show students are doing better.</li>
           <li>The <strong>all-students</strong> score is the most reliable number, and it went down.</li>
-          <li>A fair question for the district: <strong>why are so many more students now counted as facing hardship?</strong></li>
+          <li>It leaves a fair question for the district (below).</li>
         </ul>
       </div>
     </div>
+  </section>
+
+  <section class="big-question" aria-label="The question for the district">
+    <div class="eyebrow">The question for the district</div>
+    <p>Why are so many more students now counted as facing hardship?</p>
   </section>
 
   <section class="section notes">
