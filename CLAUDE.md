@@ -15,6 +15,8 @@ manager at the repo root — most of it is self-contained HTML.
   around so old links/bookmarks still land somewhere. If that deployment's URL ever changes,
   update it here too. The embedded `DATA` blob is gone from this file — see the data-sync note
   below, which now has one fewer copy to keep in sync.
+- `caaspp-2025-26.html`, `reclassification-explained.html` — redirect stubs (same pattern as
+  `smfc_caaspp_dashboard.html`) for two write-ups that moved into the dashboard app; see below.
 - `vendor_purchase_tracker.html` — district vendor spending ledger. Seed records are hardcoded;
   user-added records persist via the Artifacts `window.storage` API (`window.storage.get/set`),
   which only exists when this file is published through the Artifact tool with the storage
@@ -99,6 +101,15 @@ gitignored raw files. The tab fetches the JSON on first open (via the existing `
 route), so the main dashboard doesn't pay for it. The chat doesn't see this data yet — it's SMFCSD-only.
 The chat is the last section of the Dashboard tab (it used to be its own tab; old `?tab=chat` links
 scroll to it). `?tab=statewide` opens the statewide tab; `showTab()` keeps the URL in sync.
+
+**Write-up pages:** `templates/caaspp-2025-26.html` (2025–26 vs 2024–25 analysis, plus the district
+report comparison and statewide reclassification findings) and `templates/reclassification-explained.html`
+(a plain-language version of the reclassification analysis) are static HTML served by the `/<page>`
+route in `app.py`, which only serves names in its `PAGES` set. They share the dashboard's palette and
+header style, with link buttons back to the dashboard and between the two pages (the dashboard
+itself doesn't link to them yet). Their figures are hand-written
+from offline analysis of CDE's comprehensive statewide files (`../caaspp_files/california/comprehensive/`,
+~6.7GB, gitignored), not generated from `DATA` — update them by hand if the data changes.
 
 **Chat grounding — the important design constraint:** the full dataset is ~4.5MB (~6,700
 school×grade×subject×subgroup records). It is never sent to the model. Instead `app.py` builds a
