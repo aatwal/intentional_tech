@@ -21,7 +21,7 @@ from collections import Counter
 from datetime import datetime, timezone
 
 import requests
-from flask import Flask, jsonify, request, send_file, send_from_directory
+from flask import Flask, abort, jsonify, request, send_file, send_from_directory
 
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(APP_DIR, "data", "caaspp_data.json")
@@ -407,6 +407,17 @@ WEB_SEARCH_TOOL = {"type": "web_search_20260209", "name": "web_search"}
 @app.route("/")
 def index():
     return send_file(INDEX_PATH)
+
+
+# Standalone write-ups that sit alongside the dashboard (plain HTML, not Jinja templates).
+PAGES = {"caaspp-2025-26.html", "reclassification-explained.html"}
+
+
+@app.route("/<page>")
+def page(page):
+    if page not in PAGES:
+        abort(404)
+    return send_file(os.path.join(APP_DIR, "templates", page))
 
 
 @app.route("/data/<path:filename>")
