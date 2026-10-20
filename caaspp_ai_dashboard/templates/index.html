@@ -123,6 +123,9 @@
     color:var(--ink); background:var(--panel); border:1px solid var(--line); border-radius:2px;
     padding:11px 22px; min-height:44px; transition:border-color .12s ease, background .12s ease;
   }
+  .tab-group{display:flex; flex-wrap:wrap; gap:10px;}
+  /* The two write-up pages are plain links styled like the tab buttons. */
+  a.tab-btn{display:inline-flex; align-items:center; text-decoration:none;}
   .tab-btn:hover{border-color:var(--accent); color:var(--accent);}
   .tab-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
   .tab-btn.active, .tab-btn.active:hover{background:var(--accent); border-color:var(--accent); color:#fff; cursor:default;}
@@ -190,9 +193,13 @@
     <div class="eyebrow">CAASPP · San Mateo-Foster City School District</div>
     <h1>11-year CAASPP trends, filterable by subject, grade, school &amp; student group</h1>
     <p class="sub">Pick a subject, school, grade, and student group below; every chart updates together. 2014–15 through 2025–26 (2019–20 has no data: CAASPP testing was suspended statewide for COVID-19).</p>
-    <nav class="tab-nav" role="tablist" aria-label="Dashboard views">
-      <button type="button" class="tab-btn active" role="tab" aria-selected="true" aria-controls="tabDashboard" data-tab="dashboard">SMFCSD dashboard</button>
-      <button type="button" class="tab-btn" role="tab" aria-selected="false" aria-controls="tabStatewide" data-tab="statewide">Statewide comparison</button>
+    <nav class="tab-nav" aria-label="CAASPP pages">
+      <div class="tab-group" role="tablist" aria-label="Dashboard views">
+        <button type="button" class="tab-btn active" role="tab" aria-selected="true" aria-controls="tabDashboard" data-tab="dashboard">SMFCSD dashboard</button>
+        <button type="button" class="tab-btn" role="tab" aria-selected="false" aria-controls="tabStatewide" data-tab="statewide">Statewide comparison</button>
+      </div>
+      <a class="tab-btn" href="caaspp-2025-26.html">2025–26 results</a>
+      <a class="tab-btn" href="reclassification-explained.html">Reclassification explained</a>
     </nav>
   </header>
 
@@ -893,7 +900,7 @@ function showTab(name){
   // The chat used to be its own tab; old ?tab=chat links land on its Dashboard section.
   const toChat = name === 'chat';
   if(!TAB_NAMES.includes(name)) name = 'dashboard';
-  document.querySelectorAll('.tab-btn').forEach(b => {
+  document.querySelectorAll('button.tab-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.tab === name);
     b.setAttribute('aria-selected', b.dataset.tab === name ? 'true' : 'false');
   });
@@ -910,7 +917,7 @@ function showTab(name){
     window.scrollTo({top: top - bar.offsetHeight - 24});
   }
 }
-document.querySelectorAll('.tab-btn').forEach(btn => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
+document.querySelectorAll('button.tab-btn').forEach(btn => btn.addEventListener('click', () => showTab(btn.dataset.tab)));
 
 // ── Statewide comparison ─────────────────────────────────────────────────────
 // Loaded on first open from data/statewide.json (built by build_statewide.py), so the main
