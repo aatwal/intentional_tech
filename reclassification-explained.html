@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reclassification, Explained · SMFCSD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600;700&family=Spectral:ital@1&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #FFFFFF;
+    --card: #F7FAFB;
+    --ink: #20303B;
+    --ink-soft: #5B6B75;
+    --blue: #2F6BB6;
+    --blue-deep: #1E4A78;
+    --blue-pale: #EAF2FB;
+    --green: #7FAF4D;
+    --green-deep: #55793A;
+    --green-pale: #F0F6E9;
+    --yellow: #E3A912;
+    --yellow-pale: #FBF1D8;
+    --red: #B3382C;
+    --red-pale: #F7E2DF;
+    --orange: #C4622A;
+    --orange-pale: #FBEADD;
+    --line: #E2E8ED;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--white);
+    color: var(--ink);
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+  }
+  h1, h2, h3 {
+    font-family: 'Spectral', serif;
+    font-weight: 700;
+    color: var(--blue-deep);
+    margin: 0;
+  }
+  a { color: inherit; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 0 28px; }
+
+  /* ---------------- header ---------------- */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: var(--white);
+    border-bottom: 3px solid var(--green);
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
+  .brand-text {
+    font-family: 'Spectral', serif;
+    font-weight: 700;
+    font-size: 1.7rem;
+    color: var(--blue-deep);
+    line-height: 1.15;
+  }
+  .brand-text span {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 500;
+    font-size: 0.82rem;
+    letter-spacing: 0.08em;
+    color: var(--green-deep);
+    margin-top: 3px;
+    text-transform: uppercase;
+  }
+  nav.links { display: flex; gap: 26px; font-weight: 600; font-size: 0.92rem; }
+  nav.links a { text-decoration: none; color: var(--ink-soft); }
+  nav.links a:hover { color: var(--blue); }
+  .nav-cta {
+    background: var(--green);
+    color: #143012;
+    padding: 9px 18px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    border-radius: 0;
+    white-space: nowrap;
+  }
+  .nav-cta:hover { background: #6d9a41; }
+
+  /* ---------------- page intro band ---------------- */
+  .page-hero {
+    background: var(--blue-deep);
+    color: #fff;
+    padding: 48px 0 42px;
+  }
+  .page-hero .eyebrow {
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #B7DE85;
+  }
+  .page-hero h1 {
+    color: #fff;
+    font-size: 2.3rem;
+    line-height: 1.18;
+    margin-top: 8px;
+  }
+  .page-hero p {
+    margin-top: 16px;
+    font-size: 1.05rem;
+    color: #C9DBEC;
+    max-width: 70ch;
+  }
+
+  main { padding: 8px 0 60px; }
+
+  .intro-note {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin: 32px 0 8px;
+    font-size: 0.96rem;
+    color: var(--ink-soft);
+  }
+  .intro-note strong { color: var(--ink); }
+
+  /* ---------------- headline stats ---------------- */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 28px 0 8px; }
+  .stat {
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--blue);
+    padding: 18px 20px;
+    background: var(--white);
+  }
+  .stat.c-green { border-top-color: var(--green); }
+  .stat.c-yellow { border-top-color: var(--yellow); }
+  .stat .k {
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .stat .v {
+    font-family: 'Spectral', serif;
+    font-weight: 700;
+    font-size: 2.1rem;
+    color: var(--blue-deep);
+    line-height: 1.15;
+    margin-top: 6px;
+  }
+  .stat .d { font-size: 0.92rem; color: var(--ink-soft); margin-top: 4px; }
+
+  /* ---------------- sections ---------------- */
+  .section { padding: 34px 0 6px; }
+  .section h2 { font-size: 1.65rem; line-height: 1.2; }
+  .section h3.subhead { font-size: 1.2rem; margin: 22px 0 8px; }
+  .section .lede { color: var(--ink-soft); margin: 8px 0 18px; max-width: 90ch; }
+  .section p { max-width: 90ch; }
+  .section ul { padding-left: 1.2em; max-width: 90ch; }
+  .section li { margin-bottom: 8px; }
+
+  .table-scroll { overflow-x: auto; margin: 6px 0 14px; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.95rem;
+    font-variant-numeric: tabular-nums;
+  }
+  th, td { padding: 9px 12px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; white-space: normal; }
+  thead th {
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    border-bottom: 2px solid var(--blue-deep);
+  }
+  tbody tr:hover { background: var(--card); }
+  .up { color: var(--green-deep); font-weight: 600; }
+  .down { color: var(--red); font-weight: 600; }
+  .flat { color: var(--ink-soft); }
+  .small-n { color: var(--ink-soft); font-size: 0.85rem; }
+  .match { color: var(--green-deep); font-weight: 600; }
+  .nomatch { color: var(--orange); font-weight: 600; }
+  td.wrap-cell { white-space: normal; text-align: left; min-width: 200px; }
+
+  .callout {
+    background: var(--yellow-pale);
+    border-left: 4px solid var(--yellow);
+    padding: 16px 20px;
+    margin: 18px 0;
+    max-width: 90ch;
+  }
+  .callout strong { color: var(--ink); }
+
+  .notes { font-size: 0.9rem; color: var(--ink-soft); }
+  .notes p { margin: 0 0 10px; }
+
+  footer { background: var(--blue-deep); color: #C9DBEC; padding: 48px 0 30px; }
+  .footer-grid { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 30px; }
+  footer h4 {
+    font-family: 'IBM Plex Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #fff;
+    font-size: 0.82rem;
+    margin-bottom: 14px;
+  }
+  footer a { color: #B7DE85; text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  footer p { margin: 0 0 9px; font-size: 0.95rem; }
+  .footer-bottom {
+    border-top: 1px solid rgba(255,255,255,0.15);
+    margin-top: 34px;
+    padding-top: 18px;
+    font-size: 0.82rem;
+    color: #9FB6C9;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  @media (max-width: 860px) {
+    .footer-grid { grid-template-columns: 1fr; }
+    nav.links {
+      order: 3;
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px 20px;
+      padding-top: 10px;
+      margin-top: 2px;
+      border-top: 1px solid var(--line);
+    }
+    .page-hero h1 { font-size: 1.85rem; }
+    .stats, .school-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) {
+    .wrap { padding: 0 16px; }
+    th, td { padding: 8px 8px; }
+  }
+
+  /* ---------------- plain-language page ---------------- */
+  .big-points { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 28px 0 8px; }
+  .big-points .stat .v { font-size: 1.9rem; }
+  .section p.say { font-size: 1.12rem; }
+
+  /* dot rows: out of every 20 students */
+  .dots-row { display: flex; align-items: center; gap: 16px; margin: 12px 0; flex-wrap: wrap; }
+  .dots-row .yr { font-family: 'IBM Plex Mono', monospace; font-weight: 600; width: 4.5em; color: var(--ink-soft); }
+  .dots { display: flex; gap: 6px; flex-wrap: wrap; }
+  .dot { width: 22px; height: 22px; border-radius: 50%; background: var(--blue-pale); border: 2px solid var(--blue); }
+  .dot.h { background: var(--orange); border-color: var(--orange); }
+  .dots-row .lbl { font-weight: 600; }
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.92rem; color: var(--ink-soft); margin-top: 6px; }
+  .legend span::before { content: ""; display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 6px; vertical-align: -2px; }
+  .legend .lh::before { background: var(--orange); }
+  .legend .lb::before { background: var(--blue); }
+  .legend .ln::before { background: var(--blue-pale); border: 2px solid var(--blue); width: 10px; height: 10px; }
+
+  /* Will Rogers diagram */
+  .wr { display: grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items: stretch; margin: 18px 0 10px; }
+  .wr-panel { border: 1px solid var(--line); background: var(--card); padding: 16px 18px; }
+  .wr-panel h3 { font-size: 1.15rem; margin-bottom: 10px; }
+  .wr-arrow { align-self: center; font-size: 2.2rem; color: var(--yellow); font-weight: 700; text-align: center; }
+  .grp { border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; background: var(--white); border: 2px solid var(--line); }
+  .grp.n { border-color: var(--blue); }
+  .grp.h { border-color: var(--orange); }
+  .grp .gname { font-weight: 600; font-size: 0.92rem; }
+  .grp.n .gname { color: var(--blue-deep); }
+  .grp.h .gname { color: var(--orange); }
+  .kids { display: flex; gap: 8px; margin: 8px 0; flex-wrap: wrap; min-height: 44px; }
+  .kid { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+         font-family: 'IBM Plex Mono', monospace; font-weight: 600; font-size: 0.95rem; background: var(--blue-pale); color: var(--ink); border: 2px solid var(--blue); }
+  .grp.h .kid { background: var(--orange-pale); border-color: var(--orange); }
+  .kid.moved { background: var(--yellow-pale) !important; border: 3px dashed var(--yellow) !important; }
+  .avg { font-size: 0.95rem; }
+  .avg b { font-family: 'Spectral', serif; font-size: 1.25rem; color: var(--blue-deep); }
+  .everyone { border-top: 2px solid var(--line); padding-top: 10px; font-size: 0.95rem; }
+  .everyone b { font-family: 'Spectral', serif; font-size: 1.25rem; color: var(--blue-deep); }
+
+  /* SMFCSD bars */
+  .bars { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 18px 0 10px; }
+  .bar-card { border: 1px solid var(--line); padding: 16px 18px; }
+  .bar-card h3 { font-size: 1.1rem; margin-bottom: 12px; }
+  .bar-line { display: grid; grid-template-columns: 9.5em 1fr 4.2em; align-items: center; gap: 10px; margin: 8px 0; font-size: 0.93rem; }
+  .bar-track { background: var(--card); border: 1px solid var(--line); height: 20px; position: relative; }
+  .bar-fill { height: 100%; border-radius: 0 4px 4px 0; }
+  .bar-fill.n { background: var(--blue); }
+  .bar-fill.h { background: var(--orange); }
+  .bar-fill.a { background: var(--blue-deep); }
+  .bar-line .num { font-family: 'IBM Plex Mono', monospace; font-weight: 600; text-align: right; }
+  .verdict { margin-top: 10px; font-weight: 600; }
+
+  .split { display: flex; height: 34px; margin: 6px 0 4px; border: 1px solid var(--line); }
+  .split div { display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: 600; color: #fff; }
+  .split .h { background: var(--orange); }
+  .split .n { background: var(--blue); }
+
+  .yes-no { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 12px; }
+  .yes-no > div { border: 1px solid var(--line); padding: 16px 18px; }
+  .yes-no .no { border-top: 4px solid var(--green); }
+  .yes-no .yes { border-top: 4px solid var(--yellow); }
+  .yes-no h3 { font-size: 1.1rem; margin-bottom: 8px; }
+  .yes-no ul { margin: 0; }
+
+  @media (max-width: 860px) {
+    .big-points, .bars, .yes-no { grid-template-columns: 1fr; }
+    .wr { grid-template-columns: 1fr; }
+    .wr-arrow { transform: rotate(90deg); }
+  }
+  @media (max-width: 520px) {
+    .dot { width: 16px; height: 16px; }
+    .bar-line { grid-template-columns: 7.5em 1fr 3.6em; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <a class="brand" href="index.html">
+      <div class="brand-text">Intentional Tech in Schools<span>SMFCSD Parent Coalition</span></div>
+    </a>
+    <nav class="links">
+      <a href="board-meeting-videos.html">Voices</a>
+      <a href="index.html#needed">What's needed</a>
+      <a href="index.html#involved">Get involved</a>
+      <a href="generative-ai.html">Generative AI</a>
+      <a href="faq.html">FAQ</a>
+    </nav>
+    <a class="nav-cta" href="https://www.fournorms.com/campaigns/san-mateo-foster-city-school-district-parents-for-intentional-tech-petition-for-intentional-technology-use-in-san-mateo-foster-city-schools">Sign the petition</a>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="wrap">
+    <div class="eyebrow">CAASPP results · in plain English</div>
+    <h1>Many more students are now counted as "facing hardship." Here's why that matters.</h1>
+    <p>A simple explanation of what changed in San Mateo-Foster City, how it compares with the rest of California, and how it can make test scores look better than they are.</p>
+  </div>
+</section>
+
+<main class="wrap">
+
+  <div class="big-points">
+    <div class="stat c-yellow">
+      <div class="k">Students counted as facing hardship</div>
+      <div class="v">3 in 10 → almost 5 in 10</div>
+      <div class="d">From 2023 to 2026</div>
+    </div>
+    <div class="stat">
+      <div class="k">Compared with other districts</div>
+      <div class="v">Top 20 of 580</div>
+      <div class="d">Only 19 California districts had a bigger jump</div>
+    </div>
+    <div class="stat c-green">
+      <div class="k">Reading scores, all students</div>
+      <div class="v">Went down</div>
+      <div class="d">Even though both groups went up</div>
+    </div>
+  </div>
+
+  <section class="section">
+    <h2>1. What changed?</h2>
+    <p class="say">When California reports test scores, it splits students into two groups: students <strong>facing financial hardship</strong> (for example, their family qualifies for free or reduced-price school meals) and students <strong>not facing hardship</strong>.</p>
+    <p class="say">In San Mateo-Foster City, the number of students counted as facing hardship went up a lot in just three years.</p>
+
+    <div role="img" aria-label="Out of every 20 students tested: about 6 were counted as facing hardship in 2023, and about 9 in 2026.">
+      <div class="dots-row"><span class="yr">2023</span><span class="dots"><span class="dot h"></span><span class="dot h"></span><span class="dot h"></span><span class="dot h"></span><span class="dot h"></span><span class="dot h"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="lbl">about 6 out of 20</span></div>
+      <div class="dots-row"><span class="yr">2026</span><span class="dots"><span class="dot h"></span><span class="dot h"></span><span class="dot h"></span><span class="dot h"></span><span class="dot h"></span><span class="dot h"></span><span class="dot h"></span><span class="dot h"></span><span class="dot h"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></span><span class="lbl">about 9 out of 20</span></div>
+    </div>
+    <div class="legend"><span class="lh">Counted as facing hardship</span><span class="ln">Not facing hardship</span></div>
+    <p class="notes" style="margin-top:10px">Out of every 20 students tested in grades 3–8. "2023" means the spring 2023 test (the 2022–23 school year), and so on.</p>
+  </section>
+
+  <section class="section">
+    <h2>2. Is that normal?</h2>
+    <p class="say"><strong>No.</strong> In most California districts, this number barely moved. Out of about 580 districts, only 19 had a bigger jump than San Mateo-Foster City.</p>
+    <p class="say">Some nearby districts did see a big jump in 2024, but it went right back down the next year. In San Mateo-Foster City, it stayed up and then went up again.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Out of 100 students, how many were counted as facing hardship?</th><th>2023</th><th>2024</th><th>2025</th><th>2026</th></tr></thead>
+        <tbody>
+          <tr><td>Hillsborough</td><td>2</td><td>20</td><td>3</td><td>2</td></tr>
+          <tr><td>Portola Valley</td><td>6</td><td>25</td><td>4</td><td>5</td></tr>
+          <tr><td>San Carlos</td><td>10</td><td>21</td><td>11</td><td>11</td></tr>
+          <tr><td><strong>San Mateo-Foster City</strong></td><td><strong>31</strong></td><td><strong>42</strong></td><td><strong>40</strong></td><td><strong>45</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>3. Why does it matter? The "Will Rogers effect"</h2>
+    <p class="say">Moving students from one group to the other can make <strong>both groups' scores go up, even if no student does any better.</strong> Here's a made-up example with six students.</p>
+
+    <div class="wr" role="img" aria-label="Before: the not-facing-hardship group has scores 90, 80 and 70, an average of 80; the facing-hardship group has 50, 30 and 10, an average of 30; everyone together averages 55. One student who scored 70 is moved to the facing-hardship group. After: the first group has 90 and 80, average 85, up; the second has 70, 50, 30 and 10, average 40, up; everyone together still averages 55.">
+      <div class="wr-panel">
+        <h3>Before</h3>
+        <div class="grp n">
+          <div class="gname">Not facing hardship</div>
+          <div class="kids"><span class="kid">90</span><span class="kid">80</span><span class="kid moved">70</span></div>
+          <div class="avg">Average: <b>80</b></div>
+        </div>
+        <div class="grp h">
+          <div class="gname">Facing hardship</div>
+          <div class="kids"><span class="kid">50</span><span class="kid">30</span><span class="kid">10</span></div>
+          <div class="avg">Average: <b>30</b></div>
+        </div>
+        <div class="everyone">Everyone together: <b>55</b></div>
+      </div>
+      <div class="wr-arrow" aria-hidden="true">→</div>
+      <div class="wr-panel">
+        <h3>After moving one student</h3>
+        <div class="grp n">
+          <div class="gname">Not facing hardship</div>
+          <div class="kids"><span class="kid">90</span><span class="kid">80</span></div>
+          <div class="avg">Average: <b>85</b> <span class="up">▲ up 5</span></div>
+        </div>
+        <div class="grp h">
+          <div class="gname">Facing hardship</div>
+          <div class="kids"><span class="kid moved">70</span><span class="kid">50</span><span class="kid">30</span><span class="kid">10</span></div>
+          <div class="avg">Average: <b>40</b> <span class="up">▲ up 10</span></div>
+        </div>
+        <div class="everyone">Everyone together: <b>55</b> <span class="flat">no change</span></div>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>What happened?</strong> The student who scored 70 (dashed circle) was the <em>lowest</em> score in the first group, so taking them out raised that group's average. They were the <em>highest</em> score in the second group, so adding them raised that group's average too. Nobody's score changed. The only honest measure of change here is <strong>everyone together</strong>, and it stayed the same.
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>4. How this could have happened in San Mateo-Foster City</h2>
+    <p class="say">The district's report says both groups of students improved from 2023 to 2026. That's true. But over the same time, about <strong>1,100 students left</strong> the "not facing hardship" group and about <strong>700 more joined</strong> the "facing hardship" group. And the score for <strong>all students together went down</strong>.</p>
+
+    <div class="bar-card" style="margin-top:14px">
+      <h3>Who was in each group (grades 3–8)</h3>
+      <div class="bar-line" style="grid-template-columns: 4.5em 1fr"><span class="yr" style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--ink-soft)">2023</span>
+        <div class="split" role="img" aria-label="2023: 31% facing hardship, 69% not"><div class="h" style="width:31%">31%</div><div class="n" style="width:69%">69%</div></div></div>
+      <div class="bar-line" style="grid-template-columns: 4.5em 1fr"><span class="yr" style="font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--ink-soft)">2026</span>
+        <div class="split" role="img" aria-label="2026: 45% facing hardship, 55% not"><div class="h" style="width:45%">45%</div><div class="n" style="width:55%">55%</div></div></div>
+      <div class="legend"><span class="lh">Facing hardship</span><span class="lb">Not facing hardship</span></div>
+    </div>
+
+    <div class="bars">
+      <div class="bar-card">
+        <h3>Reading (ELA) in 2023</h3>
+        <div class="bar-line"><span>Not facing hardship</span><div class="bar-track"><div class="bar-fill n" style="width:71.0%"></div></div><span class="num">71%</span></div>
+        <div class="bar-line"><span>Facing hardship</span><div class="bar-track"><div class="bar-fill h" style="width:21.6%"></div></div><span class="num">22%</span></div>
+        <div class="bar-line"><span><strong>All students</strong></span><div class="bar-track"><div class="bar-fill a" style="width:55.6%"></div></div><span class="num">56%</span></div>
+      </div>
+      <div class="bar-card">
+        <h3>Reading (ELA) in 2026</h3>
+        <div class="bar-line"><span>Not facing hardship</span><div class="bar-track"><div class="bar-fill n" style="width:74.2%"></div></div><span class="num">74% <span class="up">▲</span></span></div>
+        <div class="bar-line"><span>Facing hardship</span><div class="bar-track"><div class="bar-fill h" style="width:26.7%"></div></div><span class="num">27% <span class="up">▲</span></span></div>
+        <div class="bar-line"><span><strong>All students</strong></span><div class="bar-track"><div class="bar-fill a" style="width:52.7%"></div></div><span class="num">53% <span class="down">▼</span></span></div>
+      </div>
+    </div>
+    <p class="notes">Percent of students who met or exceeded the reading standard. Math looks similar: both groups went up while all students together stayed about flat (51% to 50.5%).</p>
+
+    <p class="say">This is exactly the pattern in the made-up example. If the students who switched groups scored somewhere in the middle — below most "not facing hardship" students but above most "facing hardship" students — moving them would push <strong>both</strong> groups' scores up on its own.</p>
+    <p class="say">It's also rare. Across California, only about 15 districts had both groups go up while the overall score went down. San Mateo-Foster City is one of just four where it happened in both reading and math, and it had the biggest drop in overall reading scores.</p>
+  </section>
+
+  <section class="section">
+    <h2>5. What this means</h2>
+    <div class="yes-no">
+      <div class="no">
+        <h3>What it does <em>not</em> mean</h3>
+        <ul>
+          <li>It doesn't prove anyone did anything wrong.</li>
+          <li>It doesn't prove the gains for each group are fake. Some real improvement could be mixed in.</li>
+        </ul>
+      </div>
+      <div class="yes">
+        <h3>What it <em>does</em> mean</h3>
+        <ul>
+          <li>"Both groups improved" isn't enough, on its own, to show students are doing better.</li>
+          <li>The <strong>all-students</strong> score is the most reliable number, and it went down.</li>
+          <li>A fair question for the district: <strong>why are so many more students now counted as facing hardship?</strong></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section notes">
+    <h2>Sources &amp; notes</h2>
+    <p>Data: California Department of Education CAASPP research files for every California district, 2014–15 through 2025–26 (grades 3–8 combined). "Facing hardship" is CDE's "socioeconomically disadvantaged" student group. District rankings include about 580 districts with at least 300 tested students, not counting county offices of education. Numbers on this page are rounded to keep them simple.</p>
+    <p>For the full numbers and method, see the <a href="caaspp-2025-26.html">detailed 2025–26 analysis</a>. For every year, school, grade and student group, see the <a href="https://smfcsd-tech-analysis.onrender.com/" target="_blank" rel="noopener">interactive CAASPP dashboard</a>.</p>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap footer-grid">
+    <div>
+      <h4>Intentional Tech in Schools</h4>
+      <p>A coalition of SMFCSD parents, teachers, and community members working alongside district leaders for thoughtful, evidence-based use of classroom technology.</p>
+    </div>
+    <div>
+      <h4>Office hours</h4>
+      <p>Email: <a href="mailto:smfcsd@intentionaltechinschools.com">smfcsd@intentionaltechinschools.com</a></p>
+      <p><a href="https://bit.ly/4uRRG7W" target="_blank" rel="noopener">Follow us on Facebook</a></p>
+      <p><a href="https://bit.ly/4vPoZb6" target="_blank" rel="noopener">Fill out our concerns form</a></p>
+    </div>
+    <div>
+      <h4>Take action</h4>
+      <p><a href="https://www.fournorms.com/campaigns/san-mateo-foster-city-school-district-parents-for-intentional-tech-petition-for-intentional-technology-use-in-san-mateo-foster-city-schools" target="_blank" rel="noopener">Sign the petition</a></p>
+      <p><a href="https://www.smfcsd.net/board-of-trustees/smfcsd-by-trustee-area-map" target="_blank" rel="noopener">Find your board trustee</a></p>
+      <p><a href="https://smfcsd-tech-analysis.onrender.com/" target="_blank" rel="noopener">Explore the data dashboard</a></p>
+    </div>
+  </div>
+  <div class="wrap footer-bottom">
+    <span>SMFCSD &middot; Educational Technology Progress Report</span>
+    <span>Updated October 2026</span>
+  </div>
+</footer>
+
+</body>
+</html>
