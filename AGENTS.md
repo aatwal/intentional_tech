@@ -106,8 +106,10 @@ scroll to it). `?tab=statewide` opens the statewide tab; `showTab()` keeps the U
 report comparison and statewide reclassification findings) and `templates/reclassification-explained.html`
 (a plain-language version of the reclassification analysis) are static HTML served by the `/<page>`
 route in `app.py`, which only serves names in its `PAGES` set. They share the dashboard's palette and
-header style, and all three pages share one row of link buttons (dashboard, statewide tab, and the
-two write-ups); on the dashboard the first two are its real tabs and the write-ups are plain links. Their figures are hand-written
+header style, and share one row of link buttons (dashboard, statewide tab, and the reclassification
+page); on the dashboard the first two are its real tabs and the reclassification link is a plain link.
+The 2025–26 page is deliberately unlinked: it's still served at its URL (and keeps its own button
+in its own header), but no other page links to it. Their figures are hand-written
 from offline analysis of CDE's comprehensive statewide files (`../caaspp_files/california/comprehensive/`,
 ~6.7GB, gitignored), not generated from `DATA` — update them by hand if the data changes.
 
