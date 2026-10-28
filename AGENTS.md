@@ -189,13 +189,5 @@ than sharing a stylesheet, and the palettes differ:
 - `vendor_purchase_tracker.html`: cooler paper `--paper:#eef1f5`, no single `--accent` — instead
   per-category colors `--cat-assessment`/`--cat-curriculum`/`--cat-ai`/`--cat-materials`.
 
-The main site's pages (`index.html`, `staging.html`, `faq.html`, `generative-ai.html`,
-`board-meeting-videos.html`, `citations-child-health.html`, `cpra-guide.html`, `email-toolkit.html`,
-`email-templates.html`, `national-movement.html`) each carry a hand-copied header nav: Voices, Get
-involved (links to the home page's `#needed` section), Generative AI, Research (`citations-child-health.html`), FAQ, plus a "Menu" button that collapses the links below 1040px. Its
-CSS is the `<style>` block marked "site nav" at the end of each `<head>`, and its script follows
-`</header>`. Change all copies together. `cpra-guide`, `email-*` and `national-movement` are
-deliberately not in the nav. `flyer.html` keeps its own in-page nav.
-
 When extending a file, match its own existing custom properties rather than importing another
 file's palette or introducing new ad hoc colors.
