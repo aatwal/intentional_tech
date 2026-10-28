@@ -299,6 +299,9 @@
 
   @media (max-width: 860px) {
     .footer-grid { grid-template-columns: 1fr; }
+    /* brand fills row 1, so the petition button sits right beside it or, once it wraps, centered on row 2 */
+    .brand { flex-grow: 1; }
+    .nav-cta { margin: 0 auto; }
     nav.links {
       order: 3;
       width: 100%;

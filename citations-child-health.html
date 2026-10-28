@@ -112,6 +112,9 @@
   .nav-cta:hover { background: #6d9a41; }
 
   @media (max-width: 860px) {
+    /* brand fills row 1, so the petition button sits right beside it or, once it wraps, centered on row 2 */
+    .brand { flex-grow: 1; }
+    .nav-cta { margin: 0 auto; }
     nav.links {
       order: 3;
       width: 100%;
@@ -140,6 +143,9 @@
     font-weight: 600;
     margin-top: 10px;
     white-space: nowrap;
+  }
+  @media (max-width: 560px) {  /* too wide for one line on phones; split into two even lines instead */
+    .hero h1 { white-space: normal; text-wrap: balance; }
   }
   .hero p {
     margin-top: 16px;
