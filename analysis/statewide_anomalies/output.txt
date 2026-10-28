@@ -1,0 +1,189 @@
+
+====================================================================================================
+0. Sanity: SMFCSD all-students met% (compare caaspp_ai_dashboard/data/caaspp_data.json)
+====================================================================================================
+  ELA 2018:62.4 2019:62.3 2021:58.7 2022:57.7 2023:55.6 2024:55.0 2025:52.7 2026:52.7
+  Math 2018:55.0 2019:55.6 2021:49.2 2022:51.6 2023:51.1 2024:50.7 2025:49.4 2026:50.5
+  Ranked districts with >=300 testers in 2026: 576
+
+====================================================================================================
+A. Socioeconomically disadvantaged (SED) share - the original reclassification finding
+====================================================================================================
+  SMFCSD SED share: 2018:32.4 2019:31.5 2021:30.0 2022:31.7 2023:31.1 2024:41.8 2025:40.1 2026:45.3
+  SED share change 2023->2024 (largest increase first)             SMFCSD   +10.7  rank  46/578  median +2.5
+  SED share change 2025->2026 (largest increase first)             SMFCSD    +5.2  rank  42/578  median -0.1
+  SED share change 2023->2026 (largest increase first)             SMFCSD   +14.2  rank  20/578  median +1.0
+
+  'Both groups up, all students down', 2023->2026 (districts with SED and not-SED rates both years):
+  ELA: 15 of 548 districts
+      San Mateo-Foster City                  all  -2.9  SED  +5.1  not SED  +3.2
+      Novato Unified                         all  -2.3  SED  +0.8  not SED  +4.6
+      Glendale Unified                       all  -1.8  SED  +2.7  not SED  +2.7
+      Dublin Unified                         all  -1.5  SED  +4.5  not SED  +0.4
+      Templeton Unified                      all  -1.1  SED  +3.7  not SED  +0.8
+      Davis Joint Unified                    all  -0.8  SED  +5.9  not SED  +3.0
+      San Juan Unified                       all  -0.6  SED  +1.6  not SED  +0.0
+      Bishop Unified                         all  -0.5  SED  +3.2  not SED  +2.7
+      ABC Unified                            all  -0.4  SED  +1.0  not SED  +0.4
+      Belmont-Redwood Shores Elementary      all  -0.3  SED  +3.0  not SED  +0.3
+      Alta Loma Elementary                   all  -0.3  SED  +2.4  not SED  +1.3
+      Wright Elementary                      all  -0.3  SED  +0.8  not SED  +0.0
+      Vallejo City Unified                   all  -0.2  SED  +0.3  not SED  +0.1
+      Wheatland                              all  -0.1  SED  +0.1  not SED  +2.5
+      Rio Elementary                         all  -0.1  SED  +2.6  not SED +11.4
+  Math: 13 of 548 districts
+      Knightsen Elementary                   all  -2.5  SED  +2.7  not SED  +0.0
+      Fremont Unified                        all  -2.2  SED  +2.3  not SED  +1.1
+      Novato Unified                         all  -1.3  SED  +1.9  not SED  +5.4
+      Evergreen Elementary                   all  -1.0  SED  +1.5  not SED  +0.1
+      Davis Joint Unified                    all  -0.8  SED +11.4  not SED  +1.8
+      Vacaville Unified                      all  -0.8  SED  +1.3  not SED  +0.9
+      Temple City Unified                    all  -0.7  SED  +0.6  not SED  +2.6
+      San Mateo-Foster City                  all  -0.6  SED  +6.0  not SED  +6.6
+      Dublin Unified                         all  -0.2  SED  +9.6  not SED  +1.8
+      Sylvan Union Elementary                all  -0.2  SED  +0.9  not SED  +2.0
+      Norris Elementary                      all  -0.1  SED  +3.5  not SED  +0.5
+      Solana Beach Elementary                all  -0.1  SED  +1.7  not SED  +0.7
+      Merced City Elementary                 all  -0.1  SED  +0.1  not SED  +0.1
+
+====================================================================================================
+B. Who was reclassified: share of each race counted as SED, SMFCSD
+====================================================================================================
+                  2019  2021  2022  2023  2024  2025  2026
+  Black           39.0  19.0  47.7  42.9  56.8  34.8  17.4
+  Asian            5.5   5.8   6.6   6.4  15.4  13.5  15.6
+  Filipino        22.5  12.0  12.0  10.6  31.1  28.7  30.4
+  Hispanic        69.7  66.0  64.5  63.1  72.4  69.8  78.8
+  Pacific Isl.    56.9  44.1  46.4  50.8  78.3  66.7  79.7
+  White            7.7   7.0   8.7   7.5  19.3  17.0  19.4
+  Two+ races       8.7  11.0  13.5   9.8  18.9  17.6  21.7
+
+  Counts tested (ELA, grades 3-8), SED / not SED:  2023 -> 2024 -> 2026
+  Black          SED    12    21     4   not SED    16    16    19
+  Asian          SED   103   241   230   not SED  1502  1324  1240
+  Filipino       SED    23    68    68   not SED   195   151   156
+  Hispanic       SED  1636  1870  1975   not SED   956   713   530
+  Pacific Isl.   SED    60    94   102   not SED    58    26    26
+  White          SED    90   213   186   not SED  1103   890   772
+  Two+ races     SED    66   129   150   not SED   605   552   540
+  Asian students counted as SED, change 2023->2024 (>=100 Asian)   SMFCSD    +9.0  rank  40/232  median +3.6
+  Asian students counted as SED, change 2023->2026 (>=100 Asian)   SMFCSD    +9.2  rank  39/229  median +3.2
+  White students counted as SED, change 2023->2024 (>=100 White)   SMFCSD   +11.8  rank  44/466  median +3.8
+  White students counted as SED, change 2023->2026 (>=100 White)   SMFCSD   +11.9  rank  38/459  median +1.7
+  Hispanic not-SED students tested, % change 2023->2026 (steepest drop first) SMFCSD   -44.6  rank  26/396  median -5.6
+
+  SMFCSD met% by group (ELA):
+                    2019  2021  2022  2023  2024  2025  2026
+  All               62.3  58.7  57.7  55.6  55.0  52.7  52.7
+  SED               29.6  25.1  25.1  21.6  30.6  26.5  26.7
+  Not SED           77.3  73.1  72.9  71.0  72.6  70.3  74.2
+  Hispanic SED      25.0  19.5  18.9  16.0  18.2  17.7  16.9
+  Hispanic notSED   55.0  45.5  41.9  41.6  42.6  38.6  45.8
+  Asian SED         64.6  68.7  75.0  75.7  80.9  67.8  70.4
+  Asian notSED      86.3  85.3  86.9  86.2  85.7  84.5  85.6
+  White SED         54.1  45.5  48.2  41.1  58.2  53.4  52.7
+  White notSED      78.9  77.0  77.7  73.5  75.8  75.2  75.0
+
+  Race-mix decomposition (race-weighted rates; differ slightly from the group total due to suppression):
+  ELA 2023->2024: SED 21.1->29.6 (+8.5); with 2023 race mix 24.8 (+3.7)   | not SED 71.5->73.0 (+1.4); with 2023 race mix 72.0 (+0.5)
+  ELA 2023->2026: SED 21.1->26.1 (+4.9); with 2023 race mix 22.6 (+1.5)   | not SED 71.5->74.6 (+3.0); with 2023 race mix 72.5 (+1.0)
+  Math 2023->2024: SED 18.2->25.0 (+6.8); with 2023 race mix 20.4 (+2.2)   | not SED 66.9->69.2 (+2.4); with 2023 race mix 68.2 (+1.4)
+  Math 2023->2026: SED 18.2->23.2 (+5.0); with 2023 race mix 19.5 (+1.3)   | not SED 66.9->73.2 (+6.3); with 2023 race mix 70.7 (+3.8)
+  SED ELA met% change 2023->2024 (largest gain first)              SMFCSD    +9.0  rank  22/569  median +1.2
+  SED Math met% change 2023->2024 (largest gain first)             SMFCSD    +7.9  rank  37/569  median +1.5
+
+====================================================================================================
+C. Homeless students (automatically counted as SED)
+====================================================================================================
+  SMFCSD homeless share: 2019:  3.2 2021:  3.0 2022:  3.1 2023:  2.6 2024:  5.5 2025:  5.9 2026:  7.4
+  SMFCSD homeless tested: 2019:230 2021:197 2022:203 2023:167 2024:349 2025:371 2026:445
+  Homeless share 2026                                              SMFCSD    +7.4  rank  80/576  median +2.1
+  Homeless share change 2023->2026                                 SMFCSD    +4.8  rank  43/576  median +0.2
+  Homeless share 2026, among the 194 districts with SED < 50%      SMFCSD    +7.4  rank   6/194  median +0.3
+      Placentia-Yorba Linda Unified          homeless 14.3  (2023   0.0)  SED 47.1
+      Saddleback Valley Unified              homeless 12.5  (2023   9.1)  SED 44.9
+      Morgan Hill Unified                    homeless  9.2  (2023  10.2)  SED 45.4
+      Capistrano Unified                     homeless  8.9  (2023   8.0)  SED 34.6
+      San Luis Coastal Unified               homeless  7.8  (2023   0.3)  SED 44.7
+      San Mateo-Foster City                  homeless  7.4  (2023   2.6)  SED 45.3
+      Berryessa Union Elementary             homeless  6.7  (2023   1.6)  SED 34.2
+      Sonora Elementary                      homeless  6.5  (2023   3.1)  SED 45.7
+      Jamul-Dulzura Union Elementary         homeless  6.4  (2023   0.0)  SED 49.9
+      San Pasqual Union Elementary           homeless  6.3  (2023   3.0)  SED 26.2
+  SMFCSD homeless met% ELA: 2019: 22.2 2021: 14.2 2022: 14.8 2023: 10.2 2024: 12.9 2025: 10.8 2026: 15.1
+
+====================================================================================================
+D/E. Scores for other student groups, 2023->2026 (districts with >=100 tested in the group)
+====================================================================================================
+  SMFCSD Disability met%: 2019: 15.1 2021: 16.8 2022: 18.2 2023: 18.2 2024: 16.7 2025: 15.3 2026: 13.8 (ELA)
+  SMFCSD Disability met%: 2019: 14.6 2021: 14.4 2022: 17.5 2023: 18.3 2024: 15.3 2025: 15.2 2026: 13.8 (Math)
+    Disability ELA met% 2026                                       SMFCSD   +13.8  rank 217/451  median +13.6
+    Disability ELA change 2023->2026                               SMFCSD    -4.4  rank 403/431  median +0.6
+    Disability Math met% 2026                                      SMFCSD   +13.8  rank 180/450  median +11.4
+    Disability Math change 2023->2026                              SMFCSD    -4.6  rank 398/429  median +0.4
+  SMFCSD Fluent/English only met%: 2019: 72.7 2021: 71.3 2022: 72.3 2023: 70.1 2024: 69.1 2025: 68.0 2026: 67.4 (ELA)
+  SMFCSD Fluent/English only met%: 2019: 65.1 2021: 58.9 2022: 64.2 2023: 63.9 2024: 64.0 2025: 63.3 2026: 64.0 (Math)
+    Fluent/English only ELA met% 2026                              SMFCSD   +67.4  rank 117/576  median +51.4
+    Fluent/English only ELA change 2023->2026                      SMFCSD    -2.8  rank 513/576  median +1.8
+    Fluent/English only Math met% 2026                             SMFCSD   +64.0  rank  90/576  median +40.1
+    Fluent/English only Math change 2023->2026                     SMFCSD    +0.1  rank 423/576  median +2.1
+  SMFCSD English learner met%: 2019:  9.4 2021: 11.0 2022: 12.9 2023:  7.9 2024:  7.8 2025:  6.7 2026:  6.5 (ELA)
+  SMFCSD English learner met%: 2019: 11.3 2021: 12.3 2022: 14.1 2023: 11.4 2024: 10.6 2025:  9.6 2026:  9.2 (Math)
+    English learner ELA met% 2026                                  SMFCSD    +6.5  rank 320/414  median +10.2
+    English learner ELA change 2023->2026                          SMFCSD    -1.4  rank 216/410  median -1.2
+    English learner Math met% 2026                                 SMFCSD    +9.2  rank 247/418  median +10.2
+    English learner Math change 2023->2026                         SMFCSD    -2.2  rank 332/414  median +0.6
+  SMFCSD Homeless met%: 2019: 22.2 2021: 14.2 2022: 14.8 2023: 10.2 2024: 12.9 2025: 10.8 2026: 15.1 (ELA)
+  SMFCSD Homeless met%: 2019: 15.1 2021:  6.0 2022: 11.4 2023:  7.6 2024: 12.3 2025: 10.5 2026: 15.7 (Math)
+    Homeless ELA met% 2026                                         SMFCSD   +15.1  rank 162/178  median +24.6
+    Homeless ELA change 2023->2026                                 SMFCSD    +4.9  rank  31/127  median +2.0
+    Homeless Math met% 2026                                        SMFCSD   +15.7  rank 109/178  median +18.0
+    Homeless Math change 2023->2026                                SMFCSD    +8.1  rank  16/129  median +2.5
+  SMFCSD disability share: 2019:  8.7 2021:  9.0 2022:  9.0 2023:  9.8 2024:  9.7 2025: 10.8 2026: 11.1
+
+====================================================================================================
+F. Checked and normal (or not unusual)
+====================================================================================================
+  SMFCSD ELA participation (tested/enrolled), all / SED / not SED:
+    2018  97.9  97.4  98.2
+    2019  97.8  97.4  98.0
+    2021  94.1  92.5  94.8
+    2022  97.4  97.3  97.4
+    2023  97.2  96.3  97.6
+    2024  95.6  95.1  96.0
+    2025  97.4  97.1  97.6
+    2026  97.1  97.1  97.1
+  ELA participation 2026 (lowest first)                            SMFCSD   +97.1  rank  97/576  median +98.2
+  ELA participation change 2023->2026 (largest drop first)         SMFCSD    -0.1  rank 190/576  median +0.3
+  Grade 3-8 enrollment % change 2019->2026 (largest drop first)    SMFCSD   -16.4  rank 145/574  median -10.1
+  SMFCSD Hispanic share: 2019: 36.1 2021: 36.8 2022: 39.1 2023: 40.2 2024: 40.8 2025: 42.1 2026: 41.6
+  SMFCSD Asian share: 2019: 24.0 2021: 25.1 2022: 24.6 2023: 24.9 2024: 24.7 2025: 24.0 2026: 24.4
+  SMFCSD White share: 2019: 23.7 2021: 21.9 2022: 19.7 2023: 18.5 2024: 17.4 2025: 16.7 2026: 15.9
+  SMFCSD English learner share: 2019: 16.5 2021: 20.9 2022: 24.6 2023: 23.3 2024: 23.0 2025: 24.9 2026: 24.1
+  SMFCSD Ever-EL share: 2019: 38.1 2021: 39.8 2022: 40.8 2023: 41.0 2024: 40.5 2025: 42.6 2026: 41.8
+  SMFCSD parent education 'declined to state' share: 2019:  4.0 2021:  4.2 2022:  4.6 2023:  4.5 2024: 25.1 2025: 19.4 2026: 17.8
+  Parent-ed 'declined to state' change 2023->2024                  SMFCSD   +20.5  rank  43/573  median +0.1
+    districts with a jump of >= 15 points: 58
+
+  San Mateo County districts, SED share (2019 2021 2022 2023 2024 2025 2026):
+    Bayshore Elementary                   63.5    -   54.3  61.9  63.8  62.4  64.5
+    Belmont-Redwood Shores Elementary      9.8   8.6   8.1   8.0  15.6  10.8  11.1
+    Brisbane Elementary                   26.9  22.2  22.1  20.6  30.2  23.4  23.8
+    Burlingame Elementary                 12.5  11.9  15.2  17.2  20.4  23.3  15.3
+    Cabrillo Unified                      46.0    -   46.2  45.2  52.0  32.3  35.6
+    Hillsborough City Elementary           0.0   0.0   0.0   1.8  20.4   2.8   2.0
+    Jefferson Elementary                  55.4  47.3  51.3  52.3  52.8  49.7  48.7
+    Pacifica                              23.2  17.9  18.3  20.0  29.0  19.7  19.2
+    La Honda-Pescadero Unified            59.1    -   50.8  53.5  58.2  56.1  46.5
+    Las Lomitas Elementary                 6.0   3.2   6.3   6.6   8.0   5.4   6.3
+    Menlo Park City Elementary             8.3    -   10.1  11.6  12.8  12.2  11.8
+    Millbrae Elementary                   26.9  24.8  18.1  27.3  28.6  23.9  24.3
+    Portola Valley Elementary              8.4   5.9   6.8   5.9  25.2   4.2   5.4
+    Ravenswood City Elementary            92.0    -   85.7  89.2  89.8  93.5  85.5
+    Redwood City Elementary               60.4    -   58.1  61.2  63.8  62.0  60.3
+    San Bruno Park Elementary             38.0  28.7  38.6  44.5  42.6  56.6  33.2
+    San Carlos Elementary                  8.5   7.4   8.1   9.8  21.2  10.9  10.9
+    San Mateo-Foster City                 31.5  30.0  31.7  31.1  41.8  40.1  45.3
+    South San Francisco Unified           45.3  40.7  37.8  40.4  44.4  45.4  44.6
+    Woodside Elementary                    7.3   7.9  11.7   9.3  11.0   4.3   2.1
+    STATE                                 61.6  54.8  60.3  63.0  65.6  64.7  64.5

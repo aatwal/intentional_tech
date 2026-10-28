@@ -25,6 +25,10 @@ manager at the repo root — most of it is self-contained HTML.
 - `caaspp_ai_dashboard/` — the Flask-backed CAASPP dashboard with an added AI chat panel. Used to
   be a second copy alongside a standalone static dashboard; now it's the only working copy. See
   below.
+- `analysis/statewide_anomalies/` — offline scripts comparing SMFCSD with every California district
+  using the comprehensive statewide files (reclassification, homeless, disability trends, etc.).
+  `FINDINGS.md` holds the conclusions and `output.txt` a snapshot of every number, so neither needs
+  the 6.7GB raw data to read. Rerun with `extract_all.py` then `analyze.py`; `work/` is gitignored.
 - `caaspp_files/` — raw CDE CAASPP research-file exports (`sb_ca20NN_all_41_69039_csv_vN.txt`),
   one per year 2015–2026 (2020 excluded — COVID testing suspension). Nothing reads these at
   runtime (the dashboard consumes the already-derived `DATA` blob); they're read offline by
