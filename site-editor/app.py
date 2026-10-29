@@ -160,12 +160,17 @@ def run_git(*args, check=True, cwd=None):
 
 
 def ensure_clone():
-    """Clone the repo into WORKDIR if it isn't there yet (e.g. after a cold start)."""
+    """Clone the repo into WORKDIR if it isn't there yet (e.g. after a cold start).
+
+    Only the top-level files are downloaded (--sparse), and only the versions actually checked
+    out (--filter=blob:none): editors only change top-level pages, and skipping the videos and
+    data folders makes this a few MB instead of ~180MB. The preview loads videos from the live
+    site instead (see video_redirect)."""
     with CLONE_LOCK:
         if not (WORKDIR / ".git").exists():
             WORKDIR.parent.mkdir(parents=True, exist_ok=True)
-            run_git("clone", "--depth", "20", "--branch", BRANCH, authenticated_url(),
-                    str(WORKDIR), cwd=WORKDIR.parent)
+            run_git("clone", "--depth", "20", "--filter=blob:none", "--sparse",
+                    "--branch", BRANCH, authenticated_url(), str(WORKDIR), cwd=WORKDIR.parent)
 
 
 def reset_to_main():
@@ -841,18 +846,25 @@ def preview(subpath):
         if STATE["status"] not in ("ready", "running"):
             abort(409)
     viewable(subpath)
+    if subpath.startswith("videos/"):
+        return video_redirect(subpath)
     return no_store(send_from_directory(WORKDIR, subpath))
+
+
+def video_redirect(subpath):
+    """Videos aren't in the editor's slimmed-down copy (see ensure_clone), and editors never
+    change them, so the preview plays them from the live site."""
+    return redirect(SITE_URL.rstrip("/") + "/" + subpath)
 
 
 @app.route("/current/<path:subpath>")
 def current(subpath):
     """The site as it is on main (as of the last fetch), ignoring any change in progress.
-    Pages come from git, since the working copy may hold someone's draft; videos are never
-    edited, so they're served straight from the working copy."""
+    Pages come from git, since the working copy may hold someone's draft."""
     viewable(subpath)
-    ensure_clone()
     if subpath.startswith("videos/"):
-        return no_store(send_from_directory(WORKDIR, subpath))
+        return video_redirect(subpath)
+    ensure_clone()
     try:
         html = run_git("show", f"origin/{BRANCH}:{subpath}")
     except RuntimeError:
