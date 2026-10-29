@@ -362,6 +362,16 @@ search tools to answer it and make no edits. Only edit when they clearly ask for
 you can't tell whether they want a change, answer and ask rather than editing.
 - Earlier messages in this conversation still apply, so "do that" or "undo the last part" refer \
 back to them.
+- A message starting "Text edits I made directly on <page> in the preview" lists edits the editor \
+typed into the page itself, each as "from:" and "to:" text with whitespace collapsed. Apply each \
+one exactly as given and change nothing else. An edit marked "in the site menu" or "in the footer" \
+is part of the navigation or footer repeated on every page: search all pages and make the same \
+change wherever that menu or footer has the text, so the pages stay consistent; any other edit \
+applies to that page only. The "from" text is how it reads on \
+screen, so the source may differ (line breaks, &amp; and similar entities, or a link or bold tag \
+inside it): keep any such tags around the words that stay. If a "from" text appears more than \
+once, use the kind of element and the heading it's under to pick the right one. If you can't \
+find one, say which and make the rest.
 
 How to make changes:
 - Start by finding the right place (search is usually fastest), read the surrounding lines, then \
