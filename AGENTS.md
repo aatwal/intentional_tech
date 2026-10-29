@@ -29,6 +29,11 @@ manager at the repo root — most of it is self-contained HTML.
   using the comprehensive statewide files (reclassification, homeless, disability trends, etc.).
   `FINDINGS.md` holds the conclusions and `output.txt` a snapshot of every number, so neither needs
   the 6.7GB raw data to read. Rerun with `extract_all.py` then `analyze.py`; `work/` is gitignored.
+- `site-editor/` — a small Flask app (its own Render web service) that lets trusted non-technical
+  editors change the site's top-level `.html` pages by typing a plain-English request: Claude edits a
+  fresh clone of `main` with a narrow set of file tools (no shell), the editor previews the result,
+  and Publish commits and pushes to `main`. Per-editor passcodes, one change at a time, Undo reverts
+  the latest commit it made. See `site-editor/README.md` for setup and design notes.
 - `caaspp_files/` — raw CDE CAASPP research-file exports (`sb_ca20NN_all_41_69039_csv_vN.txt`),
   one per year 2015–2026 (2020 excluded — COVID testing suspension). Nothing reads these at
   runtime (the dashboard consumes the already-derived `DATA` blob); they're read offline by
