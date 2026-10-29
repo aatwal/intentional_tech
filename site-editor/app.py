@@ -79,40 +79,52 @@ CLONE_LOCK = threading.Lock()    # the first clone can be triggered by a job or 
 
 
 def fresh_state():
+    """The one shared working copy: who's using it, and the unpublished draft in it."""
     return {
-        "status": "idle",        # idle | running | ready | publishing | error
+        "status": "idle",        # idle | running | ready (a draft is waiting) | publishing
         "id": None,
-        "editor": None,
-        "requests": [],          # every prompt in this conversation, in order
-        "thread": [],            # what the editor sees: {"role": you|claude|error, "text", "changed"}
+        "editor": None,          # who's running, publishing, or owns the draft
         "change_requests": [],   # prompts whose turn changed pages (for the commit message)
         "change_summary": "",    # Claude's reply to the latest turn that changed pages
-        "messages": [],          # Claude conversation, kept for follow-up tweaks
         "activity": [],          # plain-English progress lines for the UI
-        "summary": "",
         "changed": [],
         "warnings": [],
         "error": "",
         "started": None,
-        "notes": [],             # things that happened since Claude's last reply (published, ...)
     }
 
 
 STATE = fresh_state()
 LAST_RESULT = {"message": ""}    # banner shown after publish / undo
 
+# Each editor's own conversation, so two editors never overwrite each other's thread or
+# Claude's memory of it. Kept until they start a new one (or the server restarts).
+CONVOS = {}
 
-def close_draft(thread_text, claude_note):
-    """The draft is done with (published or discarded) but the conversation stays open, so
-    the editor can keep building on it. Call with LOCK held."""
-    if not (STATE["editor"] and STATE["messages"]):
-        STATE.clear()
-        STATE.update(fresh_state())
-        return
-    STATE.update(status="ready", changed=[], warnings=[], change_requests=[],
-                 change_summary="", error="")
-    STATE["thread"].append({"role": "note", "text": thread_text})
-    STATE["notes"].append(claude_note)
+
+def convo(editor):
+    """Call with LOCK held."""
+    return CONVOS.setdefault(editor, {
+        "thread": [],            # what the editor sees: {"role": you|claude|error|note, "text", ...}
+        "messages": [],          # the Claude conversation, so later requests build on earlier ones
+        "notes": [],             # things that happened since Claude's last reply (published, ...)
+    })
+
+
+def tell(editor, thread_text, claude_note):
+    """Note something that happened outside an editor's conversation (published, discarded,
+    undone): shown in their thread, and passed to Claude with their next message. Call with
+    LOCK held."""
+    c = convo(editor)
+    if c["messages"]:
+        c["thread"].append({"role": "note", "text": thread_text})
+        c["notes"].append(claude_note)
+
+
+def reset_state():
+    """Call with LOCK held."""
+    STATE.clear()
+    STATE.update(fresh_state())
 
 
 def set_state(**kw):
@@ -478,12 +490,13 @@ def draft_snapshot():
     return {n: (WORKDIR / n).read_bytes() for n in changed_files() if (WORKDIR / n).is_file()}
 
 
-def edit_job(change_id, prompt, fresh, viewing=None):
-    """One turn of the conversation: a question (no edits) or a change. fresh means there's
-    no draft to build on, so start from a fresh copy of main."""
+def edit_job(change_id, editor, prompt, fresh, viewing=None):
+    """One turn of an editor's conversation: a question (no edits) or a change. fresh means
+    there's no draft to build on, so start from a fresh copy of main."""
     with LOCK:
-        messages, notes = STATE["messages"], STATE["notes"][:]
-        STATE["notes"].clear()
+        c = convo(editor)
+        messages, notes = c["messages"], c["notes"][:]
+        c["notes"].clear()
     base = len(messages)
     originals = None
     try:
@@ -524,38 +537,44 @@ def edit_job(change_id, prompt, fresh, viewing=None):
 
         after = draft_snapshot()
         turn_changed = sorted(n for n in set(before) | set(after) if before.get(n) != after.get(n))
+        changed = changed_files()
         with LOCK:
+            c["thread"].append({"role": "claude", "text": reply or "Done.",
+                                "changed": turn_changed})
             if STATE["id"] != change_id:
                 return  # discarded while running
-            STATE.update(status="ready", summary=reply, changed=changed_files(),
-                         warnings=problems, messages=messages)
-            STATE["thread"].append({"role": "claude", "text": reply or "Done.",
-                                    "changed": turn_changed})
             if turn_changed:
                 STATE["change_requests"].append(prompt)
                 STATE["change_summary"] = reply
+            finish(changed, problems)
     except Exception as exc:  # noqa: BLE001
-        # Drop this turn's half-finished messages so the conversation can carry on.
+        # Drop this turn's half-finished messages (only ever the end of the history) so the
+        # conversation can carry on.
         del messages[base:]
         with LOCK:
+            c["notes"][:0] = notes  # still unsent
+            c["thread"].append({"role": "error", "text": scrub(str(exc))})
             if STATE["id"] != change_id:
                 return
-            STATE["notes"][:0] = notes  # still unsent
             if originals is None and fresh:
                 # Couldn't get a fresh copy of the site, so the working copy can't be trusted.
-                # Keep the conversation open with nothing to publish; the next message retries.
-                if base == 0:
-                    STATE.update(status="error", error=scrub(str(exc)))
-                else:
-                    STATE.update(status="ready", changed=[], warnings=[])
-                    STATE["thread"].append({"role": "error", "text": scrub(str(exc))})
+                # Nothing to publish; the next message retries.
+                reset_state()
                 return
             try:
                 changed, warnings = changed_files(), check_changes(originals or {})
             except Exception:  # noqa: BLE001
                 changed, warnings = [], []
-            STATE.update(status="ready", changed=changed, warnings=warnings)
-            STATE["thread"].append({"role": "error", "text": scrub(str(exc))})
+            finish(changed, warnings)
+
+
+def finish(changed, warnings):
+    """After a turn: keep the draft waiting if pages changed; otherwise free the working copy
+    for anyone. Call with LOCK held."""
+    if changed:
+        STATE.update(status="ready", changed=changed, warnings=warnings)
+    else:
+        reset_state()
 
 
 # --------------------------------------------------------------------------- auth
@@ -611,13 +630,12 @@ def home():
 
 
 def public_state():
+    you = current_editor()
     with LOCK:
-        s = {k: STATE[k] for k in ("status", "editor", "activity", "changed", "warnings",
-                                   "error", "started")}
-        mine = STATE["editor"] == current_editor()
-        s["thread"] = list(STATE["thread"]) if mine else []
-        s["activity"] = s["activity"] if mine else []
-    s["you"] = current_editor()
+        s = {k: STATE[k] for k in ("status", "editor", "changed", "warnings", "error", "started")}
+        s["activity"] = list(STATE["activity"]) if STATE["editor"] == you else []
+        s["thread"] = list(convo(you)["thread"])  # always your own conversation
+    s["you"] = you
     s["banner"] = LAST_RESULT["message"]
     return s
 
@@ -643,26 +661,23 @@ def submit():
         status_ = STATE["status"]
         if status_ in ("running", "publishing"):
             return jsonify(error=f"{STATE['editor']} is working on something. Try again in a minute."), 409
-        if status_ == "ready" and STATE["editor"] != editor and STATE["changed"]:
+        if status_ == "ready" and STATE["editor"] != editor:
             return jsonify(error=f"{STATE['editor']} has a change waiting to be published or discarded."), 409
-        # Carry on your own conversation; otherwise start a new one. Someone else's
-        # conversation with nothing to publish (just questions) is simply replaced.
-        follow_up = status_ == "ready" and STATE["editor"] == editor
-        change_id = STATE["id"] if follow_up else uuid.uuid4().hex
-        if not follow_up:
-            STATE.clear()
-            STATE.update(fresh_state(), id=change_id, editor=editor,
+        # With your own draft waiting, build on it; otherwise start from the latest main.
+        # Your conversation carries on either way, and nobody else's is touched.
+        fresh = status_ != "ready"
+        change_id = uuid.uuid4().hex if fresh else STATE["id"]
+        if fresh:
+            reset_state()
+            STATE.update(id=change_id, editor=editor,
                          started=datetime.now(timezone.utc).isoformat())
         STATE["status"] = "running"
-        STATE["requests"].append(prompt)
-        STATE["thread"].append({"role": "you", "text": prompt})
         STATE["error"] = ""
         STATE["activity"].append(f"Request: {prompt[:200]}")
+        convo(editor)["thread"].append({"role": "you", "text": prompt})
         LAST_RESULT["message"] = ""
-        # Build on your draft if there is one; otherwise start from the latest main (the
-        # conversation itself carries on either way).
-        fresh = not STATE["changed"]
-    threading.Thread(target=edit_job, args=(change_id, prompt, fresh, viewing), daemon=True).start()
+    threading.Thread(target=edit_job, args=(change_id, editor, prompt, fresh, viewing),
+                     daemon=True).start()
     return jsonify(public_state())
 
 
@@ -671,23 +686,27 @@ def discard():
     """Throw away the unpublished draft but keep the conversation, or with {"new": true},
     end the conversation too (New conversation / Start over)."""
     new = bool((request.get_json(silent=True) or {}).get("new"))
+    you = current_editor()
     with LOCK:
-        if STATE["status"] in ("running", "publishing"):
+        who, had_changes = STATE["editor"], STATE["status"] == "ready"
+        busy = STATE["status"] in ("running", "publishing")
+        if busy and (who == you or not new):
             return jsonify(error="Wait for the current step to finish."), 409
-        who, had_changes = STATE["editor"], bool(STATE["changed"])
-        if new and who != current_editor() and had_changes:
-            return jsonify(error=f"{who} has changes waiting to be published or discarded."), 409
-        if new or not had_changes:
-            STATE.clear()
-            STATE.update(fresh_state())
+        if new:
+            # Your conversation only; someone else's draft stays put.
+            CONVOS.pop(you, None)
+            if who == you:
+                reset_state()
+            LAST_RESULT["message"] = ""
         else:
-            by = current_editor()
-            close_draft("Unpublished changes discarded" + ("" if by == who else f" by {by}") + ".",
-                        "The unpublished changes were discarded, so the site is back to the "
-                        "published version.")
-        LAST_RESULT["message"] = (f"Discarded {who}'s change. Nothing was published."
-                                  if who and had_changes else "")
-    return jsonify(public_state())
+            reset_state()
+            if had_changes:
+                tell(who, "Unpublished changes discarded" + ("" if you == who else f" by {you}") + ".",
+                     "The unpublished changes were discarded, so the site is back to the "
+                     "published version.")
+            LAST_RESULT["message"] = (f"Discarded {who}'s change. Nothing was published."
+                                      if had_changes else "")
+    return jsonify(public_state())  # outside the lock: public_state() takes it too
 
 
 @app.route("/api/publish", methods=["POST"])
@@ -698,12 +717,10 @@ def publish():
             return jsonify(error="There's nothing ready to publish."), 409
         if STATE["editor"] != editor:
             return jsonify(error=f"Only {STATE['editor']} can publish their change."), 403
-        if not STATE["changed"]:
-            return jsonify(error="No pages were changed, so there's nothing to publish."), 409
         if STATE["warnings"]:
             return jsonify(error="This change didn't pass the automatic check. Ask for a fix or discard it."), 409
         STATE["status"] = "publishing"
-        requests_ = list(STATE["change_requests"] or STATE["requests"])
+        requests_ = list(STATE["change_requests"]) or ["(no request recorded)"]
         summary, files = STATE["change_summary"], list(STATE["changed"])
     try:
         title = summary.split("\n")[0].strip() or requests_[0]
@@ -720,8 +737,9 @@ def publish():
             STATE["status"] = "ready"
         return jsonify(error=scrub(str(exc))), 500
     with LOCK:
-        close_draft(f"Published ({sha}). Your next message builds on the live site.",
-                    f"The editor published your changes to {', '.join(files)}; they're live now.")
+        reset_state()
+        tell(editor, f"Published ({sha}). Your next message builds on the live site.",
+             f"The editor published your changes to {', '.join(files)}; they're live now.")
         LAST_RESULT["message"] = (f"Published ({sha}). The live site updates in about 2–5 minutes; "
                                   "refresh it after that.")
     return jsonify(public_state())
@@ -747,11 +765,9 @@ def last_change():
 def undo():
     editor = current_editor()
     with LOCK:
-        busy = STATE["status"] in ("running", "publishing")
-        if busy or STATE["changed"]:
+        if STATE["status"] != "idle":
             return jsonify(error="Publish or discard the change in progress first."), 409
-        prev_status = STATE["status"]
-        STATE["status"] = "publishing"
+        STATE.update(status="publishing", editor=editor)
     try:
         reset_to_main()
         sha, subject, body = last_main_commit()
@@ -768,13 +784,11 @@ def undo():
     except Exception as exc:  # noqa: BLE001
         msg, ok = scrub(str(exc)), False
     with LOCK:
-        if ok and STATE["editor"] == editor and STATE["messages"]:
-            close_draft(f"Undid “{subject}”.",
-                        f"The editor undid the most recent published change (“{subject}”), so "
-                        "the live site is back to how it was before it.")
-        else:
-            STATE["status"] = "idle" if prev_status == "error" else prev_status
+        reset_state()
         if ok:
+            tell(editor, f"Undid “{subject}”.",
+                 f"The editor undid the most recent published change (“{subject}”), so the "
+                 "live site is back to how it was before it.")
             LAST_RESULT["message"] = msg
     return (jsonify(public_state()) if ok else (jsonify(error=msg), 500))
 

@@ -185,7 +185,7 @@ function render(s) {
 
   const blocked = busy || working(s) || otherDraft || (mine && s.status === "error");
   $("send").disabled = blocked;
-  $("new-convo").hidden = !(mine && s.thread.length && !working(s));
+  $("new-convo").hidden = !(s.thread.length && !(mine && working(s)));
   $("new-convo").disabled = busy;
   $("v-undo").hidden = draft || working(s) || otherDraft;
   for (const id of ["publish", "discard", "other-discard", "restart", "undo"]) $(id).disabled = busy || working(s);
@@ -197,7 +197,7 @@ function render(s) {
 
 function renderThread(s) {
   const mine = isMine(s);
-  const thread = mine ? s.thread : [];
+  const thread = s.thread;  // always your own conversation, even while someone else is busy
   $("intro").hidden = thread.length > 0;
   const key = JSON.stringify([thread.length, s.status, mine ? s.activity.length : 0]);
   if (key === renderedThreadKey) return;
