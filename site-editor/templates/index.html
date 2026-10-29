@@ -62,6 +62,9 @@
   .mode{font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;background:#e7f1ef;color:var(--accent);white-space:nowrap}
   .mode.draft{background:#fbf3e1;color:#8a6414}
   .viewer iframe{flex:1;width:100%;border:0;background:#fff}
+  button.on{background:var(--ink);border-color:var(--ink);color:#fff}
+  .edit-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid #ecd9a8;background:#fbf3e1;font-size:14px}
+  .edit-bar span{margin-right:auto;color:#8a6414}
   @media (max-width:900px){
     main{grid-template-columns:minmax(0,1fr);padding:16px}
     .viewer{position:static;height:80vh}
@@ -137,7 +140,13 @@
     <span class="mode" id="mode">Current site</span>
     <select id="page" aria-label="Page to show"></select>
     <button class="small" id="reload" type="button">Reload</button>
+    <button class="small" id="edit-toggle" type="button" aria-pressed="false">Edit text</button>
     <a class="links" id="open-tab" target="_blank" rel="noopener">Open in a new tab</a>
+  </div>
+  <div class="edit-bar" id="edit-bar" hidden>
+    <span id="edit-count"></span>
+    <button class="small primary" id="edit-send" type="button">Send edits</button>
+    <button class="small" id="edit-cancel" type="button">Cancel</button>
   </div>
   <iframe id="frame" title="Site preview"></iframe>
 </aside>
@@ -190,6 +199,7 @@ function render(s) {
   $("v-undo").hidden = draft || working(s) || otherDraft;
   for (const id of ["publish", "discard", "other-discard", "restart", "undo"]) $(id).disabled = busy || working(s);
   if (draft) $("publish").disabled = busy || working(s) || !!s.warnings.length;
+  updateEditBar();
 
   syncViewer();
   schedulePoll();
@@ -284,15 +294,160 @@ function showView(mode, page) {
   showViewingHint();
 }
 
-$("page").onchange = () => showView(viewMode, $("page").value);
-$("reload").onclick = () => showView(viewMode, viewPage);
-// Keep the picker in step when someone clicks a link inside the preview.
+$("page").onchange = () => {
+  if (!dropEditsOk()) { $("page").value = viewPage; return; }
+  showView(viewMode, $("page").value);
+};
+$("reload").onclick = () => { if (dropEditsOk()) showView(viewMode, viewPage); };
 $("frame").addEventListener("load", () => {
+  // Keep the picker in step when someone clicks a link inside the preview.
   try {
     const m = $("frame").contentWindow.location.pathname.match(/^\/(?:preview|current)\/([^/]+\.html)$/);
     if (m && m[1] !== viewPage) { viewPage = m[1]; fillPagePicker(); showViewingHint(); }
   } catch (e) { /* not our page */ }
+  edits.clear();  // a new page load starts with no edits
+  applyEditMode();
+  updateEditBar();
 });
+
+// ── Inline text editing. "Edit text" makes the preview's text blocks editable in place.
+// The edits are never saved as-is (what the browser shows isn't the page's source HTML);
+// Send turns them into an exact "from -> to" request to Claude, which finds each one in the
+// source and changes it, so it becomes a normal draft to check and publish.
+let editMode = false;
+const edits = new Set();  // edited elements in the preview
+const TEXT_BLOCKS = "h1,h2,h3,h4,h5,h6,p,li,td,th,dt,dd,figcaption,blockquote,caption,summary,label,button,a";
+const CONTAINERS = "p,ul,ol,dl,div,table,section,article,figure,blockquote,h1,h2,h3,h4,h5,h6,li";
+const norm = t => t.replace(/\s+/g, " ").trim();
+
+function frameDoc() { try { return $("frame").contentDocument; } catch (e) { return null; } }
+
+function applyEditMode() {
+  const doc = frameDoc();
+  if (!doc || !doc.body) return;
+  let style = doc.getElementById("se-edit-style");
+  if (editMode && !style) {
+    style = doc.createElement("style"); style.id = "se-edit-style";
+    style.textContent = "[data-se-editable]{outline:1px dashed rgba(42,111,111,.5)!important;outline-offset:2px;cursor:text!important}"
+      + "[data-se-editable]:focus{outline:2px solid #2a6f6f!important}"
+      + "[data-se-edited]{background:#fbf3e1!important;outline:2px solid #d9a441!important}";
+    doc.head.appendChild(style);
+  }
+  if (!editMode) {
+    if (style) style.remove();
+    for (const el of doc.querySelectorAll("[data-se-editable]")) {
+      el.removeAttribute("contenteditable"); el.removeAttribute("data-se-editable"); el.removeAttribute("data-se-edited");
+    }
+    return;
+  }
+  // Mark the outermost text blocks that hold no other blocks, so a paragraph with a link
+  // inside is edited as one paragraph, and a card made of divs is edited piece by piece.
+  for (const el of doc.body.querySelectorAll(TEXT_BLOCKS)) {
+    if (el.hasAttribute("data-se-editable") || !norm(el.textContent)) continue;
+    if (el.parentElement && el.parentElement.closest("[data-se-editable]")) continue;
+    if (el.querySelector(CONTAINERS) || el.closest("script,style,noscript,svg,template")) continue;
+    el.setAttribute("contenteditable", "plaintext-only");
+    if (el.contentEditable !== "plaintext-only") el.setAttribute("contenteditable", "true");
+    el.setAttribute("data-se-editable", "");
+    el.seBefore = norm(el.textContent);
+  }
+  if (!doc.seBound) bindEditEvents(doc);
+}
+
+function bindEditEvents(doc) {
+  doc.seBound = true;
+  const win = doc.defaultView;
+  win.addEventListener("input", e => {
+    const el = e.target.closest && e.target.closest("[data-se-editable]");
+    if (!el) return;
+    const changed = norm(el.textContent) !== el.seBefore;
+    el.toggleAttribute("data-se-edited", changed);
+    changed ? edits.add(el) : edits.delete(el);
+    updateEditBar();
+  }, true);
+  // While editing, links and buttons in the preview don't navigate or fire, so clicking
+  // them puts the cursor in their text instead.
+  win.addEventListener("click", e => {
+    if (!editMode) return;
+    if (e.target.closest && e.target.closest("a,button,[data-se-editable],[onclick]")) { e.preventDefault(); e.stopPropagation(); }
+  }, true);
+  win.addEventListener("submit", e => { if (editMode) { e.preventDefault(); e.stopPropagation(); } }, true);
+  win.addEventListener("keydown", e => {
+    if (!editMode || e.key !== "Enter" || !(e.target.closest && e.target.closest("[data-se-editable]"))) return;
+    e.preventDefault(); e.target.blur();  // one-line edits: Enter finishes the edit
+  }, true);
+  win.addEventListener("paste", e => {  // plain text only, for browsers without plaintext-only
+    if (!editMode || !(e.target.closest && e.target.closest("[data-se-editable]"))) return;
+    e.preventDefault();
+    doc.execCommand("insertText", false, (e.clipboardData || win.clipboardData).getData("text/plain"));
+  }, true);
+}
+
+function describeEdit(el) {
+  const tag = el.tagName.toLowerCase();
+  const kind = tag === "h1" ? "main heading" : /^h[2-6]$/.test(tag) ? "heading" : tag === "p" ? "paragraph"
+    : tag === "li" ? "list item" : tag === "a" ? "link text" : tag === "button" ? "button text"
+    : (tag === "td" || tag === "th") ? "table cell" : "text";
+  // The nearest heading (or FAQ question) before it, to tell apart text that appears more
+  // than once.
+  let near = "";
+  if (!/^(h[1-6]|summary)$/.test(tag)) {
+    for (const h of el.ownerDocument.querySelectorAll("h1,h2,h3,h4,h5,h6,summary")) {
+      if (h.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) near = norm(h.textContent).slice(0, 80);
+    }
+  }
+  // Where it is: the site header/menu and footer are repeated on every page.
+  const where = el.closest("header") ? "in the site menu" : el.closest("footer") ? "in the footer"
+    : el.closest("nav") ? "in a navigation list on this page" : "";
+  const after = norm(el.textContent);
+  const context = [where, near && !el.closest("header,footer") ? `under the heading "${near}"` : ""].filter(Boolean);
+  return `${kind}${context.length ? ` (${context.join(", ")})` : ""}\n   from: ${el.seBefore}\n   to: ${after || "(remove this text)"}`;
+}
+
+function editsMessage() {
+  const live = [...edits].filter(el => el.isConnected);
+  const items = live.map((el, i) => `${i + 1}. ${describeEdit(el)}`);
+  const shared = live.some(el => el.closest("header,footer"));
+  return `Text edits I made directly on ${viewPage} in the preview. Change only this text, exactly as shown, `
+    + `and keep the surrounding formatting and links.`
+    + (shared ? ` Edits in the site menu or footer: make the same change on every page whose menu or footer has that text.` : "")
+    + `\n` + items.join("\n");
+}
+
+function updateEditBar() {
+  $("edit-toggle").classList.toggle("on", editMode);
+  $("edit-toggle").setAttribute("aria-pressed", String(editMode));
+  $("edit-toggle").textContent = editMode ? "Stop editing" : "Edit text";
+  $("edit-bar").hidden = !editMode;
+  const n = edits.size;
+  $("edit-count").textContent = n ? `${n} text edit${n > 1 ? "s" : ""} on ${viewPage}, not sent yet.`
+    : "Click any text in the preview to change it. Links and buttons don't work while editing.";
+  $("edit-send").disabled = !n || $("send").disabled;
+  $("edit-cancel").textContent = n ? "Cancel edits" : "Done";
+}
+
+function dropEditsOk() {
+  return !edits.size || confirm("Throw away your text edits? They haven't been sent yet.");
+}
+
+function setEditMode(on) {
+  editMode = on;
+  if (!on && edits.size) { edits.clear(); showView(viewMode, viewPage); }  // reload the untouched page
+  applyEditMode();
+  updateEditBar();
+}
+
+$("edit-toggle").onclick = () => { if (!editMode || dropEditsOk()) setEditMode(!editMode); };
+$("edit-cancel").onclick = () => { if (dropEditsOk()) setEditMode(false); };
+$("edit-send").onclick = () => {
+  const text = editsMessage();
+  if (text.length > 4000) { showMsg("That's a lot of edits for one message. Send some of them first, then the rest."); return; }
+  act(async () => {
+    const s = await api("/api/submit", {prompt: text, viewing: viewPage});
+    edits.clear(); setEditMode(false);
+    return s;
+  });
+};
 
 // "This page" in a message means the page in the preview; say which one it is.
 function showViewingHint() { $("viewing-hint").textContent = `“This page” = ${viewPage} · `; }
