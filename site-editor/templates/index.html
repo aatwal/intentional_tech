@@ -46,6 +46,7 @@
   .chip{font-size:13px;padding:2px 10px;border-radius:999px;border:1px solid #ecd9a8;background:#fbf3e1;color:#8a6414;cursor:pointer}
   .intro p{margin:0 0 8px}
   .notice{font-size:14px;color:var(--muted);margin:0 0 10px}
+  #v-convo.dropping{outline:2px dashed var(--accent);outline-offset:-6px}
 
   /* Draft */
   .draft{border-color:#ecd9a8;background:#fffdf6}
@@ -114,13 +115,15 @@
       <button class="small" id="new-convo" hidden>New conversation</button>
     </div>
     <div class="intro" id="intro">
-      <p class="muted">Ask a question about the site, or describe a change. Questions never change anything. Changes show up as a draft on the right, and nothing goes live until you publish.</p>
+      <p class="muted">Ask a question about the site, or describe a change. Questions never change anything. Changes show up as a draft on the right, and nothing goes live until you publish. To add a picture, use Add image (or drop it here), then say where it goes.</p>
     </div>
     <div class="thread" id="thread" aria-live="polite"></div>
     <p class="notice" id="notice" hidden></p>
     <textarea id="prompt" placeholder="Ask a question or describe a change…"></textarea>
     <div class="row">
       <button class="primary" id="send">Send</button>
+      <button id="add-image" type="button">Add image</button>
+      <input type="file" id="image-file" accept="image/jpeg,image/png,image/gif,image/webp" hidden>
       <span class="muted"><span id="viewing-hint"></span>Enter to send, Shift+Enter for a new line</span>
     </div>
     <div id="msg" class="error" hidden></div>
@@ -194,6 +197,7 @@ function render(s) {
 
   const blocked = busy || working(s) || otherDraft || (mine && s.status === "error");
   $("send").disabled = blocked;
+  $("add-image").disabled = blocked;
   $("new-convo").hidden = !(s.thread.length && !(mine && working(s)));
   $("new-convo").disabled = busy;
   $("v-undo").hidden = draft || working(s) || otherDraft;
@@ -266,9 +270,11 @@ function syncViewer() {
   if (draft && S.status === "ready" && S.thread.length !== viewerTurn) {
     viewerTurn = S.thread.length;
     const last = [...S.thread].reverse().find(m => m.role !== "you");
-    if (last && last.changed && last.changed.length) { showView("draft", last.changed[0]); return; }
+    const pages = last && last.changed ? last.changed.filter(p => p.endsWith(".html")) : [];
+    if (pages.length) { showView("draft", pages[0]); return; }
   }
-  if (mode !== viewMode) showView(mode, draft && !S.changed.includes(viewPage) ? S.changed[0] : viewPage);
+  const changedPages = S.changed.filter(p => p.endsWith(".html"));
+  if (mode !== viewMode) showView(mode, draft && changedPages.length && !changedPages.includes(viewPage) ? changedPages[0] : viewPage);
 }
 
 function fillPagePicker() {
@@ -484,6 +490,37 @@ function send() {
   act(async () => { const s = await api("/api/submit", {prompt: text, viewing: viewPage}); $("prompt").value = ""; return s; });
 }
 $("send").onclick = send;
+
+// ── Image uploads: the image joins your draft (resized, location data removed on the server),
+// and Claude sees it with your next message, where you say where it goes.
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+function uploadImage(file) {
+  if (!file || $("add-image").disabled) return;
+  if (!IMAGE_TYPES.includes(file.type)) { showMsg("Only JPG, PNG, GIF and WebP images can be added."); return; }
+  if (file.size > 10 * 1024 * 1024) { showMsg("That file is too big. Images can be up to 10 MB."); return; }
+  act(async () => {
+    const body = new FormData(); body.append("image", file);
+    const r = await fetch("/api/upload", {method: "POST", headers: {"X-Requested-With": "site-editor"}, body});
+    if (r.status === 401) { location.href = "/login"; return null; }
+    let data = {};
+    try { data = await r.json(); } catch (e) { data = {error: "The server didn't respond properly. Try again in a minute."}; }
+    if (!r.ok) throw new Error(data.error || "Couldn't add that image.");
+    $("prompt").focus();
+    return data;
+  });
+}
+$("add-image").onclick = () => $("image-file").click();
+$("image-file").onchange = () => { uploadImage($("image-file").files[0]); $("image-file").value = ""; };
+for (const ev of ["dragenter", "dragover"]) $("v-convo").addEventListener(ev, e => {
+  if (![...e.dataTransfer.types].includes("Files")) return;
+  e.preventDefault(); $("v-convo").classList.add("dropping");
+});
+$("v-convo").addEventListener("dragleave", e => { if (!$("v-convo").contains(e.relatedTarget)) $("v-convo").classList.remove("dropping"); });
+$("v-convo").addEventListener("drop", e => {
+  if (!e.dataTransfer.files.length) return;
+  e.preventDefault(); $("v-convo").classList.remove("dropping");
+  uploadImage(e.dataTransfer.files[0]);
+});
 $("prompt").addEventListener("keydown", e => {
   if (e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(); }
 });
