@@ -13,8 +13,10 @@ Safety model (see README.md for more):
 - One change in progress at a time (single in-memory STATE, so run with ONE worker).
 """
 
+import base64
 import difflib
 import hmac
+import io
 import json
 import os
 import re
@@ -70,7 +72,13 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY") or os.urandom(32)
 app.config.update(SESSION_COOKIE_SAMESITE="Lax", SESSION_COOKIE_HTTPONLY=True,
                   SESSION_COOKIE_SECURE=os.environ.get("INSECURE_COOKIES") != "1",
-                  PERMANENT_SESSION_LIFETIME=60 * 60 * 24 * 14)
+                  PERMANENT_SESSION_LIFETIME=60 * 60 * 24 * 14,
+                  MAX_CONTENT_LENGTH=12 * 1024 * 1024)  # image uploads (10MB) plus form overhead
+
+
+@app.errorhandler(413)
+def too_large(_):
+    return jsonify(error="That file is too big. Images can be up to 10 MB."), 413
 
 # --------------------------------------------------------------------------- state
 
@@ -108,6 +116,7 @@ def convo(editor):
         "thread": [],            # what the editor sees: {"role": you|claude|error|note, "text", ...}
         "messages": [],          # the Claude conversation, so later requests build on earlier ones
         "notes": [],             # things that happened since Claude's last reply (published, ...)
+        "images": [],            # images uploaded since Claude's last reply, shown to it next turn
     })
 
 
@@ -393,7 +402,12 @@ adding a new page to the menu), update every page that has that menu so they sta
 then use create_page.
 - Images are separate files in images/ (for example images/logo-mark.png), and pages refer to \
 them by that path. You can use the existing ones on any page, but you can't add, change or delete \
-image files.
+image files yourself. Editors can upload images: you're told the new file's path and size, and \
+the image is attached to their message so you can see it. To place one, add an <img> with that \
+path, styled the way the page already shows images (reuse its classes, or width:100%; \
+height:auto), and alt text that says what the image shows or, for a chart, what it shows about \
+the data. An uploaded image that isn't used on any page is still published, so mention it if \
+the editor hasn't said where it goes.
 - Some lines hold huge embedded data and are shown cut off. Never edit those lines.
 - Write in plain, direct language that matches the site's tone. Avoid em dashes in new text.
 - Don't invent facts, figures, dates, quotes or links. If the request needs information you don't \
@@ -442,6 +456,8 @@ def check_changes(originals):
     """Compare each changed page with its original. Returns plain-English problems."""
     problems = []
     for name in changed_files():
+        if not name.endswith(".html"):
+            continue  # uploaded images were checked when they were uploaded
         path = WORKDIR / name
         if not path.exists():
             problems.append(f"{name} was removed.")
@@ -521,8 +537,9 @@ def edit_job(change_id, editor, prompt, fresh, viewing=None):
     there's no draft to build on, so start from a fresh copy of main."""
     with LOCK:
         c = convo(editor)
-        messages, notes = c["messages"], c["notes"][:]
+        messages, notes, images = c["messages"], c["notes"][:], c["images"][:]
         c["notes"].clear()
+        c["images"].clear()
     base = len(messages)
     originals = None
     try:
@@ -547,6 +564,13 @@ def edit_job(change_id, editor, prompt, fresh, viewing=None):
             context.append(f"[The editor is looking at {viewing} in the preview, so \"this page\" "
                            "means that page.]")
         content = "\n".join(context + [prompt]) if context else prompt
+        # Let Claude see images uploaded since its last reply (to place them and write alt text).
+        shown = [(p, IMAGE_TYPES[p.rsplit(".", 1)[1]]) for p in images if (WORKDIR / p).is_file()]
+        if shown:
+            content = [{"type": "text", "text": content}] + [
+                {"type": "image", "source": {"type": "base64", "media_type": mt,
+                                             "data": base64.b64encode((WORKDIR / p).read_bytes()).decode()}}
+                for p, mt in shown]
         messages.append({"role": "user", "content": content})
         client = CLIENT_FACTORY()
         reply = converse(client, messages)
@@ -579,6 +603,7 @@ def edit_job(change_id, editor, prompt, fresh, viewing=None):
         del messages[base:]
         with LOCK:
             c["notes"][:0] = notes  # still unsent
+            c["images"][:0] = images
             c["thread"].append({"role": "error", "text": scrub(str(exc))})
             if STATE["id"] != change_id:
                 return
@@ -707,6 +732,118 @@ def submit():
     return jsonify(public_state())
 
 
+# --------------------------------------------------------------------------- image uploads
+
+MAX_UPLOAD = 10 * 1024 * 1024    # what an editor can upload
+MAX_STORED = 2 * 1024 * 1024     # what gets committed, after shrinking
+MAX_SIDE = 2000                  # longest side, in pixels
+
+
+def process_image(data):
+    """Check an upload really is a JPG/PNG/GIF/WebP, apply the phone's rotation, shrink it to
+    MAX_SIDE, and re-save it without its metadata (phone photos carry the GPS location and
+    camera details). Returns (bytes, extension, (width, height)). ValueError = the editor's
+    problem, worded for them."""
+    from PIL import Image, ImageOps, UnidentifiedImageError
+    Image.MAX_IMAGE_PIXELS = 50_000_000  # refuse "decompression bomb" images
+    try:
+        img = Image.open(io.BytesIO(data))
+        fmt = img.format
+        img.load()
+    except Image.DecompressionBombError:
+        raise ValueError("That image has too many pixels to process (over 100 megapixels).")
+    except (UnidentifiedImageError, OSError, SyntaxError):
+        raise ValueError("That doesn't look like a JPG, PNG, GIF or WebP image.")
+    if fmt not in ("JPEG", "PNG", "GIF", "WEBP"):
+        raise ValueError("Only JPG, PNG, GIF and WebP images can be added.")
+    if fmt == "GIF" and getattr(img, "n_frames", 1) > 1:
+        # Re-encoding would lose the animation; GIFs don't carry location data anyway.
+        if len(data) > MAX_STORED:
+            raise ValueError("Animated GIFs can be up to 2 MB.")
+        return data, "gif", img.size
+    img = ImageOps.exif_transpose(img)
+    img.thumbnail((MAX_SIDE, MAX_SIDE))
+    img.info = {k: v for k, v in img.info.items() if k == "transparency"}  # drop EXIF, XMP, comments
+    out = io.BytesIO()
+    if fmt == "JPEG":
+        img.convert("RGB").save(out, "JPEG", quality=85, optimize=True, progressive=True)
+        ext = "jpg"
+    elif fmt == "WEBP":
+        img.save(out, "WEBP", quality=85)
+        ext = "webp"
+    else:  # PNG, or a still GIF
+        if img.mode not in ("RGB", "RGBA", "L", "LA", "P"):
+            img = img.convert("RGBA")
+        img.save(out, "PNG", optimize=True)
+        ext = "png"
+    if out.tell() > MAX_STORED:
+        raise ValueError("That image is still over 2 MB after shrinking it. A JPG version would be smaller.")
+    return out.getvalue(), ext, img.size
+
+
+def image_name(original, ext):
+    """A safe, unused images/ path based on the uploaded file's name."""
+    stem = re.sub(r"[^a-z0-9]+", "-", Path(original or "").stem.lower()).strip("-")[:60] or "image"
+    name, n = f"images/{stem}.{ext}", 2
+    while (WORKDIR / name).exists():
+        name, n = f"images/{stem}-{n}.{ext}", n + 1
+    return name
+
+
+@app.route("/api/upload", methods=["POST"])
+def upload():
+    """Add an image to the editor's draft (starting one from the latest main if needed). Claude
+    sees it with the editor's next message."""
+    f = request.files.get("image")
+    if not f:
+        return jsonify(error="Choose an image to add."), 400
+    data = f.read(MAX_UPLOAD + 1)
+    if len(data) > MAX_UPLOAD:
+        return jsonify(error="That file is too big. Images can be up to 10 MB."), 413
+    editor = current_editor()
+    with LOCK:
+        status_ = STATE["status"]
+        if status_ in ("running", "publishing"):
+            return jsonify(error=f"{STATE['editor']} is working on something. Try again in a minute."), 409
+        if status_ == "ready" and STATE["editor"] != editor:
+            return jsonify(error=f"{STATE['editor']} has a change waiting to be published or discarded."), 409
+        fresh = status_ != "ready"
+        if fresh:
+            reset_state()
+            STATE.update(id=uuid.uuid4().hex, editor=editor,
+                         started=datetime.now(timezone.utc).isoformat())
+        STATE["status"] = "running"
+        STATE["activity"].append("Adding an image")
+        change_id = STATE["id"]
+    try:
+        if fresh:
+            reset_to_main()
+        out, ext, (w, h) = process_image(data)
+        name = image_name(f.filename, ext)
+        (WORKDIR / "images").mkdir(exist_ok=True)
+        (WORKDIR / name).write_bytes(out)
+        changed = changed_files()
+    except Exception as exc:  # noqa: BLE001
+        with LOCK:
+            if STATE["id"] == change_id:
+                if fresh:
+                    reset_state()
+                else:
+                    STATE["status"] = "ready"  # the draft it was added to is untouched
+        if isinstance(exc, ValueError):
+            return jsonify(error=str(exc)), 400
+        return jsonify(error=scrub(str(exc))), 500
+    with LOCK:
+        c = convo(editor)
+        c["thread"].append({"role": "note", "text": f"Added {name} ({w}×{h}, {len(out) // 1024} KB). "
+                                                    "Now tell Claude where to put it."})
+        c["notes"].append(f"The editor uploaded an image, saved as {name} ({w}×{h} pixels); it's "
+                          "attached to this message.")
+        c["images"].append(name)
+        finish(changed, STATE["warnings"])
+    return jsonify(public_state())
+
+
 @app.route("/api/discard", methods=["POST"])
 def discard():
     """Throw away the unpublished draft but keep the conversation, or with {"new": true},
@@ -727,6 +864,7 @@ def discard():
         else:
             reset_state()
             if had_changes:
+                convo(who)["images"].clear()  # discarded along with the draft
                 tell(who, "Unpublished changes discarded" + ("" if you == who else f" by {you}") + ".",
                      "The unpublished changes were discarded, so the site is back to the "
                      "published version.")
@@ -826,6 +964,10 @@ def diff():
             return jsonify(diff="")
     chunks = []
     for name in changed_files():
+        if not name.endswith(".html"):
+            size = (WORKDIR / name).stat().st_size if (WORKDIR / name).exists() else 0
+            chunks.append(f"(new image: {name}, {size // 1024} KB)")
+            continue
         try:
             old = run_git("show", f"HEAD:{name}").split("\n")
         except RuntimeError:
