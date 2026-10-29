@@ -162,15 +162,23 @@ def run_git(*args, check=True, cwd=None):
 def ensure_clone():
     """Clone the repo into WORKDIR if it isn't there yet (e.g. after a cold start).
 
-    Only the top-level files are downloaded (--sparse), and only the versions actually checked
-    out (--filter=blob:none): editors only change top-level pages, and skipping the videos and
-    data folders makes this a few MB instead of ~180MB. The preview loads videos from the live
-    site instead (see video_redirect)."""
+    Only the top-level files and images/ are downloaded (--sparse plus SPARSE_DIRS), and only
+    the versions actually checked out (--filter=blob:none): editors only change top-level
+    pages, and skipping the videos and data folders makes this a few MB instead of ~180MB. The
+    preview loads videos from the live site instead (see video_redirect)."""
+    global SPARSE_SET
     with CLONE_LOCK:
         if not (WORKDIR / ".git").exists():
             WORKDIR.parent.mkdir(parents=True, exist_ok=True)
             run_git("clone", "--depth", "20", "--filter=blob:none", "--sparse",
                     "--branch", BRANCH, authenticated_url(), str(WORKDIR), cwd=WORKDIR.parent)
+        if not SPARSE_SET:  # once per process, so an older copy without images/ catches up
+            run_git("sparse-checkout", "set", *SPARSE_DIRS)
+            SPARSE_SET = True
+
+
+SPARSE_DIRS = ["images"]  # folders the pages need besides the top-level files
+SPARSE_SET = False
 
 
 def reset_to_main():
@@ -383,7 +391,10 @@ adding new colors, fonts or inline styles.
 adding a new page to the menu), update every page that has that menu so they stay consistent.
 - To add a new page, read an existing page of a similar kind and copy its structure and styles, \
 then use create_page.
-- Some lines hold huge embedded data or images and are shown cut off. Never edit those lines.
+- Images are separate files in images/ (for example images/logo-mark.png), and pages refer to \
+them by that path. You can use the existing ones on any page, but you can't add, change or delete \
+image files.
+- Some lines hold huge embedded data and are shown cut off. Never edit those lines.
 - Write in plain, direct language that matches the site's tone. Avoid em dashes in new text.
 - Don't invent facts, figures, dates, quotes or links. If the request needs information you don't \
 have, make the change with what you were given and say what's missing.
@@ -825,11 +836,24 @@ def diff():
     return jsonify(diff="\n".join(chunks[:3000]))
 
 
+IMAGE_RE = re.compile(r"^images/[\w-]+(\.[\w-]+)*\.(png|jpe?g|gif|webp)$")  # never SVG: it can run scripts
+IMAGE_TYPES = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
+               "gif": "image/gif", "webp": "image/webp"}
+
+
 def viewable(subpath):
     allowed = (PAGE_NAME_RE.match(subpath) and subpath not in PROTECTED_PAGES) or \
-        re.match(r"^videos/[\w./-]+$", subpath)
+        IMAGE_RE.match(subpath) or re.match(r"^videos/[\w./-]+$", subpath)
     if not allowed or ".." in subpath:
         abort(404)
+
+
+def git_show_bytes(spec):
+    """Like run_git("show", ...) but for binary files such as images."""
+    proc = subprocess.run(["git", "show", spec], cwd=WORKDIR, capture_output=True, timeout=180)
+    if proc.returncode != 0:
+        raise RuntimeError(scrub("git show failed: " + proc.stderr.decode(errors="replace").strip()))
+    return proc.stdout
 
 
 def no_store(resp):
@@ -875,6 +899,12 @@ def current(subpath):
     if subpath.startswith("videos/"):
         return video_redirect(subpath)
     ensure_clone()
+    if subpath.startswith("images/"):
+        try:
+            data = git_show_bytes(f"origin/{BRANCH}:{subpath}")
+        except RuntimeError:
+            abort(404)
+        return no_store(Response(data, mimetype=IMAGE_TYPES[subpath.rsplit(".", 1)[1].lower()]))
     try:
         html = run_git("show", f"origin/{BRANCH}:{subpath}")
     except RuntimeError:
