@@ -83,7 +83,10 @@ def fresh_state():
         "status": "idle",        # idle | running | ready | publishing | error
         "id": None,
         "editor": None,
-        "requests": [],          # every prompt in this change, in order
+        "requests": [],          # every prompt in this conversation, in order
+        "thread": [],            # what the editor sees: {"role": you|claude|error, "text", "changed"}
+        "change_requests": [],   # prompts whose turn changed pages (for the commit message)
+        "change_summary": "",    # Claude's reply to the latest turn that changed pages
         "messages": [],          # Claude conversation, kept for follow-up tweaks
         "activity": [],          # plain-English progress lines for the UI
         "summary": "",
@@ -91,11 +94,25 @@ def fresh_state():
         "warnings": [],
         "error": "",
         "started": None,
+        "notes": [],             # things that happened since Claude's last reply (published, ...)
     }
 
 
 STATE = fresh_state()
 LAST_RESULT = {"message": ""}    # banner shown after publish / undo
+
+
+def close_draft(thread_text, claude_note):
+    """The draft is done with (published or discarded) but the conversation stays open, so
+    the editor can keep building on it. Call with LOCK held."""
+    if not (STATE["editor"] and STATE["messages"]):
+        STATE.clear()
+        STATE.update(fresh_state())
+        return
+    STATE.update(status="ready", changed=[], warnings=[], change_requests=[],
+                 change_summary="", error="")
+    STATE["thread"].append({"role": "note", "text": thread_text})
+    STATE["notes"].append(claude_note)
 
 
 def set_state(**kw):
@@ -316,11 +333,20 @@ ACTIVITY = {
 }
 
 SYSTEM_PROMPT = """You edit the Intentional Tech in Schools website (a parent group's advocacy site \
-about technology in the San Mateo-Foster City School District) on behalf of a non-technical editor. \
+about technology in the San Mateo-Foster City School District) on behalf of a non-technical editor, \
+and answer their questions about it. \
 The site is hand-written static HTML: each top-level .html page is self-contained, with its own \
 <style> block and :root color variables, and its own copy of the header/navigation and footer.
 
-How to work:
+Questions or changes:
+- The editor may ask a question (for example "which pages aren't linked from any other page?" or \
+"what does the FAQ say about screen time?") or ask for a change. For a question, use the read and \
+search tools to answer it and make no edits. Only edit when they clearly ask for a change. If \
+you can't tell whether they want a change, answer and ask rather than editing.
+- Earlier messages in this conversation still apply, so "do that" or "undo the last part" refer \
+back to them.
+
+How to make changes:
 - Start by finding the right place (search is usually fastest), read the surrounding lines, then \
 make the smallest edit that does what was asked. Don't restyle, reorganize or "improve" anything \
 that wasn't requested.
@@ -336,12 +362,13 @@ then use create_page.
 have, make the change with what you were given and say what's missing.
 - The CAASPP dashboard is a separate app and can't be changed here. If asked to change it, \
 or anything else outside these pages, make no edits and explain.
-- If the request is unclear, make your best reasonable interpretation; the editor will see a \
-preview and can ask for a tweak.
+- If a change request is unclear, make your best reasonable interpretation; the editor will see \
+a preview and can ask for a tweak.
 
-When you're done, reply with 1-3 short plain-English sentences for the editor saying what you \
-changed and on which page(s), plus anything they should check in the preview. No code, no HTML, \
-no file jargon beyond page names."""
+When you're done, reply in plain English. After a change: 1-3 short sentences saying what you \
+changed and on which page(s), plus anything they should check in the preview. After a question: \
+answer it directly; short lists are fine (one item per line, starting with "- "). Never say you \
+changed something unless you did. No code, no HTML, no file jargon beyond page names."""
 
 
 # --------------------------------------------------------------------------- checks
@@ -446,9 +473,21 @@ def converse(client, messages):
     raise RuntimeError("This request took too many steps. Try breaking it into smaller requests.")
 
 
-def edit_job(change_id, prompt, follow_up):
+def draft_snapshot():
+    """Contents of every page that differs from main, to tell which ones a turn touched."""
+    return {n: (WORKDIR / n).read_bytes() for n in changed_files() if (WORKDIR / n).is_file()}
+
+
+def edit_job(change_id, prompt, fresh):
+    """One turn of the conversation: a question (no edits) or a change. fresh means there's
+    no draft to build on, so start from a fresh copy of main."""
+    with LOCK:
+        messages, notes = STATE["messages"], STATE["notes"][:]
+        STATE["notes"].clear()
+    base = len(messages)
+    originals = None
     try:
-        if not follow_up:
+        if fresh:
             note("Getting the latest version of the site")
             reset_to_main()
         originals = {n: (WORKDIR / n).read_text(encoding="utf-8", errors="replace")
@@ -459,12 +498,15 @@ def edit_job(change_id, prompt, follow_up):
                 originals[name] = run_git("show", f"HEAD:{name}")
             except RuntimeError:
                 originals.pop(name, None)
+        before = draft_snapshot()
 
-        with LOCK:
-            messages = STATE["messages"]
-        messages.append({"role": "user", "content": prompt})
+        content = prompt
+        if notes:
+            content = ("[Since your last reply: " + " ".join(notes) + " Pages may have changed, "
+                       "so read them again before editing.]\n\n" + prompt)
+        messages.append({"role": "user", "content": content})
         client = CLIENT_FACTORY()
-        summary = converse(client, messages)
+        reply = converse(client, messages)
 
         problems = check_changes(originals)
         if problems:
@@ -473,18 +515,43 @@ def edit_job(change_id, prompt, follow_up):
                              "An automatic check found problems with your edits. Fix them without "
                              "changing anything else, then give the editor your summary again:\n- "
                              + "\n- ".join(problems)})
-            summary = converse(client, messages)
+            reply = converse(client, messages)
             problems = check_changes(originals)
 
+        after = draft_snapshot()
+        turn_changed = sorted(n for n in set(before) | set(after) if before.get(n) != after.get(n))
         with LOCK:
             if STATE["id"] != change_id:
                 return  # discarded while running
-            STATE.update(status="ready", summary=summary, changed=changed_files(),
+            STATE.update(status="ready", summary=reply, changed=changed_files(),
                          warnings=problems, messages=messages)
+            STATE["thread"].append({"role": "claude", "text": reply or "Done.",
+                                    "changed": turn_changed})
+            if turn_changed:
+                STATE["change_requests"].append(prompt)
+                STATE["change_summary"] = reply
     except Exception as exc:  # noqa: BLE001
+        # Drop this turn's half-finished messages so the conversation can carry on.
+        del messages[base:]
         with LOCK:
-            if STATE["id"] == change_id:
-                STATE.update(status="error", error=scrub(str(exc)))
+            if STATE["id"] != change_id:
+                return
+            STATE["notes"][:0] = notes  # still unsent
+            if originals is None and fresh:
+                # Couldn't get a fresh copy of the site, so the working copy can't be trusted.
+                # Keep the conversation open with nothing to publish; the next message retries.
+                if base == 0:
+                    STATE.update(status="error", error=scrub(str(exc)))
+                else:
+                    STATE.update(status="ready", changed=[], warnings=[])
+                    STATE["thread"].append({"role": "error", "text": scrub(str(exc))})
+                return
+            try:
+                changed, warnings = changed_files(), check_changes(originals or {})
+            except Exception:  # noqa: BLE001
+                changed, warnings = [], []
+            STATE.update(status="ready", changed=changed, warnings=warnings)
+            STATE["thread"].append({"role": "error", "text": scrub(str(exc))})
 
 
 # --------------------------------------------------------------------------- auth
@@ -541,8 +608,11 @@ def home():
 
 def public_state():
     with LOCK:
-        s = {k: STATE[k] for k in ("status", "editor", "requests", "activity", "summary",
-                                   "changed", "warnings", "error", "started")}
+        s = {k: STATE[k] for k in ("status", "editor", "activity", "changed", "warnings",
+                                   "error", "started")}
+        mine = STATE["editor"] == current_editor()
+        s["thread"] = list(STATE["thread"]) if mine else []
+        s["activity"] = s["activity"] if mine else []
     s["you"] = current_editor()
     s["banner"] = LAST_RESULT["message"]
     return s
@@ -562,11 +632,14 @@ def submit():
         return jsonify(error="That request is too long. Try splitting it up."), 400
     editor = current_editor()
     with LOCK:
-        follow_up = STATE["status"] == "ready"
-        if STATE["status"] not in ("idle", "ready"):
-            return jsonify(error=f"{STATE['editor']} is in the middle of a change. Try again in a minute."), 409
-        if follow_up and STATE["editor"] != editor:
+        status_ = STATE["status"]
+        if status_ in ("running", "publishing"):
+            return jsonify(error=f"{STATE['editor']} is working on something. Try again in a minute."), 409
+        if status_ == "ready" and STATE["editor"] != editor and STATE["changed"]:
             return jsonify(error=f"{STATE['editor']} has a change waiting to be published or discarded."), 409
+        # Carry on your own conversation; otherwise start a new one. Someone else's
+        # conversation with nothing to publish (just questions) is simply replaced.
+        follow_up = status_ == "ready" and STATE["editor"] == editor
         change_id = STATE["id"] if follow_up else uuid.uuid4().hex
         if not follow_up:
             STATE.clear()
@@ -574,24 +647,38 @@ def submit():
                          started=datetime.now(timezone.utc).isoformat())
         STATE["status"] = "running"
         STATE["requests"].append(prompt)
-        STATE["warnings"] = []
+        STATE["thread"].append({"role": "you", "text": prompt})
         STATE["error"] = ""
         STATE["activity"].append(f"Request: {prompt[:200]}")
         LAST_RESULT["message"] = ""
-    threading.Thread(target=edit_job, args=(change_id, prompt, follow_up), daemon=True).start()
+        # Build on your draft if there is one; otherwise start from the latest main (the
+        # conversation itself carries on either way).
+        fresh = not STATE["changed"]
+    threading.Thread(target=edit_job, args=(change_id, prompt, fresh), daemon=True).start()
     return jsonify(public_state())
 
 
 @app.route("/api/discard", methods=["POST"])
 def discard():
+    """Throw away the unpublished draft but keep the conversation, or with {"new": true},
+    end the conversation too (New conversation / Start over)."""
+    new = bool((request.get_json(silent=True) or {}).get("new"))
     with LOCK:
-        if STATE["status"] == "publishing":
-            return jsonify(error="It's being published right now."), 409
-        who = STATE["editor"]
-        STATE.clear()
-        STATE.update(fresh_state())
+        if STATE["status"] in ("running", "publishing"):
+            return jsonify(error="Wait for the current step to finish."), 409
+        who, had_changes = STATE["editor"], bool(STATE["changed"])
+        if new and who != current_editor() and had_changes:
+            return jsonify(error=f"{who} has changes waiting to be published or discarded."), 409
+        if new or not had_changes:
+            STATE.clear()
+            STATE.update(fresh_state())
+        else:
+            by = current_editor()
+            close_draft("Unpublished changes discarded" + ("" if by == who else f" by {by}") + ".",
+                        "The unpublished changes were discarded, so the site is back to the "
+                        "published version.")
         LAST_RESULT["message"] = (f"Discarded {who}'s change. Nothing was published."
-                                  if who else "")
+                                  if who and had_changes else "")
     return jsonify(public_state())
 
 
@@ -608,7 +695,8 @@ def publish():
         if STATE["warnings"]:
             return jsonify(error="This change didn't pass the automatic check. Ask for a fix or discard it."), 409
         STATE["status"] = "publishing"
-        requests_, summary, files = list(STATE["requests"]), STATE["summary"], list(STATE["changed"])
+        requests_ = list(STATE["change_requests"] or STATE["requests"])
+        summary, files = STATE["change_summary"], list(STATE["changed"])
     try:
         title = summary.split("\n")[0].strip() or requests_[0]
         title = (title[:68] + "…") if len(title) > 70 else title
@@ -624,8 +712,8 @@ def publish():
             STATE["status"] = "ready"
         return jsonify(error=scrub(str(exc))), 500
     with LOCK:
-        STATE.clear()
-        STATE.update(fresh_state())
+        close_draft(f"Published ({sha}). Your next message builds on the live site.",
+                    f"The editor published your changes to {', '.join(files)}; they're live now.")
         LAST_RESULT["message"] = (f"Published ({sha}). The live site updates in about 2–5 minutes; "
                                   "refresh it after that.")
     return jsonify(public_state())
@@ -651,8 +739,10 @@ def last_change():
 def undo():
     editor = current_editor()
     with LOCK:
-        if STATE["status"] != "idle":
+        busy = STATE["status"] in ("running", "publishing")
+        if busy or STATE["changed"]:
             return jsonify(error="Publish or discard the change in progress first."), 409
+        prev_status = STATE["status"]
         STATE["status"] = "publishing"
     try:
         reset_to_main()
@@ -670,8 +760,12 @@ def undo():
     except Exception as exc:  # noqa: BLE001
         msg, ok = scrub(str(exc)), False
     with LOCK:
-        STATE.clear()
-        STATE.update(fresh_state())
+        if ok and STATE["editor"] == editor and STATE["messages"]:
+            close_draft(f"Undid “{subject}”.",
+                        f"The editor undid the most recent published change (“{subject}”), so "
+                        "the live site is back to how it was before it.")
+        else:
+            STATE["status"] = "idle" if prev_status == "error" else prev_status
         if ok:
             LAST_RESULT["message"] = msg
     return (jsonify(public_state()) if ok else (jsonify(error=msg), 500))
