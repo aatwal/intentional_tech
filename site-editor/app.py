@@ -478,7 +478,7 @@ def draft_snapshot():
     return {n: (WORKDIR / n).read_bytes() for n in changed_files() if (WORKDIR / n).is_file()}
 
 
-def edit_job(change_id, prompt, fresh):
+def edit_job(change_id, prompt, fresh, viewing=None):
     """One turn of the conversation: a question (no edits) or a change. fresh means there's
     no draft to build on, so start from a fresh copy of main."""
     with LOCK:
@@ -500,10 +500,14 @@ def edit_job(change_id, prompt, fresh):
                 originals.pop(name, None)
         before = draft_snapshot()
 
-        content = prompt
+        context = []
         if notes:
-            content = ("[Since your last reply: " + " ".join(notes) + " Pages may have changed, "
-                       "so read them again before editing.]\n\n" + prompt)
+            context.append("[Since your last reply: " + " ".join(notes) + " Pages may have "
+                           "changed, so read them again before editing.]")
+        if viewing:
+            context.append(f"[The editor is looking at {viewing} in the preview, so \"this page\" "
+                           "means that page.]")
+        content = "\n".join(context + [prompt]) if context else prompt
         messages.append({"role": "user", "content": content})
         client = CLIENT_FACTORY()
         reply = converse(client, messages)
@@ -625,7 +629,11 @@ def status():
 
 @app.route("/api/submit", methods=["POST"])
 def submit():
-    prompt = ((request.get_json(silent=True) or {}).get("prompt") or "").strip()
+    body = request.get_json(silent=True) or {}
+    prompt = (body.get("prompt") or "").strip()
+    viewing = (body.get("viewing") or "").strip()
+    if not (PAGE_NAME_RE.match(viewing) and viewing not in PROTECTED_PAGES):
+        viewing = None  # the page shown in the preview, if it's one Claude can work with
     if not prompt:
         return jsonify(error="Type what you'd like to change."), 400
     if len(prompt) > 4000:
@@ -654,7 +662,7 @@ def submit():
         # Build on your draft if there is one; otherwise start from the latest main (the
         # conversation itself carries on either way).
         fresh = not STATE["changed"]
-    threading.Thread(target=edit_job, args=(change_id, prompt, fresh), daemon=True).start()
+    threading.Thread(target=edit_job, args=(change_id, prompt, fresh, viewing), daemon=True).start()
     return jsonify(public_state())
 
 

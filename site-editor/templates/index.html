@@ -118,7 +118,7 @@
     <textarea id="prompt" placeholder="Ask a question or describe a change…"></textarea>
     <div class="row">
       <button class="primary" id="send">Send</button>
-      <span class="muted">Enter to send, Shift+Enter for a new line</span>
+      <span class="muted"><span id="viewing-hint"></span>Enter to send, Shift+Enter for a new line</span>
     </div>
     <div id="msg" class="error" hidden></div>
   </section>
@@ -281,6 +281,7 @@ function showView(mode, page) {
   const url = (draft ? "/preview/" : "/current/") + viewPage + "?t=" + Date.now();
   $("frame").src = url; $("open-tab").href = url;
   fillPagePicker();
+  showViewingHint();
 }
 
 $("page").onchange = () => showView(viewMode, $("page").value);
@@ -289,9 +290,12 @@ $("reload").onclick = () => showView(viewMode, viewPage);
 $("frame").addEventListener("load", () => {
   try {
     const m = $("frame").contentWindow.location.pathname.match(/^\/(?:preview|current)\/([^/]+\.html)$/);
-    if (m && m[1] !== viewPage) { viewPage = m[1]; fillPagePicker(); }
+    if (m && m[1] !== viewPage) { viewPage = m[1]; fillPagePicker(); showViewingHint(); }
   } catch (e) { /* not our page */ }
 });
+
+// "This page" in a message means the page in the preview; say which one it is.
+function showViewingHint() { $("viewing-hint").textContent = `“This page” = ${viewPage} · `; }
 
 async function loadPages() {
   try { const d = await api("/api/pages"); sitePages = (d && d.pages) || []; } catch (e) { sitePages = []; }
@@ -322,7 +326,7 @@ async function act(fn) {
 function send() {
   const text = $("prompt").value.trim();
   if (!text || $("send").disabled) return;
-  act(async () => { const s = await api("/api/submit", {prompt: text}); $("prompt").value = ""; return s; });
+  act(async () => { const s = await api("/api/submit", {prompt: text, viewing: viewPage}); $("prompt").value = ""; return s; });
 }
 $("send").onclick = send;
 $("prompt").addEventListener("keydown", e => {
