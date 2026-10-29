@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Site editor</title>
+<style>
+  :root{--ink:#1c2b33;--paper:#f6f3ec;--panel:#fff;--line:#dfd8c8;--accent:#2a6f6f;--gold:#d9a441;--rust:#b5493f;--muted:#6b6259}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 "Helvetica Neue",Inter,Arial,sans-serif}
+  header{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--panel);flex-wrap:wrap}
+  header h1{font-family:"Iowan Old Style",Georgia,serif;font-weight:600;font-size:22px;margin:0}
+  header .who{color:var(--muted);font-size:14px}
+  a{color:var(--accent)}
+  main{display:grid;grid-template-columns:minmax(340px,460px) minmax(0,1fr);gap:20px;align-items:start;padding:20px 20px 40px}
+  .viewer{position:sticky;top:16px;height:calc(100vh - 32px);display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .viewer-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 12px;border-bottom:1px solid var(--line)}
+  .viewer-bar select{font:inherit;font-size:14px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:var(--panel);color:var(--ink);max-width:100%}
+  .viewer-bar button{padding:5px 12px;font-size:14px}
+  .viewer-bar .links{margin-left:auto;font-size:14px}
+  .mode{font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;background:#e7f1ef;color:var(--accent);white-space:nowrap}
+  .mode.draft{background:#fbf3e1;color:#8a6414}
+  .viewer iframe{flex:1;width:100%;border:0;background:#fff}
+  @media (max-width:900px){
+    main{grid-template-columns:minmax(0,1fr);padding:16px}
+    .viewer{position:static;height:80vh}
+  }
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;margin-bottom:16px}
+  h2{font-family:"Iowan Old Style",Georgia,serif;font-weight:600;font-size:20px;margin:0 0 10px}
+  textarea{width:100%;min-height:110px;padding:12px;font:inherit;border:1px solid var(--line);border-radius:6px;resize:vertical}
+  button{font:inherit;padding:10px 18px;border-radius:6px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+  button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  button.danger{color:var(--rust);border-color:#e3c3bf}
+  button:disabled{opacity:.5;cursor:default}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px}
+  .muted{color:var(--muted);font-size:14px}
+  .banner{background:#e7f1ef;border:1px solid #bcd8d3;border-radius:8px;padding:12px 14px;margin-bottom:16px}
+  .error{background:#f8e9e7;border:1px solid #e3c3bf;border-radius:8px;padding:12px 14px;margin:12px 0;color:#7a2f28}
+  .warn{background:#fbf3e1;border:1px solid #ecd9a8;border-radius:8px;padding:12px 14px;margin:12px 0}
+  ul.activity{list-style:none;padding:0;margin:10px 0 0;font-size:14px;color:var(--muted);max-height:220px;overflow:auto}
+  ul.activity li{padding:2px 0}
+  ul.activity li:last-child{color:var(--ink)}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;vertical-align:-2px;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .summary{white-space:pre-wrap}
+  pre.diff{max-height:420px;overflow:auto;font-size:12px;background:#faf8f3;border:1px solid var(--line);border-radius:6px;padding:10px;white-space:pre-wrap;word-break:break-word}
+  pre.diff .add{background:#e4f2e6}
+  pre.diff .del{background:#f6e3e1}
+  .examples{margin:8px 0 0;padding-left:18px;color:var(--muted);font-size:14px}
+  [hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header>
+  <h1>Site editor</h1>
+  <div class="who">Signed in as {{ editor }} · <a href="{{ site_url }}" target="_blank" rel="noopener">View live site</a> · <a href="/logout">Sign out</a></div>
+</header>
+<main>
+<div class="controls">
+  <div id="banner" class="banner" hidden></div>
+
+  <!-- Idle: ask for a change -->
+  <section id="v-idle" class="card" hidden>
+    <h2>What would you like to change?</h2>
+    <textarea id="prompt" placeholder="Describe the change in plain English. Mention the page if you know it."></textarea>
+    <ul class="examples">
+      <li>On the FAQ page, add a question “When is the next board meeting?” with the answer “November 20 at 7pm.”</li>
+      <li>Fix the typo “goverance” on the home page.</li>
+      <li>Add the October 23 board meeting video to the videos page.</li>
+    </ul>
+    <div class="row">
+      <button class="primary" id="go">Make this change</button>
+      <span class="muted">You'll see a preview before anything goes live.</span>
+    </div>
+  </section>
+
+  <!-- Running -->
+  <section id="v-running" class="card" hidden>
+    <h2><span class="spinner"></span><span id="running-title">Working on it…</span></h2>
+    <p class="muted">This usually takes under a minute or two. You can leave this page open.</p>
+    <ul class="activity" id="activity"></ul>
+  </section>
+
+  <!-- Ready (someone else's) -->
+  <section id="v-other" class="card" hidden>
+    <h2 id="other-title"></h2>
+    <p class="muted">Only one change can be in progress at a time. If it's been abandoned, you can discard it.</p>
+    <div class="row"><button class="danger" id="other-discard">Discard their change</button></div>
+  </section>
+
+  <!-- Ready (mine) -->
+  <section id="v-ready" hidden>
+    <div class="card">
+      <h2>Here's the change. Check the preview.</h2>
+      <div class="summary" id="summary"></div>
+      <div id="warnings" class="warn" hidden></div>
+      <div id="nochange" class="warn" hidden>No pages were changed. Try asking in a different way below, or discard.</div>
+      <div class="row">
+        <button class="primary" id="publish">Publish to the live site</button>
+        <button class="danger" id="discard">Discard</button>
+      </div>
+      <details style="margin-top:12px" id="diffbox"><summary class="muted">Show the exact changes (technical)</summary><pre class="diff" id="diff">Loading…</pre></details>
+    </div>
+    <div class="card">
+      <h2>Want a tweak first?</h2>
+      <textarea id="followup" placeholder="e.g. Make the new heading match the others, and move it above the video list."></textarea>
+      <div class="row"><button id="tweak">Update the change</button></div>
+    </div>
+  </section>
+
+  <!-- Error -->
+  <section id="v-error" class="card" hidden>
+    <h2>Something went wrong</h2>
+    <div class="error" id="errmsg"></div>
+    <div class="row"><button id="restart">Start over</button></div>
+  </section>
+
+  <div id="msg" class="error" hidden></div>
+
+  <!-- Undo -->
+  <section id="v-undo" class="card" hidden>
+    <h2>Most recent published change</h2>
+    <p id="last-desc" class="muted"></p>
+    <div class="row"><button class="danger" id="undo" hidden>Undo this change</button></div>
+  </section>
+</div>
+
+<!-- The site itself: main as it is now, or the draft once a change is ready -->
+<aside class="viewer" aria-label="Site preview">
+  <div class="viewer-bar">
+    <span class="mode" id="mode">Current site</span>
+    <select id="page" aria-label="Page to show"></select>
+    <button id="reload" type="button">Reload</button>
+    <a class="links" id="open-tab" target="_blank" rel="noopener">Open in a new tab</a>
+  </div>
+  <iframe id="frame" title="Site preview"></iframe>
+</aside>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+let S = null, pollTimer = null, renderedReadyKey = null;
+let sitePages = [], viewMode = null, viewPage = "index.html", viewerReady = false;
+
+async function api(path, body) {
+  const opts = body === undefined ? {} : {method: "POST", headers: {"Content-Type": "application/json", "X-Requested-With": "site-editor"}, body: JSON.stringify(body)};
+  const r = await fetch(path, opts);
+  if (r.status === 401) { location.href = "/login"; return null; }
+  let data = {};
+  try { data = await r.json(); } catch (e) { data = {error: "The server didn't respond properly. Try again in a minute."}; }
+  if (!r.ok) throw new Error(data.error || "Something went wrong.");
+  return data;
+}
+
+function showMsg(text) { $("msg").textContent = text; $("msg").hidden = !text; }
+
+function render(s) {
+  S = s;
+  const mine = s.editor === s.you;
+  $("banner").textContent = s.banner || ""; $("banner").hidden = !s.banner;
+  for (const v of ["idle", "running", "other", "ready", "error"]) $("v-" + v).hidden = true;
+
+  if (s.status === "idle") { $("v-idle").hidden = false; renderedReadyKey = null; }
+  else if (s.status === "running" || s.status === "publishing") {
+    $("v-running").hidden = false;
+    $("running-title").textContent = s.status === "publishing" ? "Publishing…" : (mine ? "Working on your change…" : `${s.editor} is making a change…`);
+    $("activity").innerHTML = "";
+    for (const a of s.activity.slice(-15)) { const li = document.createElement("li"); li.textContent = a; $("activity").appendChild(li); }
+  }
+  else if (s.status === "ready" && !mine) {
+    $("v-other").hidden = false;
+    $("other-title").textContent = `${s.editor} has a change waiting to be published.`;
+  }
+  else if (s.status === "ready") {
+    $("v-ready").hidden = false;
+    const key = s.requests.length + "|" + s.changed.join(",");
+    if (key !== renderedReadyKey) { renderedReadyKey = key; renderReady(s); }
+  }
+  else if (s.status === "error") {
+    $("v-error").hidden = false;
+    $("errmsg").textContent = s.error;
+  }
+  $("v-undo").hidden = s.status !== "idle";
+  syncViewer();
+  schedulePoll();
+}
+
+function renderReady(s) {
+  $("summary").textContent = s.summary || "Done.";
+  $("warnings").hidden = !s.warnings.length;
+  $("warnings").textContent = s.warnings.length ? "The automatic check found a problem, so this can't be published yet. Ask for a fix below or discard it. Details: " + s.warnings.join(" ") : "";
+  $("nochange").hidden = !!s.changed.length;
+  $("publish").disabled = !s.changed.length || !!s.warnings.length;
+  const pages = s.changed.filter(p => p.endsWith(".html"));
+  if (viewerReady) showView("draft", pages.includes(viewPage) ? viewPage : (pages[0] || viewPage));
+  $("diffbox").open = false; $("diff").textContent = "Loading…";
+}
+
+// ── Viewer: the right-hand panel showing the site.
+// Your own change in progress (ready, or a tweak running on top of it) shows as the draft;
+// anything else shows main, never someone else's unpublished edits.
+function syncViewer() {
+  if (!viewerReady || !S) return;
+  const mine = S.editor === S.you;
+  const draft = mine && (S.status === "ready" || (S.status === "running" && S.requests.length > 1));
+  const mode = draft ? "draft" : "current";
+  if (mode !== viewMode) {
+    const changed = S.changed.filter(p => p.endsWith(".html"));
+    showView(mode, draft && !changed.includes(viewPage) && changed.length ? changed[0] : viewPage);
+  }
+}
+
+function fillPagePicker() {
+  const changed = (viewMode === "draft" && S) ? S.changed.filter(p => p.endsWith(".html")) : [];
+  const names = [...new Set([...changed, ...sitePages, viewPage])];
+  const sel = $("page"); sel.innerHTML = "";
+  for (const n of names) {
+    const o = document.createElement("option");
+    o.value = n; o.textContent = n + (changed.includes(n) ? " (changed)" : "");
+    sel.appendChild(o);
+  }
+  sel.value = viewPage;
+}
+
+function showView(mode, page) {
+  viewMode = mode; viewPage = page || "index.html";
+  const draft = mode === "draft";
+  $("mode").textContent = draft ? "Your draft (not published)" : "Current site";
+  $("mode").classList.toggle("draft", draft);
+  const url = (draft ? "/preview/" : "/current/") + viewPage + "?t=" + Date.now();
+  $("frame").src = url; $("open-tab").href = url;
+  fillPagePicker();
+}
+
+$("page").onchange = () => showView(viewMode, $("page").value);
+$("reload").onclick = () => showView(viewMode, viewPage);
+// Keep the picker in step when someone clicks a link inside the preview.
+$("frame").addEventListener("load", () => {
+  try {
+    const m = $("frame").contentWindow.location.pathname.match(/^\/(?:preview|current)\/([^/]+\.html)$/);
+    if (m && m[1] !== viewPage) { viewPage = m[1]; fillPagePicker(); }
+  } catch (e) { /* not our page */ }
+});
+
+async function loadPages() {
+  try { const d = await api("/api/pages"); sitePages = (d && d.pages) || []; } catch (e) { sitePages = []; }
+  fillPagePicker();
+}
+
+$("diffbox").addEventListener("toggle", async () => {
+  if (!$("diffbox").open) return;
+  const d = await api("/api/diff");
+  const pre = $("diff"); pre.innerHTML = "";
+  for (const line of (d.diff || "No changes.").split("\n")) {
+    const span = document.createElement("span");
+    if (line.startsWith("+") && !line.startsWith("+++")) span.className = "add";
+    if (line.startsWith("-") && !line.startsWith("---")) span.className = "del";
+    span.textContent = line + "\n"; pre.appendChild(span);
+  }
+});
+
+async function act(fn) {
+  showMsg("");
+  document.querySelectorAll("button").forEach(b => b.disabled = true);
+  try { const s = await fn(); if (s) render(s); }
+  catch (e) { showMsg(e.message); }
+  finally {
+    document.querySelectorAll("button").forEach(b => b.disabled = false);
+    if (S && S.status === "ready") $("publish").disabled = !S.changed.length || !!S.warnings.length;
+  }
+}
+
+$("go").onclick = () => act(async () => { const s = await api("/api/submit", {prompt: $("prompt").value}); $("prompt").value = ""; return s; });
+$("tweak").onclick = () => act(async () => { const s = await api("/api/submit", {prompt: $("followup").value}); $("followup").value = ""; return s; });
+$("publish").onclick = () => { if (confirm("Publish this change to the live site?")) act(async () => { const s = await api("/api/publish", {}); loadLast(); return s; }); };
+$("discard").onclick = () => { if (confirm("Throw away this change? Nothing will be published.")) act(() => api("/api/discard", {})); };
+$("other-discard").onclick = () => { if (confirm(`Throw away ${S.editor}'s change?`)) act(() => api("/api/discard", {})); };
+$("restart").onclick = () => act(() => api("/api/discard", {}));
+$("undo").onclick = () => { if (confirm("Undo the most recent published change? The live site will go back to how it was before it.")) act(async () => { const s = await api("/api/undo", {}); loadLast(); return s; }); };
+
+async function loadLast() {
+  try {
+    const d = await api("/api/last-change");
+    if (!d || d.reason === "busy") return;
+    if (!d.sha) { $("last-desc").textContent = "Couldn't load the latest change."; $("undo").hidden = true; return; }
+    $("last-desc").textContent = `“${d.subject}” by ${d.by}.` + (d.available ? "" : " Changes made outside this tool can't be undone here.");
+    $("undo").hidden = !d.available;
+  } catch (e) { $("last-desc").textContent = ""; }
+}
+
+function schedulePoll() {
+  clearTimeout(pollTimer);
+  const busy = S && (S.status === "running" || S.status === "publishing");
+  pollTimer = setTimeout(async () => { try { const s = await api("/api/status"); if (s) render(s); } catch (e) { schedulePoll(); } }, busy ? 2000 : 15000);
+}
+
+api("/api/status").then(s => s && render(s));
+// loadLast() fetches main first, so the viewer opens on the latest published version.
+loadLast().then(loadPages).then(() => { viewerReady = true; syncViewer(); });
+</script>
+</body>
+</html>

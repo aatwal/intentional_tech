@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Site editor · sign in</title>
+<style>
+  :root{--ink:#1c2b33;--paper:#f6f3ec;--panel:#fff;--line:#dfd8c8;--accent:#2a6f6f;--rust:#b5493f;--muted:#6b6259}
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--paper);color:var(--ink);
+       font:16px/1.5 "Helvetica Neue",Inter,Arial,sans-serif;padding:16px}
+  form{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:28px;width:100%;max-width:380px}
+  h1{font-family:"Iowan Old Style",Georgia,serif;font-weight:600;font-size:26px;margin:0 0 4px}
+  p{color:var(--muted);margin:0 0 20px}
+  input{width:100%;padding:12px;font-size:16px;border:1px solid var(--line);border-radius:6px}
+  button{margin-top:14px;width:100%;padding:12px;font-size:16px;border:0;border-radius:6px;background:var(--accent);color:#fff;cursor:pointer}
+  .err{color:var(--rust);margin-top:12px}
+</style>
+</head>
+<body>
+<form method="post">
+  <h1>Site editor</h1>
+  <p>Intentional Tech in Schools</p>
+  {% if not configured %}<p class="err">No editor passcodes are set up yet. Andy needs to add EDITOR_PASSCODES in Render.</p>{% endif %}
+  <label for="pc" style="display:block;margin-bottom:6px">Your passcode</label>
+  <input id="pc" name="passcode" type="password" autocomplete="current-password" autofocus required>
+  <button type="submit">Sign in</button>
+  {% if error %}<div class="err">{{ error }}</div>{% endif %}
+</form>
+</body>
+</html>
