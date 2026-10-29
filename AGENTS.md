@@ -17,6 +17,10 @@ manager at the repo root — most of it is self-contained HTML.
   below, which now has one fewer copy to keep in sync.
 - `caaspp-2025-26.html`, `reclassification-explained.html` — redirect stubs (same pattern as
   `smfc_caaspp_dashboard.html`) for two write-ups that moved into the dashboard app; see below.
+- `images/` — the site pages' images (logo, home page charts), referenced by relative path
+  (`images/logo-mark.png`). They used to be embedded in the pages as base64; keep them as files
+  so pages stay small and the charts can be replaced without touching HTML. No SVGs: the site
+  editor's preview runs on its own origin, where an SVG's scripts would run as a signed-in editor.
 - `vendor_purchase_tracker.html` — district vendor spending ledger. Seed records are hardcoded;
   user-added records persist via the Artifacts `window.storage` API (`window.storage.get/set`),
   which only exists when this file is published through the Artifact tool with the storage
