@@ -157,6 +157,13 @@ different ids — `District.subgroup_id_by_name` qualifies every colliding name 
 `"Asian (Race and Ethnicity)"` vs `"Asian (Ethnicity for Socioeconomically Disadvantaged)"`) so
 the enum stays 1:1 with ids; a naive `{name: id}` dict would silently collapse those to one id.
 
+**District URLs:** each district has its own path: SMFCSD at `/smfc`, Burlingame Elementary at
+`/burlingame` (`districts.py`). `/` forwards to `/smfc` with a 302, keeping the query string, so the
+many links to the bare `https://smfcsd-tech-analysis.onrender.com/` (site pages, redirect stubs,
+`?tab=statewide` links) still land right; `/smfc/` and `/burlingame/` forward to the slash-less
+form, which the page's relative links assume. The write-up pages stay at the root and link back to
+`/smfc`.
+
 **Other districts (unlinked):** the same app also serves a copy of the dashboard for Burlingame
 Elementary at `/burlingame`. It's linked from nowhere and marked `noindex` (meta tag plus an
 `X-Robots-Tag` header), and it leaves out the SMFCSD-only write-up link. `districts.py` lists the

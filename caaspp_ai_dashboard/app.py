@@ -6,8 +6,8 @@ served through a small Flask app that adds a chat panel backed by the Claude
 API. The API key stays server-side (read from the ANTHROPIC_API_KEY env var)
 so nothing secret ever reaches the browser.
 
-One app, several districts (districts.py): SMFCSD at /, the others at their own unlinked,
-noindex paths. Each has its own data, chat overview and lookup tool (the District class below),
+One app, several districts (districts.py), each at its own path: SMFCSD at /smfc (/ forwards
+there), the others unlinked and noindex. Each has its own data, chat overview and lookup tool (the District class below),
 and its own copy of the dashboard page, filled in from templates/index.html at startup.
 
 Run:
@@ -26,7 +26,7 @@ from collections import Counter
 from datetime import datetime, timezone
 
 import requests
-from flask import Flask, Response, abort, jsonify, request, send_file, send_from_directory
+from flask import Flask, Response, abort, jsonify, redirect, request, send_file, send_from_directory
 
 import districts
 
@@ -441,14 +441,24 @@ def district_page(slug):
     return resp
 
 
+def forward(path):
+    """302 to path, keeping any query string (so old ?tab=statewide links still land right).
+    Temporary on purpose: browsers cache a permanent redirect for good, and / might become
+    something else later."""
+    qs = request.query_string.decode()
+    return redirect(path + ("?" + qs if qs else ""), code=302)
+
+
 @app.route("/")
 def index():
-    return district_page(districts.DEFAULT)
+    return forward(districts.DISTRICTS[districts.DEFAULT]["path"])
 
 
 for _slug, _c in districts.DISTRICTS.items():
-    if _slug != districts.DEFAULT:
-        app.add_url_rule(_c["path"], f"district_{_slug}", lambda _slug=_slug: district_page(_slug))
+    app.add_url_rule(_c["path"], f"district_{_slug}", lambda _slug=_slug: district_page(_slug))
+    # "/smfc/" -> "/smfc": the page's relative links (e.g. to the write-ups) assume no slash.
+    app.add_url_rule(_c["path"] + "/", f"district_{_slug}_slash",
+                     lambda _c=_c: forward(_c["path"]), strict_slashes=True)
 
 
 # Standalone write-ups that sit alongside the dashboard (plain HTML, not Jinja templates).
