@@ -19,10 +19,12 @@ import hmac
 import io
 import json
 import os
+import posixpath
 import re
 import subprocess
 import threading
 import time
+import urllib.parse
 import uuid
 from datetime import datetime, timezone
 from html.parser import HTMLParser
@@ -475,6 +477,135 @@ def check_changes(originals):
             problems.append(f"{name} shrank by more than 30%, which is more than a normal edit.")
         if "</html>" in old.lower() and "</html>" not in new.lower():
             problems.append(f"{name} lost its closing </html> tag.")
+    try:
+        problems += link_problems(originals)
+    except Exception as exc:  # noqa: BLE001 - a bug in this check must never block publishing
+        print(f"LINK_CHECK_ERROR {exc!r}", flush=True)
+    return problems
+
+
+# --------------------------------------------------------------------------- link & menu check
+#
+# Run with the tag check above, so a problem goes back to Claude to fix and otherwise blocks
+# Publish. Only problems the draft introduces count: anything already broken on main (say, a
+# link to a section a script creates) never blocks anyone.
+
+LINK_ATTRS = {("a", "href"), ("area", "href"), ("link", "href"), ("img", "src"), ("source", "src"),
+              ("video", "src"), ("video", "poster"), ("audio", "src"), ("iframe", "src"),
+              ("script", "src"), ("embed", "src")}
+
+
+class PageLinks(HTMLParser):
+    """A page's links and section ids, plus the links in its first <header> and <footer>."""
+
+    def __init__(self, text):
+        super().__init__(convert_charrefs=True)
+        self.ids, self.links = set(), []
+        self.menus = {"header": [], "footer": []}
+        self.region, self.depth, self.done, self.anchor = None, 0, set(), None
+        self.feed(text)
+
+    def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
+        if a.get("id"):
+            self.ids.add(a["id"])
+        if tag == "a" and a.get("name"):
+            self.ids.add(a["name"])
+        if tag in self.menus and self.region in (None, tag) and tag not in self.done:
+            self.region = tag
+            self.depth += 1
+        for t, attr in LINK_ATTRS:
+            if tag == t and a.get(attr):
+                self.links.append(a[attr])
+        if tag == "a" and a.get("href") and self.region:
+            self.anchor = [a["href"], ""]
+
+    def handle_data(self, data):
+        if self.anchor is not None:
+            self.anchor[1] += data
+
+    def handle_endtag(self, tag):
+        if tag == "a" and self.anchor is not None:
+            href, text = self.anchor
+            self.menus[self.region].append((" ".join(text.split()), href))
+            self.anchor = None
+        if tag == self.region:
+            self.depth -= 1
+            if self.depth == 0:
+                self.done.add(tag)
+                self.region = None
+
+
+def link_target(href, page):
+    """(path, section) a link points to within the site, or None for one that leaves it."""
+    h = href.strip()
+    if h.startswith(SITE_URL):
+        h = h[len(SITE_URL):]
+    if h.startswith("//") or re.match(r"^[a-z][a-z0-9+.-]*:", h, re.I):
+        return None  # another site, mailto:, tel:, javascript:, data:
+    path, _, section = h.partition("#")
+    path = urllib.parse.unquote(path.split("?")[0])
+    if not path:
+        path = page
+    elif path.startswith("/"):
+        path = path.lstrip("/")
+    if not path or path.endswith("/"):
+        path += "index.html"
+    return posixpath.normpath(path), urllib.parse.unquote(section)
+
+
+def broken_links(pages, files):
+    """{(page, href): reason} for every internal link, image or video that leads nowhere."""
+    parsed = {name: PageLinks(text) for name, text in pages.items()}
+    broken = {}
+    for name, links in parsed.items():
+        for href in links.links:
+            target = link_target(href, name)
+            if target is None:
+                continue
+            path, section = target
+            if path.startswith("..") or path not in files:
+                broken[(name, href)] = f"{path} doesn't exist"
+            elif section and section != "top" and path in parsed and section not in parsed[path].ids:
+                broken[(name, href)] = f"{path} has no section with id=\"{section}\""
+    return broken
+
+
+def menu(page_links, region, name):
+    """A page's header/footer links, compared by where they go (so "#needed" on the home page
+    matches "index.html#needed" elsewhere), not by how the address is written."""
+    return tuple((text, link_target(href, name) or href) for text, href in page_links.menus[region])
+
+
+def link_problems(originals):
+    main_files = set(run_git("ls-tree", "-r", "--name-only", "HEAD").split("\n"))
+    draft = {n: (WORKDIR / n).read_text(encoding="utf-8", errors="replace") for n in editable_pages()}
+    problems = []
+
+    old = broken_links(originals, main_files)
+    new = broken_links(draft, main_files | set(changed_files()))
+    for (name, href), reason in list(new.items())[:20]:
+        if (name, href) not in old:
+            problems.append(f"{name} links to \"{href}\", but {reason}.")
+
+    # A menu or footer edited on one page must be edited the same way on every page that had
+    # the identical menu/footer on main; pages with their own (the flyer, say) are left alone.
+    main_parsed = {n: PageLinks(t) for n, t in originals.items()}
+    draft_parsed = {n: PageLinks(t) for n, t in draft.items() if n in originals}
+    for region, label in (("header", "menu"), ("footer", "footer")):
+        before = {n: menu(pl, region, n) for n, pl in main_parsed.items()}
+        after = {n: menu(pl, region, n) for n, pl in draft_parsed.items()}
+        reported = set()
+        for name in sorted(after):
+            if after[name] == before[name] or not before[name] or before[name] in reported:
+                continue
+            behind = sorted(n for n in before if n != name and before[n] == before[name]
+                            and after.get(n) != after[name])
+            if behind:
+                reported.add(before[name])
+                problems.append(f"The {label} links changed on {name} but not on {', '.join(behind)}, "
+                                f"which had the same {label}. Make the same change there too, so "
+                                "every page's " + label + " matches.")
     return problems
 
 
@@ -511,8 +642,11 @@ def clean_block(block):
 def converse(client, messages):
     """Run the tool loop until Claude stops. Returns its final text."""
     for _ in range(MAX_TOOL_ROUNDS):
+        # The conversation only ever grows (earlier turns are never edited), so caching it means
+        # each request pays full price only for what's new since the last one.
         resp = client.messages.create(model=MODEL, max_tokens=16000, system=SYSTEM_PROMPT,
-                                      tools=TOOL_SPECS, messages=messages)
+                                      tools=TOOL_SPECS, messages=messages,
+                                      cache_control={"type": "ephemeral"})
         content = [clean_block(block) for block in resp.content]
         messages.append({"role": "assistant", "content": content})
         if resp.stop_reason != "tool_use":
