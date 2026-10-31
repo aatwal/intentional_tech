@@ -1,0 +1,8 @@
+"County Code","District Code","School Code","Filler","Test Year","Type Id","County Name","District Name","School Name","Zip Code"
+"41","68882","0000000",,"2016","6","San Mateo","Burlingame Elementary School District","","     "
+"41","68882","6043525",,"2016","7","San Mateo","Burlingame Elementary School District","Burlingame Intermediate","94010"
+"41","68882","6043541",,"2016","7","San Mateo","Burlingame Elementary School District","Franklin Elementary","94010"
+"41","68882","6043566",,"2016","7","San Mateo","Burlingame Elementary School District","Lincoln Elementary","94010"
+"41","68882","6043574",,"2016","7","San Mateo","Burlingame Elementary School District","Mckinley Elementary","94010"
+"41","68882","6043590",,"2016","7","San Mateo","Burlingame Elementary School District","Roosevelt Elementary","94010"
+"41","68882","6043608",,"2016","7","San Mateo","Burlingame Elementary School District","Washington Elementary","94010"

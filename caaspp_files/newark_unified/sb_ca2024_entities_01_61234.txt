@@ -1,0 +1,12 @@
+County Code^District Code^School Code^Type ID^Filler^Test Year^County Name^District Name^School Name^Zip Code
+01^61234^0000000^6^^2024^Alameda^Newark Unified^^
+01^61234^0130054^7^^2024^Alameda^Newark Unified^Newark Memorial High^94560
+01^61234^0130484^7^^2024^Alameda^Newark Unified^Crossroads High (Alternative)^94560
+01^61234^0135426^7^^2024^Alameda^Newark Unified^Bridgepoint High^94560
+01^61234^0161234^7^^2024^Alameda^Newark Unified^Newark Unified District Level Program^94560
+01^61234^6001440^7^^2024^Alameda^Newark Unified^August Schilling Elementary^94560
+01^61234^6001481^7^^2024^Alameda^Newark Unified^Coyote Hills Elementary^94560
+01^61234^6001507^7^^2024^Alameda^Newark Unified^John F. Kennedy Elementary^94560
+01^61234^6001523^7^^2024^Alameda^Newark Unified^Lincoln Elementary^94560
+01^61234^6001531^7^^2024^Alameda^Newark Unified^Birch Grove Intermediate^94560
+01^61234^6102917^7^^2024^Alameda^Newark Unified^Newark Middle^94560

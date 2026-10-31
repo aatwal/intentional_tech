@@ -12,6 +12,10 @@ and never parses or rewrites them. From 2019 on the files are identical, line or
 reads rows by key, so order doesn't matter. Run with --check to prove that again: it extracts
 SMFCSD and compares the result with the committed SMFCSD files.
 
+It also saves the district's lines from each year's entities file (sb_caYYYY_entities_<county>_
+<district>.txt): CDE's older score files carry no school names, so a school that has since closed
+would otherwise have no name. build_data.py uses them as a last resort.
+
 Usage:
     cd caaspp_ai_dashboard
     python3 extract_district.py 41 68882      # writes ../caaspp_files/burlingame_elementary/*.txt
@@ -30,19 +34,26 @@ STATEWIDE = os.path.join(districts.FILES_DIR, "california", "comprehensive", "sb
                          "sb_ca*_all_csv_v*.txt")
 
 
-def extract(args):
-    """Header plus every line whose first two fields are the county and district codes."""
-    path, county, district = args
-    m = re.search(r"sb_ca(\d{4})_all_csv_(v\d+)\.txt$", path)
-    prefixes = [f'{county}{d}{district}{d}'.encode() for d in "^,"] + \
-               [f'"{county}"{d}"{district}"{d}'.encode() for d in "^,"]
+def district_lines(path, county, district):
+    """A file's header plus every line whose first two fields are the county and district codes,
+    as raw bytes."""
+    prefixes = tuple([f'{county}{d}{district}{d}'.encode() for d in "^,"] +
+                     [f'"{county}"{d}"{district}"{d}'.encode() for d in "^,"])
     out = []
     with open(path, "rb") as f:
         out.append(f.readline())
         for line in f:
-            if line.startswith(tuple(prefixes)):
+            if line.startswith(prefixes):
                 out.append(line)
-    return m.group(1), m.group(2), b"".join(out)
+    return b"".join(out)
+
+
+def extract(args):
+    path, county, district = args
+    m = re.search(r"sb_ca(\d{4})_all_csv_(v\d+)\.txt$", path)
+    entities = glob.glob(os.path.join(os.path.dirname(path), f"sb_ca{m.group(1)}entities_csv.txt"))
+    names = district_lines(entities[0], county, district) if entities else b""
+    return m.group(1), m.group(2), district_lines(path, county, district), names
 
 
 def rows(data):
@@ -61,7 +72,7 @@ def main():
     if sys.argv[1:] == ["--check"]:
         bad = 0
         smfc = districts.files_dir(districts.DISTRICTS["smfcsd"])
-        for year, ver, data in run("41", "69039"):
+        for year, ver, data, _ in run("41", "69039"):
             committed = os.path.join(smfc, f"sb_ca{year}_all_41_69039_csv_{ver}.txt")
             theirs = open(committed, "rb").read() if os.path.exists(committed) else b""
             if theirs == data:
@@ -81,7 +92,7 @@ def main():
                  "setting names the folder these go in.")
     folder = districts.files_dir(d)
     os.makedirs(folder, exist_ok=True)
-    for year, ver, data in run(county, district):
+    for year, ver, data, names in run(county, district):
         n = rows(data)
         if n == 0:
             print(f"{year}: no rows for {county} {district}, nothing written")
@@ -89,7 +100,10 @@ def main():
         out = os.path.join(folder, f"sb_ca{year}_all_{county}_{district}_csv_{ver}.txt")
         with open(out, "wb") as f:
             f.write(data)
-        print(f"{year}: {n} rows -> {os.path.relpath(out, HERE)}")
+        if rows(names) > 0:
+            with open(os.path.join(folder, f"sb_ca{year}_entities_{county}_{district}.txt"), "wb") as f:
+                f.write(names)
+        print(f"{year}: {n} rows, {max(rows(names), 0)} school names -> {os.path.relpath(out, HERE)}")
 
 
 if __name__ == "__main__":
