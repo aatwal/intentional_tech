@@ -1,6 +1,6 @@
 """
-The districts this app can show. SMFCSD is the main dashboard at /; the others are served at
-/<slug>, are linked from nowhere, and are marked noindex.
+The districts this app can show, each at its own path: SMFCSD (the main dashboard) at /smfc,
+which / forwards to; the others are linked from nowhere and marked noindex.
 
 Each district's data is built by `python3 build_data.py --district <slug>` from CDE's
 per-district research files in its own folder, ../caaspp_files/<files>/ (named
@@ -18,7 +18,7 @@ APP_DIR = os.path.dirname(os.path.abspath(__file__))
 
 DISTRICTS = {
     "smfcsd": {
-        "path": "/",
+        "path": "/smfc",
         "county": "41",
         "code": "69039",
         "files": "smfc",                   # ../caaspp_files/smfc/
