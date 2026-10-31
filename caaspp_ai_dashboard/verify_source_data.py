@@ -6,10 +6,8 @@ the CAASPP data correctly" -- nothing else in this repo reads them at runtime, s
 currently the only way to check the derived data traces back to CDE's published figures rather
 than a transcription error from whenever the original extraction happened.
 
-Also checks that templates/index.html's own embedded copy of DATA (used for its client-side
-charts -- see CLAUDE.md's data-sync note) is byte-for-byte identical to data/caaspp_data.json,
-since nothing enforces that automatically and the two dashboards would silently disagree
-otherwise.
+Works for any district in districts.py (--district <slug>, default SMFCSD): its data file is
+checked against its own per-district source files.
 
 Checks, per (school, grade, subject, student-group, year) combination found in DATA:
   - percent meeting/exceeding standard ("met_above") matches the source row's "Percentage
@@ -42,7 +40,7 @@ that's confidently checking the wrong columns.
 
 Usage:
     cd caaspp_ai_dashboard
-    python3 verify_source_data.py [-v]
+    python3 verify_source_data.py [-v] [--district <slug>]
 
 Exit status is non-zero if any mismatch is found.
 """
@@ -53,11 +51,19 @@ import os
 import re
 import sys
 
+import districts
+
 APP_DIR = os.path.dirname(os.path.abspath(__file__))
-DATA_PATH = os.path.join(APP_DIR, "data", "caaspp_data.json")
-TEMPLATE_PATH = os.path.join(APP_DIR, "templates", "index.html")
-SOURCE_DIR = os.path.join(APP_DIR, "..", "caaspp_files")
-SOURCE_GLOB = os.path.join(SOURCE_DIR, "sb_ca*_all_41_69039_csv_v*.txt")
+# The district being built/checked; configure() switches it (default SMFCSD).
+DATA_PATH = districts.DISTRICTS[districts.DEFAULT]["data"]
+SOURCE_GLOB = districts.source_glob(districts.DISTRICTS[districts.DEFAULT])
+EXPECTED_CODES = (districts.DISTRICTS[districts.DEFAULT]["county"], districts.DISTRICTS[districts.DEFAULT]["code"])
+
+
+def configure(district):
+    global DATA_PATH, SOURCE_GLOB, EXPECTED_CODES
+    DATA_PATH, SOURCE_GLOB = district["data"], districts.source_glob(district)
+    EXPECTED_CODES = (district["county"], district["code"])
 
 CLAIM_AREAS = 4  # DATA always stores 4 claim series even for Math (3 real + 1 zero-filled)
 
@@ -113,12 +119,19 @@ def sniff_delimiter(path):
 def load_source_rows(path):
     """{(school_code, grade, test_id, subgroup_id): row_dict}, warning on any duplicate key
     (would silently overwrite otherwise -- the same class of unverified-uniqueness bug already
-    found once in app.py's subgroup reverse map)."""
+    found once in app.py's subgroup reverse map). Stops if any row belongs to a different
+    district than the one being built/checked (EXPECTED_CODES): files are picked by folder and
+    filename, and a misplaced file would otherwise mix one district's numbers into another's."""
     rows = {}
     dupes = 0
     delimiter = sniff_delimiter(path)
     with open(path, encoding="utf-8") as f:
         for r in csv.DictReader(f, delimiter=delimiter):
+            codes = (r["County Code"], r["District Code"])
+            if codes != EXPECTED_CODES:
+                sys.exit(f"{path} has a row for county {codes[0]} district {codes[1]}, but this is "
+                         f"county {EXPECTED_CODES[0]} district {EXPECTED_CODES[1]}'s data. Is the file "
+                         "in the wrong folder?")
             key = (
                 r["School Code"],
                 r["Grade"],
@@ -179,34 +192,13 @@ def check_file(path, data_records, year_index, mismatches, checked_counter):
                     )
 
 
-def check_template_sync():
-    """templates/index.html carries its own copy of the same DATA blob for its client-side
-    charts (see CLAUDE.md's data-sync note) -- nothing enforces the two stay identical, so a
-    dashboard could be showing wrong numbers even with a perfect data/caaspp_data.json."""
-    with open(TEMPLATE_PATH, encoding="utf-8") as f:
-        for line in f:
-            if line.startswith("const DATA = "):
-                raw = line[len("const DATA = "):].rstrip("\n").rstrip(";")
-                return json.loads(raw)
-    raise RuntimeError(f"couldn't find 'const DATA = ' in {TEMPLATE_PATH}")
-
-
 def main():
     verbose = "-v" in sys.argv or "--verbose" in sys.argv
+    configure(districts.from_argv()[1])
 
     with open(DATA_PATH, encoding="utf-8") as f:
         data = json.load(f)
 
-    template_data = check_template_sync()
-    if template_data != data:
-        print(
-            f"MISMATCH: {TEMPLATE_PATH}'s embedded DATA blob does not match {DATA_PATH}. "
-            "One of the two dashboards is showing different numbers than the other.",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-    if verbose:
-        print(f"{TEMPLATE_PATH}'s embedded DATA blob matches {DATA_PATH}.")
     years = data["years"]
     year_index_by_label = {label: i for i, label in enumerate(years)}
 

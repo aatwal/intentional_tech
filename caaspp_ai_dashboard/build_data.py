@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Rebuild DATA (data/caaspp_data.json + the embedded `const DATA = ...` line in
-templates/index.html) from the raw CDE CAASPP research files in ../caaspp_files/.
+Rebuild a district's DATA (data/caaspp_data.json for SMFCSD; see districts.py for the others)
+from the raw CDE CAASPP research files in ../caaspp_files/. app.py puts it into the dashboard
+page when it starts, so the JSON file is the only copy.
 
 Before this script existed DATA was a one-off extraction with no checked-in generator; the
 record-selection and rounding rules below were reverse-engineered from that extraction and
@@ -25,12 +26,14 @@ the same four levels as Standard Exceeded / Met / Nearly Met / Not Met (a label 
 
 School names come from the newest source file that has one. Subgroup names and categories are
 not in the research files (they come from CDE's student group reference file), so they're carried
-forward from the existing JSON; a subgroup id with no known name stops the build.
+forward from the existing JSON; a subgroup id with no known name stops the build. A district's
+first build has no existing JSON: it takes the subgroup names from SMFCSD's (the ids are CDE's,
+the same statewide) and has no prior years to compare.
 
 Usage:
     cd caaspp_ai_dashboard
-    python3 build_data.py [--dry-run] [--force]
-then run `python3 verify_source_data.py -v`.
+    python3 build_data.py [--dry-run] [--force] [--district <slug>]
+then run `python3 verify_source_data.py -v [--district <slug>]`.
 """
 import glob
 import json
@@ -38,9 +41,9 @@ import os
 import re
 import sys
 
+import districts
 import verify_source_data as v
 
-TEMPLATE_PREFIX = "const DATA = "
 DISTRICT_CODE = "0000000"
 DISTRICT_NAME = "District Total (all schools)"
 SUBJECTS = ("1", "2")  # ELA, Math
@@ -202,9 +205,16 @@ def compare_prior_years(old, new):
 def main():
     dry_run = "--dry-run" in sys.argv
     force = "--force" in sys.argv
+    slug, district = districts.from_argv()
+    v.configure(district)
 
-    with open(v.DATA_PATH, encoding="utf-8") as f:
+    first_build = not os.path.exists(v.DATA_PATH)
+    names_from = districts.DISTRICTS[districts.DEFAULT]["data"] if first_build else v.DATA_PATH
+    with open(names_from, encoding="utf-8") as f:
         old = json.load(f)
+    if first_build:
+        print(f"First build for {district['name']}: subgroup names come from {os.path.basename(names_from)}.")
+        old = {**old, "years": [], "schools": [], "data": {}}
     new = build(old)
 
     problems = compare_prior_years(old, new)
@@ -213,29 +223,20 @@ def main():
     print(f"Records: {len(old['data'])} -> {len(new['data'])}; "
           f"schools: {len(old['schools'])} -> {len(new['schools'])}; "
           f"subgroups: {len(old['subgroups'])} -> {len(new['subgroups'])}")
-    if problems:
+    if problems and not first_build:
         print(f"\n{len(problems)} prior-year difference(s) vs the existing JSON:", file=sys.stderr)
         for p in problems[:50]:
             print(" -", p, file=sys.stderr)
         if not force:
             sys.exit("Refusing to write. Re-run with --force if these changes are intended.")
-    else:
+    elif not first_build:
         print(f"All {len(old['years'])} prior years reproduce the existing JSON exactly.")
     if dry_run:
         return
 
     with open(v.DATA_PATH, "w", encoding="utf-8") as f:
         json.dump(new, f, ensure_ascii=False, separators=(",", ":"))
-
-    with open(v.TEMPLATE_PATH, encoding="utf-8") as f:
-        lines = f.readlines()
-    hits = [i for i, line in enumerate(lines) if line.startswith(TEMPLATE_PREFIX)]
-    if len(hits) != 1:
-        sys.exit(f"Expected exactly one '{TEMPLATE_PREFIX}' line in {v.TEMPLATE_PATH}, found {len(hits)}")
-    lines[hits[0]] = TEMPLATE_PREFIX + json.dumps(new, ensure_ascii=False) + ";\n"
-    with open(v.TEMPLATE_PATH, "w", encoding="utf-8") as f:
-        f.writelines(lines)
-    print(f"Wrote {v.DATA_PATH} and {v.TEMPLATE_PATH}")
+    print(f"Wrote {v.DATA_PATH}")
 
 
 if __name__ == "__main__":

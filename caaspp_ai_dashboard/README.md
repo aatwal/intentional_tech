@@ -40,13 +40,13 @@ a different school/grade means changing the filter first.
 
 ## Regenerating the data
 
-`build_data.py` rebuilds DATA from the raw CDE research files in `../caaspp_files/` and writes
-both copies: `data/caaspp_data.json` and the embedded `const DATA = ...` line in
-`templates/index.html`. After adding a new year's file there:
+`build_data.py` rebuilds DATA from the raw CDE research files in `../caaspp_files/smfc/` and writes
+`data/caaspp_data.json`, which `app.py` puts into the page at startup. For another district in
+`districts.py`, add `--district <slug>` to both commands below. After adding a new year's file there:
 
 ```bash
 python3 build_data.py --dry-run   # report what would change
-python3 build_data.py             # write both copies
+python3 build_data.py             # write data/caaspp_data.json
 python3 verify_source_data.py -v  # cross-check every value against the source files
 ```
 
