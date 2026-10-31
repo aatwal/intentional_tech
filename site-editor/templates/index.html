@@ -63,6 +63,12 @@
   .mode{font-size:13px;font-weight:600;padding:3px 10px;border-radius:999px;background:#e7f1ef;color:var(--accent);white-space:nowrap}
   .mode.draft{background:#fbf3e1;color:#8a6414}
   .viewer iframe{flex:1;width:100%;border:0;background:#fff}
+  .viewer.phone{background:var(--paper)}
+  .viewer.phone iframe{width:390px;max-width:100%;align-self:center;border-left:1px solid var(--line);border-right:1px solid var(--line)}
+  .seg{display:inline-flex}
+  .seg button{border-radius:0}
+  .seg button:first-child{border-radius:6px 0 0 6px}
+  .seg button:last-child{border-radius:0 6px 6px 0;margin-left:-1px}
   button.on{background:var(--ink);border-color:var(--ink);color:#fff}
   .edit-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid #ecd9a8;background:#fbf3e1;font-size:14px}
   .edit-bar span{margin-right:auto;color:#8a6414}
@@ -144,6 +150,10 @@
     <select id="page" aria-label="Page to show"></select>
     <button class="small" id="reload" type="button">Reload</button>
     <button class="small" id="edit-toggle" type="button" aria-pressed="false">Edit text</button>
+    <span class="seg" role="group" aria-label="Preview width">
+      <button class="small on" id="size-desktop" type="button" aria-pressed="true">Desktop</button>
+      <button class="small" id="size-phone" type="button" aria-pressed="false" title="Show the page at a phone's width (390 pixels)">Phone</button>
+    </span>
     <a class="links" id="open-tab" target="_blank" rel="noopener">Open in a new tab</a>
   </div>
   <div class="edit-bar" id="edit-bar" hidden>
@@ -305,6 +315,19 @@ $("page").onchange = () => {
   showView(viewMode, $("page").value);
 };
 $("reload").onclick = () => { if (dropEditsOk()) showView(viewMode, viewPage); };
+
+// Desktop / Phone: Phone narrows the preview to an iPhone's width, so the page lays itself
+// out with its own small-screen CSS, exactly as on a phone. Remembered per browser.
+function setPreviewSize(phone) {
+  document.querySelector(".viewer").classList.toggle("phone", phone);
+  for (const [id, on] of [["size-desktop", !phone], ["size-phone", phone]]) {
+    $(id).classList.toggle("on", on); $(id).setAttribute("aria-pressed", String(on));
+  }
+  try { localStorage.setItem("previewSize", phone ? "phone" : "desktop"); } catch (e) { /* private mode */ }
+}
+$("size-desktop").onclick = () => setPreviewSize(false);
+$("size-phone").onclick = () => setPreviewSize(true);
+try { if (localStorage.getItem("previewSize") === "phone") setPreviewSize(true); } catch (e) { /* private mode */ }
 $("frame").addEventListener("load", () => {
   // Keep the picker in step when someone clicks a link inside the preview.
   try {
