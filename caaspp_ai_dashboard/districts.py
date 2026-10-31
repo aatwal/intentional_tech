@@ -45,6 +45,20 @@ DISTRICTS = {
         "listed": False,
         "writeups": False,
     },
+    "newark": {
+        "path": "/newark",
+        "county": "01",
+        "code": "61234",
+        "files": "newark_unified",
+        "name": "Newark Unified School District",
+        "place": "Newark Unified",
+        "short": "Newark Unified",
+        "county_name": "Alameda County",
+        "org": "Newark Unified School District",
+        "data": os.path.join(APP_DIR, "data", "caaspp_data_newark.json"),
+        "listed": False,
+        "writeups": False,
+    },
 }
 DEFAULT = "smfcsd"
 

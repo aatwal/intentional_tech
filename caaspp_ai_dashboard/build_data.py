@@ -35,6 +35,7 @@ Usage:
     python3 build_data.py [--dry-run] [--force] [--district <slug>]
 then run `python3 verify_source_data.py -v [--district <slug>]`.
 """
+import csv
 import glob
 import json
 import os
@@ -61,6 +62,12 @@ COLUMNS = {
     "not_met": ["Percentage Standard Not Met", "Percentage Minimal"],
     "tested": v.TESTED_COLS,
 }
+# CDE student groups (from its student group reference file) that no existing JSON names yet,
+# because no district built so far had enough students in them for CDE to publish results.
+EXTRA_SUBGROUPS = {
+    "28": {"name": "Migrant education", "category": "Migrant"},  # the pair of 29, "Not migrant education"
+}
+
 CLAIM_COLUMNS = [
     [f"Area {i} Percentage Above Standard", f"Area {i} Percentage Above Proficient"]
     for i in range(1, v.CLAIM_AREAS + 1)
@@ -110,21 +117,35 @@ def build(old):
         rec["claims"] = claims if has_claims else None
         data["|".join(key)] = rec
 
-    # Subgroups: names/categories only exist in the old JSON (see docstring).
-    known = {s["id"]: s for s in old["subgroups"]}
+    # Subgroups: names/categories only exist in the old JSON (see docstring), plus EXTRA_SUBGROUPS
+    # for CDE groups no district built so far has had, each placed with its own category.
+    named = list(old["subgroups"])
+    for sid, extra in EXTRA_SUBGROUPS.items():
+        if sid not in {s["id"] for s in named}:
+            at = next((i for i, s in enumerate(named) if s["category"] == extra["category"]), len(named))
+            named.insert(at, {"id": sid, **extra})
+    known = {s["id"]: s for s in named}
     used = {k.split("|")[3] for k in data}
     unknown = sorted(used - set(known), key=int)
     if unknown:
-        sys.exit(f"Subgroup id(s) {unknown} have no name/category; add them to subgroups first.")
-    subgroups = [s for s in old["subgroups"] if s["id"] in used]
+        sys.exit(f"Subgroup id(s) {unknown} have no name/category; add them to EXTRA_SUBGROUPS first.")
+    subgroups = [s for s in named if s["id"] in used]
 
     # Schools: newest non-empty source name, else the old JSON's name, else "School <code>".
-    old_names = {s["code"]: s["name"] for s in old["schools"]}
-    names = {}
+    # (a "School <code>" placeholder from an earlier build isn't a name worth keeping)
+    old_names = {s["code"]: s["name"] for s in old["schools"] if s["name"] != f"School {s['code']}"}
+    names, entity_names = {}, {}
     for _, rows in years:
         for row in rows.values():
             if row.get("School Name"):
                 names[row["School Code"]] = row["School Name"]
+    # Last resort, for schools that closed before CDE's score files carried names: the district's
+    # lines from CDE's entities files (saved by extract_district.py), newest year winning.
+    for path in sorted(glob.glob(os.path.join(os.path.dirname(v.SOURCE_GLOB), "sb_ca*_entities_*.txt"))):
+        with open(path, encoding="latin-1", newline="") as f:
+            for row in csv.DictReader(f, delimiter=v.sniff_delimiter(path)):
+                if row.get("School Name") and row["School Code"] not in names:
+                    entity_names[row["School Code"]] = row["School Name"]
     by_school = {}
     for k in data:
         school, grade, _, subgroup = k.split("|")
@@ -134,7 +155,8 @@ def build(old):
     sub_order = [s["id"] for s in subgroups]
     schools = []
     for code, (g, s) in by_school.items():
-        name = DISTRICT_NAME if code == DISTRICT_CODE else names.get(code) or old_names.get(code) or f"School {code}"
+        name = DISTRICT_NAME if code == DISTRICT_CODE else (names.get(code) or old_names.get(code)
+                                                            or entity_names.get(code) or f"School {code}")
         schools.append({
             "code": code,
             "name": name,

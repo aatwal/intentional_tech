@@ -1,0 +1,10 @@
+County Code^District Code^School Code^Type ID^Filler^Test Year^County Name^District Name^School Name^Zip Code
+41^68882^0000000^6^^2026^San Mateo^Burlingame Elementary^^
+41^68882^0133157^7^^2026^San Mateo^Burlingame Elementary^Hoover Elementary^94010
+41^68882^4168882^7^^2026^San Mateo^Burlingame Elementary^Burlingame Elementary District Level Program^94010
+41^68882^6043525^7^^2026^San Mateo^Burlingame Elementary^Burlingame Intermediate^94010
+41^68882^6043541^7^^2026^San Mateo^Burlingame Elementary^Franklin Elementary^94010
+41^68882^6043566^7^^2026^San Mateo^Burlingame Elementary^Lincoln Elementary^94010
+41^68882^6043574^7^^2026^San Mateo^Burlingame Elementary^McKinley Elementary^94010
+41^68882^6043590^7^^2026^San Mateo^Burlingame Elementary^Roosevelt Elementary^94010
+41^68882^6043608^7^^2026^San Mateo^Burlingame Elementary^Washington Elementary^94010

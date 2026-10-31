@@ -40,8 +40,10 @@ manager at the repo root — most of it is self-contained HTML.
 - `caaspp_files/` — raw CDE CAASPP research files, one folder per district (each district's
   `files` setting in `caaspp_ai_dashboard/districts.py`), one file per year 2015–2026 (2020
   excluded — COVID testing suspension), under CDE's own names (`sb_ca20NN_all_<county>_<district>_csv_vN.txt`):
-  `smfc/` (`41_69039`) and `burlingame_elementary/` (`41_68882`, cut from the statewide files by
-  `extract_district.py` — see "Other districts" below). `california/` holds the statewide files
+  `smfc/` (`41_69039`), `burlingame_elementary/` (`41_68882`) and `newark_unified/` (`01_61234`);
+  the last two are cut from the statewide files by `extract_district.py` (see "Other districts"
+  below), which also saves each year's school names (`sb_caYYYY_entities_*.txt`) since CDE's
+  older score files have none. `california/` holds the statewide files
   (gitignored). Nothing reads these at runtime (the dashboard consumes the already-derived `DATA`
   blob); they're read offline by `caaspp_ai_dashboard/build_data.py` (generates `DATA`) and
   `verify_source_data.py` (cross-check) — see below. Both stop if any row's county/district codes
@@ -158,15 +160,15 @@ different ids — `District.subgroup_id_by_name` qualifies every colliding name 
 the enum stays 1:1 with ids; a naive `{name: id}` dict would silently collapse those to one id.
 
 **District URLs:** each district has its own path: SMFCSD at `/smfc`, Burlingame Elementary at
-`/burlingame` (`districts.py`). `/` forwards to `/smfc` with a 302, keeping the query string, so the
-many links to the bare `https://smfcsd-tech-analysis.onrender.com/` (site pages, redirect stubs,
-`?tab=statewide` links) still land right; `/smfc/` and `/burlingame/` forward to the slash-less
+`/burlingame`, Newark Unified at `/newark` (`districts.py`). `/` forwards to `/smfc` with a 302,
+keeping the query string, so the many links to the bare `https://smfcsd-tech-analysis.onrender.com/`
+(site pages, redirect stubs, `?tab=statewide` links) still land right; `/<district>/` forwards to the slash-less
 form, which the page's relative links assume. The write-up pages stay at the root and link back to
 `/smfc`.
 
-**Other districts (unlinked):** the same app also serves a copy of the dashboard for Burlingame
-Elementary at `/burlingame`. It's linked from nowhere and marked `noindex` (meta tag plus an
-`X-Robots-Tag` header), and it leaves out the SMFCSD-only write-up link. `districts.py` lists the
+**Other districts (unlinked):** the same app also serves copies of the dashboard for Burlingame
+Elementary (`/burlingame`) and Newark Unified (`/newark`). They're linked from nowhere and marked `noindex` (meta tag plus an
+`X-Robots-Tag` header), and they leave out the SMFCSD-only write-up link. `districts.py` lists the
 districts (codes, display names, data file, path); `app.py` builds a `District` per entry at
 startup (its data, chat overview, lookup tool, and its copy of the page). `templates/index.html`
 holds `%%NAME%%`-style placeholders that `render_page()` fills in one pass: never write a
@@ -175,7 +177,11 @@ pages without it get SMFCSD), and `CHAT_QUERY` log lines include it. A district'
 cut from CDE's statewide comprehensive files by **`extract_district.py <county> <code>`**:
 CDE's own per-district files are exactly those rows (`--check` proves it against SMFCSD's committed
 files; 2015–2018 differ only in line order). Then `build_data.py --district <slug>` (a first build
-takes subgroup names from SMFCSD's JSON) and `verify_source_data.py --district <slug>`. The page's
+takes subgroup names from SMFCSD's JSON, plus `EXTRA_SUBGROUPS` for CDE groups SMFCSD has never had,
+e.g. 28 "Migrant education"; a closed school's name comes from the saved entities lines) and
+`verify_source_data.py --district <slug>`. The dashboard only breaks results down for grades 3–8:
+for a unified district like Newark, grade 11 is left out of the grade charts but included in "All
+Grades", so its district figures differ slightly from the statewide tab's grades 3–8 ones. The page's
 section headings were written for SMFCSD ("Where the ground was lost", "Which skills eroded most")
 and are shown as-is for other districts.
 
